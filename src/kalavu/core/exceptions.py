@@ -23,3 +23,7 @@ class FusionError(KalavuError):
 
 class CooperativeError(KalavuError):
     """Raised when cooperative-specific operations fail."""
+
+
+class HardwareError(KalavuError):
+    """Raised when required hardware (CUDA GPU) is not available."""
