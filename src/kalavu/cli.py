@@ -1,5 +1,7 @@
 """KALAVU CLI — The Decentralized LLM Training Protocol."""
 
+from pathlib import Path
+
 import click
 
 from kalavu import __version__
@@ -20,9 +22,41 @@ def coop():
 @click.option("--name", required=True, help="Cooperative name")
 @click.option("--modules", default=20, help="Number of module slots")
 @click.option("--target-params", default="1B", help="Target parameters per module")
-def create(name: str, modules: int, target_params: str):
+@click.option(
+    "--output-dir",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Output directory (default: ./<name>)",
+)
+@click.option(
+    "--corpus",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Path to text corpus for tokenizer training",
+)
+@click.option("--vocab-size", default=4096, help="Tokenizer vocabulary size")
+@click.option("--seed", default=42, help="Random seed for reproducibility")
+def create(
+    name: str,
+    modules: int,
+    target_params: str,
+    output_dir: Path | None,
+    corpus: Path | None,
+    vocab_size: int,
+    seed: int,
+):
     """Create a new cooperative."""
-    click.echo(f"Creating cooperative '{name}' with {modules} modules @ {target_params} each...")
+    from kalavu.coop.create import create_cooperative
+
+    create_cooperative(
+        name=name,
+        modules=modules,
+        target_params=target_params,
+        output_dir=output_dir,
+        corpus_path=corpus,
+        vocab_size=vocab_size,
+        seed=seed,
+    )
 
 
 @coop.command()
