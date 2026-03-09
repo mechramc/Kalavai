@@ -14,32 +14,32 @@
 ### Epic: Core Config & Data Models
 > Priority: P0 | Effort: M | Dependencies: None
 
-- [ ] **TASK-001**: Implement `kalavu.yaml` schema and config parser
+- [x] **TASK-001**: Implement `kalavu.yaml` schema and config parser
   - **Effort**: M
   - **Dependencies**: None
   - **Component**: `src/kalavu/core/config.py`
   - **Acceptance**: Parse the full cooperative config schema from spec section 6.1 (cooperative name, modules, target_params, architecture block, alignment block, fusion block, domains list). Validate required fields, raise `ConfigError` on invalid YAML. Round-trip: load → validate → access via typed dataclass.
   - **Notes**: This is the single most depended-on task. Every subsystem reads this config.
 
-- [ ] **TASK-002**: Define custom exception hierarchy
+- [x] **TASK-002**: Define custom exception hierarchy
   - **Effort**: XS
   - **Dependencies**: None
   - **Component**: `src/kalavu/core/exceptions.py`
   - **Acceptance**: Create `KalavuError` base, plus `ConfigError`, `AlignmentError`, `CheckpointValidationError`, `FusionError`, `CooperativeError`. All inherit from `KalavuError`.
 
-- [ ] **TASK-003**: Implement checkpoint format handler
+- [x] **TASK-003**: Implement checkpoint format handler
   - **Effort**: S
   - **Dependencies**: TASK-001
   - **Component**: `src/kalavu/core/checkpoint.py`
   - **Acceptance**: Define checkpoint directory structure (model weights, alignment probes, alignment report JSON, training metadata JSON, artifact hashes). Implement `save_checkpoint()` and `load_checkpoint()`. Validate artifact hashes (tokenizer, seed) against cooperative config on load.
 
-- [ ] **TASK-004**: Implement CKA (Centered Kernel Alignment) computation
+- [x] **TASK-004**: Implement CKA (Centered Kernel Alignment) computation
   - **Effort**: M
   - **Dependencies**: None
   - **Component**: `src/kalavu/core/cka.py`
   - **Acceptance**: Implement linear CKA between two sets of hidden-state representations (tensors of shape `[N, D]`). Must handle batched computation. Return float in [0, 1]. Include `cka_loss(h_module, h_reference) -> tensor` that returns `1 - CKA` for use as a loss term. Unit test: CKA of identical representations = 1.0, orthogonal ≈ 0.0.
 
-- [ ] **TASK-005**: Implement hardware auto-detection
+- [x] **TASK-005**: Implement hardware auto-detection
   - **Effort**: S
   - **Dependencies**: None
   - **Component**: `src/kalavu/train/hardware.py`
@@ -48,13 +48,13 @@
 ### Epic: Dev Tooling
 > Priority: P0 | Effort: S | Dependencies: None
 
-- [ ] **TASK-006**: Set up pytest fixtures and test infrastructure
+- [x] **TASK-006**: Set up pytest fixtures and test infrastructure
   - **Effort**: S
   - **Dependencies**: None
   - **Component**: `tests/conftest.py`
   - **Acceptance**: Create fixtures for: temporary cooperative directory, sample `kalavu.yaml`, mock seed checkpoint (small random tensor), mock calibration batch. All tests should run without GPU (mock torch.cuda).
 
-- [ ] **TASK-007**: Add `pip install -e ".[dev]"` smoke test in CI-compatible script
+- [x] **TASK-007**: Add `pip install -e ".[dev]"` smoke test in CI-compatible script
   - **Effort**: XS
   - **Dependencies**: TASK-001
   - **Component**: `tests/test_install.py`
@@ -69,37 +69,37 @@
 ### Epic: Cooperative Creation
 > Priority: P0 | Effort: L | Dependencies: TASK-001, TASK-004
 
-- [ ] **TASK-008**: Implement BPE tokenizer training via minbpe
+- [x] **TASK-008**: Implement BPE tokenizer training via minbpe
   - **Effort**: M
   - **Dependencies**: TASK-001
   - **Component**: `src/kalavu/coop/create.py`
   - **Acceptance**: Given a corpus path (or default multi-domain corpus config), train a BPE tokenizer using minbpe and save as `tokenizer.model`. Configurable vocab size from `kalavu.yaml`. Deterministic: same corpus → same tokenizer.
 
-- [ ] **TASK-009**: Implement canonical seed checkpoint generation
+- [x] **TASK-009**: Implement canonical seed checkpoint generation
   - **Effort**: M
   - **Dependencies**: TASK-001, TASK-003
   - **Component**: `src/kalavu/coop/create.py`
   - **Acceptance**: Initialize a nanochat-compatible model at the architecture config (depth, d_model, n_heads, ffn_ratio, norm) with a fixed random seed. Save as `seed_checkpoint.pt`. Hash the checkpoint for integrity verification. Must be reproducible: same config + same seed = identical checkpoint.
 
-- [ ] **TASK-010**: Compute CKA reference representations
+- [x] **TASK-010**: Compute CKA reference representations
   - **Effort**: S
   - **Dependencies**: TASK-004, TASK-009
   - **Component**: `src/kalavu/coop/create.py`
   - **Acceptance**: Run the seed model on the calibration batch, extract hidden states at probe layers (25%, 50%, 75% depth). Save as `cka_reference.pt`. These are the alignment targets for all modules.
 
-- [ ] **TASK-011**: Generate calibration batch
+- [x] **TASK-011**: Generate calibration batch
   - **Effort**: S
   - **Dependencies**: TASK-008
   - **Component**: `src/kalavu/coop/create.py`
   - **Acceptance**: Tokenize ~1024 sequences from a configurable corpus using the trained tokenizer. Save as `calibration_batch.pt`. Fixed once per cooperative.
 
-- [ ] **TASK-012**: Generate domain manifest
+- [x] **TASK-012**: Generate domain manifest
   - **Effort**: S
   - **Dependencies**: TASK-001
   - **Component**: `src/kalavu/coop/create.py`
   - **Acceptance**: Generate `domain_manifest.json` with N slots (from config), each with id, name, data_hint, and status ("open"). Default domains from spec (Code, Math, Bio, Legal, History, etc.). Allow custom domains via `kalavu.yaml`.
 
-- [ ] **TASK-013**: Wire `kalavu coop create` end-to-end
+- [x] **TASK-013**: Wire `kalavu coop create` end-to-end
   - **Effort**: M
   - **Dependencies**: TASK-008, TASK-009, TASK-010, TASK-011, TASK-012
   - **Component**: `src/kalavu/cli.py`, `src/kalavu/coop/create.py`
@@ -108,13 +108,13 @@
 ### Epic: Cooperative Membership
 > Priority: P0 | Effort: M | Dependencies: TASK-013
 
-- [ ] **TASK-014**: Implement `kalavu coop join` — download artifacts and claim slot
+- [x] **TASK-014**: Implement `kalavu coop join` — download artifacts and claim slot
   - **Effort**: M
   - **Dependencies**: TASK-013
   - **Component**: `src/kalavu/coop/join.py`
   - **Acceptance**: Given a cooperative path (local directory for Alpha; GitHub repo URL for Beta), download all shared artifacts (tokenizer, seed, calibration batch, CKA reference). Claim a domain slot by ID. Update `domain_manifest.json` to mark slot as "claimed". Validate artifact hashes.
 
-- [ ] **TASK-015**: Implement `kalavu coop status` — display cooperative health
+- [x] **TASK-015**: Implement `kalavu coop status` — display cooperative health
   - **Effort**: S
   - **Dependencies**: TASK-013
   - **Component**: `src/kalavu/coop/status.py`
