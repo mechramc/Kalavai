@@ -1,0 +1,27 @@
+# Core
+torch>=2.4.0
+numpy>=1.26.0
+
+# Hugging Face stack (real model experiments)
+transformers>=4.44.0
+peft>=0.12.0
+datasets>=2.20.0
+accelerate>=0.33.0
+trl>=0.9.0
+
+# Evaluation
+lm-eval>=0.4.3
+
+# Experiment tracking
+wandb>=0.17.0
+
+# Tokenization
+tiktoken>=0.7.0
+
+# Figures and analysis
+matplotlib>=3.8.0
+seaborn>=0.13.0
+pandas>=2.2.0
+
+# Config management
+pyyaml>=6.0.0

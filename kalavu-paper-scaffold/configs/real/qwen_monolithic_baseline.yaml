@@ -1,0 +1,45 @@
+# Monolithic Baseline (Table 2 in paper)
+# Same total compute as 2 specialists, but spent on continued pre-training
+# on mixed domain data. Tests: does specialist-then-fuse beat generalist training?
+
+name: qwen_monolithic_baseline
+description: >
+  Continue training Qwen2.5-1.5B on mixed math+science data for the same
+  total steps as 2 specialists combined (2 × 500 = 1000 steps).
+  If the fused model beats this, specialist-then-fuse outperforms
+  generalist training at equal compute budget.
+
+seeds: [42, 137, 2026]
+output_dir: results/real
+wandb_project: kalavu-paper
+
+alignment:
+  freeze_layers: 2  # same freeze for fair comparison
+  seed: 42
+
+training:
+  batch_size: 4
+  learning_rate: 2e-4
+  weight_decay: 0.1
+  max_steps: 1000  # 2x specialist steps = equal total compute
+  eval_interval: 100
+  warmup_steps: 50
+  gradient_clip: 1.0
+  precision: bf16
+
+fusion:
+  method: none  # no fusion — this is the monolithic baseline
+
+data:
+  mode: huggingface
+  model_id: Qwen/Qwen2.5-1.5B
+  domains: [mixed]
+  dataset_ids:
+    mixed: null  # script interleaves math + science data
+  max_train_samples: 20000
+  max_eval_samples: 500
+
+eval:
+  benchmarks: [gsm8k, arc_challenge, sciq]
+  eval_batch_size: 8
+  num_fewshot: 0

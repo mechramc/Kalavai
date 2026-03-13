@@ -1,0 +1,47 @@
+# Freeze Depth Ablation (Figure 2 in paper)
+# Run this config 7 times with freeze_layers: 0, 1, 2, 3, 4, 6, 8
+# Script run_freeze_ablation.sh automates this sweep
+
+name: qwen_freeze_ablation
+description: >
+  Sweep freeze_layers from 0 to 8 on Qwen2.5-1.5B with math vs science domains.
+  This produces the paper's central figure showing the tradeoff between
+  alignment (more frozen layers) and specialization capacity (fewer frozen layers).
+
+seeds: [42, 137, 2026]
+output_dir: results/real
+wandb_project: kalavu-paper
+
+alignment:
+  freeze_layers: 2  # overridden by sweep script
+  seed: 42
+
+training:
+  batch_size: 4
+  learning_rate: 2e-4
+  weight_decay: 0.1
+  max_steps: 500
+  eval_interval: 100
+  warmup_steps: 50
+  gradient_clip: 1.0
+  precision: bf16
+
+fusion:
+  method: moe
+  router_steps: 200
+  router_lr: 1e-3
+
+data:
+  mode: huggingface
+  model_id: Qwen/Qwen2.5-1.5B
+  domains: [math, science]
+  dataset_ids:
+    math: open-web-math/open-web-math
+    science: scientific_papers/arxiv
+  max_train_samples: 10000
+  max_eval_samples: 500
+
+eval:
+  benchmarks: [gsm8k, arc_challenge, sciq]
+  eval_batch_size: 8
+  num_fewshot: 0
