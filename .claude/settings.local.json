@@ -5,7 +5,8 @@
       "Skill(browse)",
       "Bash(taskkill:*)",
       "Bash(tasklist:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(ls:*)"
     ]
   }
 }
