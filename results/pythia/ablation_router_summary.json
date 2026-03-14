@@ -1,0 +1,73 @@
+{
+  "experiment": "router_ablation",
+  "base_model": "pythia-410m-step10000",
+  "seed": 42,
+  "freeze_layers": 4,
+  "best_individual_mixed": 2.089038,
+  "variants": {
+    "uniform": {
+      "mixed_loss": 1.949844,
+      "improvement_pct": 6.6631,
+      "gate_distribution": {
+        "code": [
+          0.333,
+          0.333,
+          0.333
+        ],
+        "science": [
+          0.333,
+          0.333,
+          0.333
+        ],
+        "fiction": [
+          0.333,
+          0.333,
+          0.333
+        ]
+      }
+    },
+    "simple_linear": {
+      "mixed_loss": 1.793269,
+      "improvement_pct": 14.1582,
+      "gate_distribution": {
+        "code": [
+          0.9978,
+          0.0003,
+          0.0018
+        ],
+        "science": [
+          0.0004,
+          0.997,
+          0.0026
+        ],
+        "fiction": [
+          0.0004,
+          0.0004,
+          0.9993
+        ]
+      }
+    },
+    "two_layer": {
+      "mixed_loss": 1.793077,
+      "improvement_pct": 14.1673,
+      "gate_distribution": {
+        "code": [
+          0.9998,
+          0.0,
+          0.0001
+        ],
+        "science": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "fiction": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "timestamp": "2026-03-13T21:39:58Z"
+}
