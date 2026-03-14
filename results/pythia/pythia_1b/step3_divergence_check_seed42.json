@@ -1,0 +1,46 @@
+{
+  "seed": 42,
+  "passed": true,
+  "loss_matrix": {
+    "base": {
+      "code": 2.008226,
+      "science": 2.772743,
+      "fiction": 2.642392
+    },
+    "code": {
+      "code": 1.786265,
+      "science": 2.794975,
+      "fiction": 2.657347
+    },
+    "science": {
+      "code": 2.130461,
+      "science": 2.512278,
+      "fiction": 2.800786
+    },
+    "fiction": {
+      "code": 2.026687,
+      "science": 2.779696,
+      "fiction": 1.971058
+    }
+  },
+  "checks": {
+    "code_beats_base": {
+      "passed": true,
+      "base_loss": 2.008226,
+      "spec_loss": 1.786265,
+      "delta_pct": -11.05
+    },
+    "science_beats_base": {
+      "passed": true,
+      "base_loss": 2.772743,
+      "spec_loss": 2.512278,
+      "delta_pct": -9.39
+    },
+    "fiction_beats_base": {
+      "passed": true,
+      "base_loss": 2.642392,
+      "spec_loss": 1.971058,
+      "delta_pct": -25.41
+    }
+  }
+}
