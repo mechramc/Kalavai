@@ -1,0 +1,70 @@
+{
+  "seed": 42,
+  "base_losses": {
+    "code": 2.087168,
+    "science": 2.89201,
+    "fiction": 2.973911,
+    "math": 2.611184,
+    "multilingual": 3.079116,
+    "mixed_all": 2.248017
+  },
+  "specialist_losses": {
+    "code": 1.879066,
+    "science": 2.556521,
+    "fiction": 2.219371,
+    "math": 1.69707,
+    "multilingual": 2.885473
+  },
+  "subset_results": {
+    "2_specialists": {
+      "subset_domains": [
+        "code",
+        "fiction"
+      ],
+      "n_specialists": 2,
+      "best_individual_mixed": 2.179583,
+      "weight_avg_mixed": 2.196352,
+      "moe_mixed_loss": 1.79324,
+      "improvement_pct": 17.7256
+    },
+    "3_specialists": {
+      "subset_domains": [
+        "code",
+        "science",
+        "fiction"
+      ],
+      "n_specialists": 3,
+      "best_individual_mixed": 2.089038,
+      "weight_avg_mixed": 2.157677,
+      "moe_mixed_loss": 1.793751,
+      "improvement_pct": 14.1351
+    },
+    "4_specialists": {
+      "subset_domains": [
+        "code",
+        "science",
+        "fiction",
+        "math"
+      ],
+      "n_specialists": 4,
+      "best_individual_mixed": 2.089038,
+      "weight_avg_mixed": 2.184516,
+      "moe_mixed_loss": 1.793724,
+      "improvement_pct": 14.1364
+    },
+    "5_specialists": {
+      "subset_domains": [
+        "code",
+        "science",
+        "fiction",
+        "math",
+        "multilingual"
+      ],
+      "n_specialists": 5,
+      "best_individual_mixed": 2.089038,
+      "weight_avg_mixed": 2.195338,
+      "moe_mixed_loss": 1.795195,
+      "improvement_pct": 14.066
+    }
+  }
+}
