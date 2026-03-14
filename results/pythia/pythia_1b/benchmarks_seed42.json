@@ -1,0 +1,81 @@
+{
+  "model_id": "EleutherAI/pythia-1b",
+  "revision": "step10000",
+  "seed": 42,
+  "n_examples_per_benchmark": 500,
+  "benchmarks": [
+    "hellaswag",
+    "arc_easy",
+    "lambada",
+    "sciq",
+    "winogrande"
+  ],
+  "random_chance": {
+    "hellaswag": 0.25,
+    "arc_easy": 0.25,
+    "lambada": 0.0,
+    "sciq": 0.25,
+    "winogrande": 0.5
+  },
+  "results": {
+    "base": {
+      "hellaswag": 34.4,
+      "arc_easy": 40.4,
+      "lambada": 60.2,
+      "sciq": 68.4,
+      "winogrande": 49.6,
+      "average": 50.6
+    },
+    "code_spec": {
+      "hellaswag": 34.2,
+      "arc_easy": 39.4,
+      "lambada": 57.4,
+      "sciq": 65.8,
+      "winogrande": 50.0,
+      "average": 49.36
+    },
+    "science_spec": {
+      "hellaswag": 34.2,
+      "arc_easy": 41.0,
+      "lambada": 56.4,
+      "sciq": 65.8,
+      "winogrande": 48.2,
+      "average": 49.12
+    },
+    "fiction_spec": {
+      "hellaswag": 34.4,
+      "arc_easy": 39.8,
+      "lambada": 58.6,
+      "sciq": 66.8,
+      "winogrande": 48.2,
+      "average": 49.56
+    },
+    "weight_avg": {
+      "hellaswag": 34.6,
+      "arc_easy": 39.0,
+      "lambada": 57.8,
+      "sciq": 67.8,
+      "winogrande": 48.6,
+      "average": 49.56
+    },
+    "moe": {
+      "hellaswag": 35.0,
+      "arc_easy": 40.0,
+      "lambada": 59.0,
+      "sciq": 64.8,
+      "winogrande": 49.4,
+      "average": 49.64
+    },
+    "monolithic": {
+      "hellaswag": 33.4,
+      "arc_easy": 38.4,
+      "lambada": 58.2,
+      "sciq": 67.0,
+      "winogrande": 49.4,
+      "average": 49.28
+    }
+  },
+  "moe_avg_accuracy": 49.64,
+  "base_avg_accuracy": 50.6,
+  "timestamp": "2026-03-14T12:11:11Z"
+}
