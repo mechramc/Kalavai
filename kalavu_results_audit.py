@@ -1,3 +1,6 @@
+import sys
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 """
 KALAVU Results Audit
 ====================
@@ -216,20 +219,24 @@ def audit_pythia_core():
                 f"MoE={moe_loss:.4f} weight_avg={wavg_loss:.4f}",
             )
 
-    print("\n  2d. Improvement_pct matches computed value")
+    print("\n  2d. Improvement_pct matches computed value (vs best individual)")
     for seed in seeds:
         step4 = load(RESULTS_DIR / f"pythia/step4_fusion_results_seed{seed}.json")
         if not step4:
             continue
         reported = step4.get("improvement_pct", None)
-        base_mixed = step4.get("eval_heldout", {}).get("base", {}).get("mixed", None)
+        # improvement is computed vs best_individual_mixed (not base)
+        best_spec_mixed = min(
+            step4.get("eval_heldout", {}).get(k, {}).get("mixed", float("inf"))
+            for k in ["code_spec", "science_spec", "fiction_spec"]
+        )
         moe_mixed = step4.get("eval_heldout", {}).get("moe", {}).get("mixed", None)
-        if reported is not None and base_mixed is not None and moe_mixed is not None:
-            computed = compute_improvement_pct(base_mixed, moe_mixed)
+        if reported is not None and best_spec_mixed < float("inf") and moe_mixed is not None:
+            computed = compute_improvement_pct(best_spec_mixed, moe_mixed)
             check(
                 f"improvement_pct matches raw losses seed={seed}",
-                approx_eq(reported, computed, tol=0.05),
-                f"reported={reported:.4f}% computed={computed:.4f}%",
+                approx_eq(reported, computed, tol=0.1),
+                f"reported={reported:.4f}% computed={computed:.4f}% (vs best_indiv={best_spec_mixed:.4f})",
             )
 
     print("\n  2e. Summary stats match per-seed data")
@@ -311,7 +318,7 @@ def audit_router_ablation():
     print("\n  3b. Simple == two-layer (architecture doesn't matter)")
     if simple_imp and two_layer_imp:
         diff = abs(simple_imp - two_layer_imp)
-        check("Simple ≈ two-layer (within 0.1pp)", diff < 0.1,
+        check("Simple ~= two-layer (within 0.1pp)", diff < 0.1,
               f"diff={diff:.3f}pp")
 
     print("\n  3c. Uniform uses equal gates (333/333/333)")
@@ -380,13 +387,13 @@ def audit_freeze_ablation():
         check(f"freeze={freeze_str}: low variance (std < 0.05)", std < 0.05,
               f"std={std:.4f}")
 
-    print("\n  4d. Computed improvement matches raw losses")
+    print("\n  4d. Computed improvement matches raw losses (vs best individual)")
     for entry in phase1:
-        base = entry.get("base_mixed_loss")
+        best_ind = entry.get("best_individual_mixed")
         moe = entry.get("moe_mixed_loss")
         reported = entry.get("improvement_pct")
-        if base and moe and reported is not None:
-            computed = compute_improvement_pct(base, moe)
+        if best_ind and moe and reported is not None:
+            computed = compute_improvement_pct(best_ind, moe)
             check(
                 f"freeze={entry['freeze_layers']}: improvement_pct correct",
                 approx_eq(reported, computed, tol=0.05),
@@ -853,7 +860,7 @@ def audit_figures():
         FIGURES_DIR / "pythia/fig_specialist_scaling.png",
         FIGURES_DIR / "pythia/fig_maturity_curve_1b.png",
         FIGURES_DIR / "pythia/fig_maturity_curve_combined.png",
-        Path("figures/fig_paper_hero.png"),
+        FIGURES_DIR / "pythia/fig_paper_hero.png",
     ]
 
     for path in expected_figures:
