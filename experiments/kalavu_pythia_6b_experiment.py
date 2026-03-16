@@ -323,9 +323,10 @@ def load_model(revision: str, device: str, gradient_checkpointing: bool = True):
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_ID,
         revision=revision,
-        torch_dtype=torch.bfloat16,
+        dtype=torch.bfloat16,
         device_map="auto",       # accelerate handles placement
         trust_remote_code=True,
+        use_safetensors=False,
     )
     if gradient_checkpointing:
         model.gradient_checkpointing_enable()
