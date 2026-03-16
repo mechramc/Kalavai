@@ -1,0 +1,12 @@
+{
+  "base_loss": 2.420161,
+  "moe_loss": 2.079704,
+  "moe_improvement_pct": 14.0676,
+  "multihead_loss": 2.931461,
+  "multihead_improvement_pct": -21.1267,
+  "seed": 42,
+  "n_heads": 3,
+  "model": "EleutherAI/pythia-410m@step10000",
+  "freeze_layers": 4,
+  "timestamp": "2026-03-16T11:52:58Z"
+}
