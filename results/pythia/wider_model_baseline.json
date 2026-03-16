@@ -1,0 +1,13 @@
+{
+  "model": "EleutherAI/pythia-1.4b",
+  "base_loss": 2.283694,
+  "wider_loss": 2.149128,
+  "improvement_pct": 5.8925,
+  "moe_410m_improvement_pct": 14.1778,
+  "moe_410m_loss": null,
+  "training_steps": 6000,
+  "freeze_layers": 7,
+  "lr": 1e-05,
+  "seed": 42,
+  "timestamp": "2026-03-16T12:36:48Z"
+}
