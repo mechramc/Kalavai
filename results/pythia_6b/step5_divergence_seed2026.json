@@ -1,0 +1,47 @@
+{
+  "seed": 2026,
+  "revision": "step10000",
+  "loss_matrix": {
+    "base": {
+      "code": 1.962507,
+      "science": 2.554791,
+      "fiction": 2.442915
+    },
+    "code": {
+      "code": 1.69323,
+      "science": 2.611912,
+      "fiction": 2.67536
+    },
+    "science": {
+      "code": 2.029903,
+      "science": 2.325439,
+      "fiction": 2.513203
+    },
+    "fiction": {
+      "code": 1.983248,
+      "science": 2.586844,
+      "fiction": 2.302767
+    }
+  },
+  "divergence_checks": {
+    "code": {
+      "specialist_loss": 1.69323,
+      "base_loss": 1.962507,
+      "improvement": 0.269277,
+      "passes": true
+    },
+    "science": {
+      "specialist_loss": 2.325439,
+      "base_loss": 2.554791,
+      "improvement": 0.229352,
+      "passes": true
+    },
+    "fiction": {
+      "specialist_loss": 2.302767,
+      "base_loss": 2.442915,
+      "improvement": 0.140148,
+      "passes": true
+    }
+  },
+  "all_pass": true
+}
