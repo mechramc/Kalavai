@@ -498,7 +498,7 @@ def train_specialist(model, domain: str, train_chunks: list, device: str,
 def eval_loss(model, dataset, device: str, batch_size: int = 1,
               is_fused: bool = False) -> float:
     """Evaluate cross-entropy loss on dataset. Batch size 1 for 6.9B."""
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False,
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True,
                         drop_last=True, collate_fn=_collate)
     model.eval()
     total, count = 0.0, 0
