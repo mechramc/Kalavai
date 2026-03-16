@@ -497,8 +497,9 @@ def eval_multihead_loss(clf, base_model, specialists: dict,
         if domain_losses:
             all_losses.extend(domain_losses)
             domain_avg = sum(domain_losses) / len(domain_losses)
+            correct_route = sum(p == domain_idx for p in predictions[:n_eval])
             print(f"  Multihead [{domain}] avg_loss={domain_avg:.4f} "
-                  f"(n={len(domain_losses)}, correct_route={sum(predictions[:n_eval] == domain_idx)}/{n_eval})")
+                  f"(n={len(domain_losses)}, correct_route={correct_route}/{n_eval})")
 
     return float(np.mean(all_losses)) if all_losses else float("inf")
 
