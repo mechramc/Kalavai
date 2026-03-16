@@ -347,8 +347,15 @@ def freeze_layers(model, n: int):
 
 
 def save_specialist_checkpoint(model, domain: str, seed: int, revision: str = REVISION_EARLY):
-    """Checkpoint save disabled — specialists kept in memory to save disk space."""
-    print(f"  Skipping checkpoint save for {domain} seed={seed} (disk space)")
+    """Save specialist checkpoint. Only seed=42 is persisted — seeds 137/2026 are variance-only."""
+    if seed != 42:
+        print(f"  Skipping checkpoint save for {domain} seed={seed} (variance seed, not saved)")
+        return
+    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
+    ckpt = checkpoint_path(domain, seed, revision)
+    torch.save(model.state_dict(), ckpt)
+    size_gb = ckpt.stat().st_size / 1e9
+    print(f"  Saved specialist: {ckpt} ({size_gb:.1f}GB)")
 
 
 def load_specialist_model(domain: str, seed: int, device: str,
@@ -995,6 +1002,7 @@ def run_seed_experiment(seed: int, tokenizer, device: str,
         train_chunks = all_domain_chunks[domain]["train"]
         train_specialist(model, domain, train_chunks, device, seed)
         model.eval()
+        save_specialist_checkpoint(model, domain, seed, revision)
         # Move to CPU so the next specialist can train on GPU without OOM
         model.to("cpu")
         torch.cuda.empty_cache()
@@ -1155,6 +1163,22 @@ def run_seed_experiment(seed: int, tokenizer, device: str,
         )
 
     router_dist = eval_router_distribution(moe, held_out_sets, device)
+
+    # Save fused artifacts for seed=42 (for HF Hub publishing)
+    if seed == 42 and revision == REVISION_EARLY:
+        CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
+        # Router weights (tiny — ~48KB for 4096×3)
+        router_path = CHECKPOINT_DIR / "router_seed42.pt"
+        torch.save(moe.router.state_dict(), router_path)
+        print(f"  Saved router weights: {router_path}")
+        # Weight-averaged model (usable as standalone drop-in, ~14GB)
+        avg_path = CHECKPOINT_DIR / "weight_avg_seed42.pt"
+        avg_for_save = weight_average_three(spec_code, spec_science, spec_fiction)
+        torch.save(avg_for_save.state_dict(), avg_path)
+        size_gb = avg_path.stat().st_size / 1e9
+        print(f"  Saved weight-avg model: {avg_path} ({size_gb:.1f}GB)")
+        del avg_for_save
+        torch.cuda.empty_cache()
 
     del moe, spec_code, spec_science, spec_fiction
     torch.cuda.empty_cache()
