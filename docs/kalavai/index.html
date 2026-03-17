@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KALAVAI — When Does Independent Specialist Fusion Work?</title>
+  <meta name="description" content="20 people. 20 GPUs. 1 model none of them could build alone. A companion to the KALAVAI paper on cooperative LLM training.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0c0b09;
+      --surface: #151412;
+      --surface-raised: #1c1a17;
+      --border: rgba(243, 236, 220, 0.08);
+      --border-bright: rgba(243, 236, 220, 0.15);
+      --cream: #f3ecdc;
+      --cream-dim: #a89f8f;
+      --cream-faint: #6b6459;
+      --teal: #3fb5a3;
+      --teal-glow: rgba(63, 181, 163, 0.12);
+      --gold: #d4a24e;
+      --gold-glow: rgba(212, 162, 78, 0.10);
+      --red: #c45c4f;
+      --red-glow: rgba(196, 92, 79, 0.10);
+      --plum: #a87bbf;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Consolas', monospace;
+      --max-w: 740px;
+      --wide-w: 960px;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 14px 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(12, 11, 9, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar__brand { font-family: var(--serif); font-size: 1.2rem; letter-spacing: 0.06em; }
+    .topbar__brand span { color: var(--cream-dim); font-weight: 400; }
+    .topbar__links { display: flex; gap: 1.5rem; }
+    .topbar__links a {
+      color: var(--cream-dim); text-decoration: none;
+      font-size: 0.85rem; letter-spacing: 0.04em; transition: color 0.2s;
+    }
+    .topbar__links a:hover { color: var(--cream); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center; padding: 120px 28px 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%, var(--teal-glow), transparent),
+        radial-gradient(ellipse 40% 40% at 30% 70%, var(--gold-glow), transparent);
+      pointer-events: none;
+    }
+    .hero__kicker {
+      font-family: var(--mono); font-size: 0.78rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--teal); margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: var(--serif); font-size: clamp(2.8rem, 6vw, 5.2rem);
+      line-height: 1.08; max-width: 14ch; margin-bottom: 1.5rem; font-weight: 400;
+    }
+    .hero h1 em { font-style: italic; color: var(--teal); }
+    .hero__sub { font-size: 1.15rem; color: var(--cream-dim); max-width: 52ch; margin-bottom: 2.5rem; }
+    .hero__stats {
+      display: flex; gap: 2.5rem; flex-wrap: wrap;
+      justify-content: center; margin-bottom: 3rem;
+    }
+    .hero__stat-value { font-family: var(--serif); font-size: 2.4rem; color: var(--cream); }
+    .hero__stat-label { font-size: 0.78rem; color: var(--cream-faint); letter-spacing: 0.06em; }
+    .hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; border-radius: 999px; text-decoration: none;
+      font-family: var(--sans); font-size: 0.9rem; font-weight: 500; transition: all 0.2s;
+    }
+    .btn--primary { background: var(--cream); color: var(--bg); }
+    .btn--primary:hover { background: #fff; }
+    .btn--ghost { border: 1px solid var(--border-bright); color: var(--cream-dim); }
+    .btn--ghost:hover { border-color: var(--cream-dim); color: var(--cream); }
+
+    /* ARTICLE BODY */
+    .article { max-width: var(--max-w); margin: 0 auto; padding: 0 24px 120px; }
+    .article h2 {
+      font-family: var(--serif); font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 400; line-height: 1.15; margin: 4rem 0 1rem; padding-top: 2rem;
+    }
+    .article h3 {
+      font-family: var(--serif); font-size: 1.4rem;
+      font-weight: 400; line-height: 1.25; margin: 2.5rem 0 0.6rem;
+    }
+    .article p { color: var(--cream-dim); margin-bottom: 1.3rem; }
+    .article p strong { color: var(--cream); font-weight: 500; }
+    .section-label {
+      font-family: var(--mono); font-size: 0.72rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--teal); margin-bottom: 0.5rem; display: block;
+    }
+
+    /* FIGURES */
+    .figure {
+      margin: 2.5rem -60px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .figure img { display: block; width: 100%; height: auto; }
+    .figure figcaption {
+      padding: 14px 20px; font-size: 0.85rem;
+      color: var(--cream-faint); line-height: 1.55;
+      border-top: 1px solid var(--border);
+    }
+    .figure figcaption strong { color: var(--cream-dim); }
+    .figure--wide {
+      max-width: var(--wide-w);
+      margin-left: calc((var(--max-w) - var(--wide-w)) / 2 - 24px);
+      margin-right: calc((var(--max-w) - var(--wide-w)) / 2 - 24px);
+    }
+
+    /* FIGURE GRID */
+    .figure-grid { display: grid; gap: 16px; margin: 2.5rem 0; }
+    .figure-grid--2 { grid-template-columns: 1fr 1fr; }
+    .figure-grid--3 { grid-template-columns: 1fr 1fr 1fr; }
+    .figure-grid .figure { margin: 0; }
+
+    /* RESULT CARDS */
+    .result-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 2rem 0; }
+    .result-row--4 { grid-template-columns: repeat(4, 1fr); }
+    .result-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px;
+    }
+    .result-card__label { font-size: 0.78rem; color: var(--cream-faint); letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+    .result-card__value { font-family: var(--serif); font-size: 1.8rem; }
+    .result-card__note { font-size: 0.82rem; color: var(--cream-faint); margin-top: 0.3rem; }
+    .val--teal { color: var(--teal); }
+    .val--gold { color: var(--gold); }
+    .val--red { color: var(--red); }
+
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 2rem; font-size: 0.9rem; }
+    .data-table th, .data-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    .data-table th {
+      font-family: var(--mono); font-size: 0.72rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-faint);
+    }
+    .data-table td { color: var(--cream-dim); }
+    .data-table td:last-child { font-weight: 500; color: var(--cream); }
+    .data-table tbody tr:hover { background: var(--surface); }
+    .data-table .highlight { background: rgba(63, 181, 163, 0.06); }
+
+    /* CALLOUT */
+    .callout { margin: 2rem 0; padding: 20px 24px; border-radius: 14px; border-left: 3px solid; }
+    .callout--teal { background: var(--teal-glow); border-color: var(--teal); }
+    .callout--gold { background: var(--gold-glow); border-color: var(--gold); }
+    .callout--red { background: var(--red-glow); border-color: var(--red); }
+    .callout p { color: var(--cream-dim); margin-bottom: 0; }
+    .callout strong { color: var(--cream); }
+
+    /* USE CASE CARDS */
+    .use-case {
+      margin: 2rem 0; padding: 28px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; position: relative;
+    }
+    .use-case__number {
+      font-family: var(--serif); font-size: 3rem;
+      color: var(--surface-raised); position: absolute;
+      top: 16px; right: 24px; line-height: 1; opacity: 0.5;
+    }
+    .use-case h3 { font-family: var(--serif); font-size: 1.3rem; font-weight: 400; margin: 0 0 0.6rem; color: var(--cream); }
+    .use-case p { color: var(--cream-dim); margin-bottom: 0.8rem; font-size: 0.95rem; }
+    .use-case p:last-child { margin-bottom: 0; }
+    .use-case .kicker {
+      font-family: var(--mono); font-size: 0.7rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 0.5rem; display: block;
+    }
+    .use-case:nth-child(5n+1) .kicker { color: var(--teal); }
+    .use-case:nth-child(5n+2) .kicker { color: var(--gold); }
+    .use-case:nth-child(5n+3) .kicker { color: var(--plum); }
+    .use-case:nth-child(5n+4) .kicker { color: var(--red); }
+    .use-case:nth-child(5n+5) .kicker { color: var(--teal); }
+
+    /* EXPERIMENT CARDS */
+    .experiment-card {
+      margin: 1rem 0; padding: 20px 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; display: flex; gap: 16px; align-items: flex-start;
+    }
+    .experiment-card__status {
+      font-family: var(--mono); font-size: 0.65rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 999px;
+      white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+    }
+    .status--done { background: rgba(63, 181, 163, 0.15); color: var(--teal); border: 1px solid rgba(63, 181, 163, 0.3); }
+    .status--running { background: rgba(212, 162, 78, 0.15); color: var(--gold); border: 1px solid rgba(212, 162, 78, 0.3); }
+    .status--queued { background: rgba(107, 100, 89, 0.2); color: var(--cream-faint); border: 1px solid var(--border); }
+    .experiment-card__body { flex: 1; }
+    .experiment-card__title { font-weight: 500; color: var(--cream); margin-bottom: 0.3rem; font-size: 0.95rem; }
+    .experiment-card__desc { font-size: 0.88rem; color: var(--cream-faint); margin: 0; }
+    .experiment-card__result { font-family: var(--serif); font-size: 1.3rem; color: var(--teal); margin-top: 0.4rem; }
+
+    /* CODE */
+    code { font-family: var(--mono); font-size: 0.88em; background: var(--surface); padding: 2px 6px; border-radius: 4px; }
+    pre {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; overflow-x: auto;
+      margin: 1.5rem 0; font-size: 0.85rem; line-height: 1.6;
+    }
+    pre code { background: none; padding: 0; }
+
+    /* SEPARATOR */
+    .sep { border: none; border-top: 1px solid var(--border); margin: 4rem 0; }
+
+    /* FOOTER */
+    .site-footer {
+      max-width: var(--max-w); margin: 0 auto; padding: 0 24px 60px;
+      text-align: center; color: var(--cream-faint); font-size: 0.85rem;
+    }
+    .site-footer a { color: var(--cream-dim); }
+
+    /* RESPONSIVE */
+    @media (max-width: 860px) {
+      .figure, .figure--wide { margin-left: -12px; margin-right: -12px; }
+      .result-row, .result-row--4 { grid-template-columns: 1fr 1fr; }
+      .hero__stats { gap: 1.5rem; }
+      .figure-grid--2, .figure-grid--3 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .topbar__links { display: none; }
+      .article { padding: 0 16px 80px; }
+      .result-row, .result-row--4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar__brand">KALAVAI <span>கலவை</span></div>
+  <div class="topbar__links">
+    <a href="#method">Method</a>
+    <a href="#results">Results</a>
+    <a href="#conditions">Conditions</a>
+    <a href="#ablations">Ablations</a>
+    <a href="#routing">Routing</a>
+    <a href="#impact">Impact</a>
+    <a href="https://github.com/mechramc/Kalavai">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero__kicker">Murai Labs — NeurIPS 2026</div>
+  <h1>20 people, 20 GPUs, <em>one model</em> none could build alone</h1>
+  <p class="hero__sub">KALAVAI is a cooperative LLM training protocol. Everyone starts from the same checkpoint, trains independently on their own data, and a lightweight router fuses the result. No communication during training. The fused model outperforms every individual.</p>
+
+  <div class="hero__stats">
+    <div><div class="hero__stat-value">+14.2%</div><div class="hero__stat-label">410M vs best specialist</div></div>
+    <div><div class="hero__stat-value">+14.8%</div><div class="hero__stat-label">1B vs best specialist</div></div>
+    <div><div class="hero__stat-value">+14.5%</div><div class="hero__stat-label">vs equal-compute monolithic</div></div>
+    <div><div class="hero__stat-value">322/322</div><div class="hero__stat-label">audit checks passed</div></div>
+  </div>
+
+  <div class="hero__actions">
+    <a class="btn btn--primary" href="kalavai_neurips2026.pdf">Read the Paper</a>
+    <a class="btn btn--ghost" href="https://github.com/mechramc/Kalavai">View Code</a>
+    <a class="btn btn--ghost" href="#reproduce">Reproduce in 30 min</a>
+  </div>
+</header>
+
+<article class="article">
+
+  <!-- ═══ METHOD ═══ -->
+  <span class="section-label" id="method">The Protocol</span>
+  <h2>Four steps. Zero communication during training.</h2>
+
+  <p>The entire KALAVAI protocol fits in a paragraph. A coordinator distributes a shared base checkpoint. Each contributor fine-tunes their copy on their own domain — independently, asynchronously, on whatever hardware they have. Nobody shares data, gradients, or activations. When everyone is done, they submit their checkpoints. A lightweight router (a single linear layer, trained for 500 steps on mixed data) learns which expert is best for which token. At inference, all specialists run in parallel and the router combines their outputs.</p>
+
+  <p>That's it. The mechanism is the protocol, not the infrastructure. Standard PyTorch. Standard HuggingFace. No custom CUDA kernels, no distributed training framework, no LoRA, no adapters.</p>
+
+  <pre><code># Everyone starts from the same model
+base = load("pythia-410m", revision="step10000")
+
+# Each person trains on their domain (independently, no communication)
+specialist_code    = train(copy(base), code_data,    steps=2000)
+specialist_science = train(copy(base), science_data, steps=2000)
+specialist_fiction  = train(copy(base), fiction_data, steps=2000)
+
+# A router learns who's good at what (500 steps, one linear layer)
+router = nn.Linear(hidden_size, 3, bias=False)
+fused = MoE(specialists=[code, science, fiction], router=router)
+train_router(fused, mixed_data, steps=500)
+
+# Result: fused model beats every individual specialist
+# +14.2% over best specialist, +14.5% over monolithic training</code></pre>
+
+  <figure class="figure figure--wide">
+    <img src="figures/fig_hero_4panel.png" alt="KALAVAI four key findings">
+    <figcaption><strong>Figure 1.</strong> The four core findings. (A) Fusion improvement across model scales. (B) Training duration crossover: frozen layers become necessary around 10k steps. (C) Single-specialist dispatch fails catastrophically. (D) KALAVAI beats equal-compute monolithic training by +14.5%.</figcaption>
+  </figure>
+
+  <!-- ═══ RESULTS ═══ -->
+  <hr class="sep">
+  <span class="section-label" id="results">Core Results</span>
+  <h2>Consistent gains at 410M and 1B. Reduced at 6.9B.</h2>
+
+  <p>The fused model beats the best individual specialist at every tested scale. The gains at 410M and 1B are robust across three random seeds with near-zero variance. The 6.9B result is smaller — we attribute this to a much weaker per-parameter training signal (17× the parameters but only half the training steps).</p>
+
+  <div class="result-row">
+    <div class="result-card">
+      <div class="result-card__label">Pythia-410M</div>
+      <div class="result-card__value val--teal">+14.2%</div>
+      <div class="result-card__note">3 seeds, ±0.016%</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card__label">Pythia-1B</div>
+      <div class="result-card__value val--teal">+14.8%</div>
+      <div class="result-card__note">3 seeds, ±0.003%</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card__label">Pythia-6.9B</div>
+      <div class="result-card__value val--gold">+2.4%</div>
+      <div class="result-card__note">3 seeds, corrected eval</div>
+    </div>
+  </div>
+
+  <figure class="figure figure--wide">
+    <img src="figures/fig_scale_ladder.png" alt="KALAVAI improvement across model scales">
+    <figcaption><strong>Figure 2.</strong> Scale ladder. KALAVAI improvement as a function of model size. Gains are nearly identical at 410M and 1B (+14.2% and +14.8%), then contract at 6.9B (+2.4%). We attribute this to the per-parameter training signal budget: 6.9B has 17&times; the parameters but was fine-tuned for fewer total steps.</figcaption>
+  </figure>
+
+  <h3>Beats equal-compute monolithic training</h3>
+
+  <p>The natural objection: just train one model on all the data for the same total compute. We tested this directly. A single model fine-tuned on mixed data for 6,000 steps (equal to 3 specialists &times; 2,000 steps) achieves +6.7% over base. KALAVAI achieves <strong>+14.5% over that monolithic model</strong>.</p>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_monolithic_comparison.png" alt="KALAVAI MoE vs monolithic baseline at 410M">
+      <figcaption><strong>Figure 3.</strong> 410M monolithic comparison. MoE (1.793) beats both base (2.248) and monolithic (2.098) by a large margin.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_fusion_comparison.png" alt="Full fusion comparison at 410M">
+      <figcaption><strong>Figure 4.</strong> Full 410M comparison: base, three specialists, monolithic, weight-averaged, and MoE. Mixed held-out loss on the vertical axis.</figcaption>
+    </figure>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>Method</th><th>Loss</th><th>vs. Base</th><th>vs. Monolithic</th></tr></thead>
+    <tbody>
+      <tr><td>Base model</td><td>2.248</td><td>—</td><td>—</td></tr>
+      <tr><td>Monolithic (6,000 steps mixed)</td><td>2.098</td><td>+6.7%</td><td>—</td></tr>
+      <tr><td>Best specialist (code)</td><td>2.089</td><td>+7.1%</td><td>+0.4%</td></tr>
+      <tr><td>Weight averaging</td><td>2.158</td><td>+4.0%</td><td>—</td></tr>
+      <tr><td>Wider model (3.5&times; params)</td><td>2.120</td><td>+5.9%</td><td>—</td></tr>
+      <tr class="highlight"><td>KALAVAI MoE</td><td>1.793</td><td>+20.2%</td><td><strong>+14.5%</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>1B results: replication holds</h3>
+
+  <p>The 1B scale replicates the 410M result with essentially zero variance. The improvement is +14.8% over the best specialist. Three seeds, standard deviation 0.003%. The monolithic baseline at 1B also confirms: KALAVAI beats equal-compute monolithic by ~+14.5% at 1B as well.</p>
+
+  <figure class="figure">
+    <img src="figures/fig_1b_fusion_comparison.png" alt="KALAVAI fusion comparison at 1B scale">
+    <figcaption><strong>Figure 5.</strong> Full comparison at Pythia-1B. MoE achieves held-out mixed loss of 1.696 vs. best specialist at 1.992 — a +14.8% improvement. The monolithic baseline (6,000 steps on mixed data) achieves 1.986, confirming the MoE advantage holds at 1B.</figcaption>
+  </figure>
+
+  <h3>6.9B: the scale boundary</h3>
+
+  <p>At 6.9B parameters the improvement contracts to +2.4%. The mechanism still works — the MoE is definitively better than every individual specialist — but the magnitude is much smaller. The most likely explanation: at 6.9B, each specialist had only 500 fine-tuning steps (budget-constrained by A100 runtime), leaving insufficient domain signal for strong specialisation. A follow-up experiment (B1: 6.9B step-budget sweep) will test whether more training recovers the larger improvement seen at 410M/1B.</p>
+
+  <figure class="figure">
+    <img src="figures/fig_6b_summary.png" alt="6.9B scale results summary">
+    <figcaption><strong>Figure 6.</strong> 6.9B results. Despite the reduced improvement (+2.4%), the result is statistically clear across three seeds with zero variance. This flags a scale-dependent boundary, not a mechanism failure.</figcaption>
+  </figure>
+
+  <!-- ═══ CONDITIONS ═══ -->
+  <hr class="sep">
+  <span class="section-label" id="conditions">Three Governing Conditions</span>
+  <h2>When fusion works — and when it doesn't</h2>
+
+  <p>The paper's core contribution isn't "MoE is good." It's an empirical characterisation of the <em>conditions</em> under which post-hoc fusion of independently trained specialists succeeds or fails. We identify three.</p>
+
+  <h3>1. Shared initialisation is necessary</h3>
+
+  <p>Specialists must start from the same checkpoint. The shared starting point preserves representational compatibility — specialists diverge in what they learn, but the geometry of their representations stays aligned enough for a router to combine them. Initialising from different checkpoints breaks this: their representational spaces are no longer aligned, and the router cannot learn coherent dispatch.</p>
+
+  <div class="callout callout--teal">
+    <p><strong>Practical implication:</strong> The cooperative coordinator must distribute a single canonical checkpoint. All specialists must start from exactly the same revision — same weights, same tokenizer, same architecture. This is the one non-negotiable constraint of the protocol.</p>
+  </div>
+
+  <h3>2. Frozen layers become necessary beyond ~10,000 steps</h3>
+
+  <p>At short training horizons (&le;5,000 steps), freezing layers is optional — more plastic representations allow specialists to diverge more effectively. But beyond approximately 10,000 steps, unfrozen specialists over-specialise and become harder to fuse. Freezing the first K layers provides a structural anchor that preserves routing compatibility.</p>
+
+  <figure class="figure">
+    <img src="figures/fig_training_duration_crossover.png" alt="Training duration crossover: freeze=0 vs freeze=4">
+    <figcaption><strong>Figure 7.</strong> The training duration crossover. Without frozen layers, improvement peaks at 5k steps then degrades. With 4 frozen layers, improvement plateaus through 20k steps. Crossover at approximately 10,000 steps.</figcaption>
+  </figure>
+
+  <table class="data-table">
+    <thead><tr><th>Steps</th><th>Freeze=0</th><th>Freeze=4</th><th>Winner</th></tr></thead>
+    <tbody>
+      <tr><td>500</td><td>+9.9%</td><td>+8.9%</td><td>Freeze=0</td></tr>
+      <tr><td>1,000</td><td>+12.5%</td><td>+11.3%</td><td>Freeze=0</td></tr>
+      <tr><td>2,000</td><td>+15.1%</td><td>+13.9%</td><td>Freeze=0</td></tr>
+      <tr><td>5,000</td><td>+16.4%</td><td>+15.8%</td><td>Freeze=0</td></tr>
+      <tr class="highlight"><td>10,000</td><td>+15.4%</td><td>+15.6%</td><td><strong>Freeze=4 &larr; crossover</strong></td></tr>
+      <tr class="highlight"><td>20,000</td><td>+13.6%</td><td>+14.8%</td><td><strong>Freeze=4</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>3. All specialists must run at inference</h3>
+
+  <p>This is the paper's most surprising result. A domain classifier with 99.3% accuracy, routing each input to a single specialist, produces <strong>&minus;21.1% degradation</strong> relative to base. The MoE running all three specialists and combining outputs produces <strong>+14.1% improvement</strong>. Same routing accuracy — opposite results. The 35 percentage point gap is the difference between a system that works and one that's worse than doing nothing.</p>
+
+  <figure class="figure">
+    <img src="figures/fig_domain_classifier.png" alt="MoE vs domain classifier dispatch">
+    <figcaption><strong>Figure 8.</strong> Routing strategies at Pythia-410M. Joint MoE inference achieves +14.1%. Single-specialist dispatch with a near-perfect domain classifier achieves &minus;21.1%. The 35pp gap is entirely explained by catastrophic forgetting.</figcaption>
+  </figure>
+
+  <div class="callout callout--gold">
+    <p><strong>Why does single-expert dispatch fail?</strong> Each specialist forgets what it wasn't trained on. The code specialist's loss on science data is <em>worse than the base model</em>. When only one specialist runs, out-of-domain tokens have no fallback. Joint inference restores coverage by letting the router suppress out-of-domain specialists token by token.</p>
+  </div>
+
+  <h3>The mechanism in one image</h3>
+
+  <p>The cross-domain evaluation matrix shows why fusion works. Each specialist is best on its own domain (the diagonal) and worst on the others. The MoE router dispatches each token to the right diagonal entry, recovering all specialist gains simultaneously.</p>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_divergence_heatmap.png" alt="Cross-domain evaluation loss matrix at 410M">
+      <figcaption><strong>Figure 9.</strong> 410M cross-domain loss matrix. Green = lower loss. The pronounced diagonal confirms complementary specialisation — each specialist excels on its own domain and degrades on others.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_1b_divergence_heatmap.png" alt="Cross-domain evaluation loss matrix at 1B">
+      <figcaption><strong>Figure 10.</strong> 1B cross-domain loss matrix. The same diagonal structure holds at 1B. The mechanism is scale-invariant at 410M and 1B.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ═══ ABLATIONS ═══ -->
+  <hr class="sep">
+  <span class="section-label" id="ablations">Ablations</span>
+  <h2>What doesn't matter (and what does)</h2>
+
+  <h3>Router architecture doesn't matter</h3>
+  <p>A uniform router (fixed 1/N weights, no training) achieves +6.7%. A trained linear router achieves +14.2%. A 2-layer MLP achieves +14.2%. The gap between uniform and learned routing is +7.5pp — entirely explained by the router's ability to suppress out-of-domain specialists. The specific function class is irrelevant; the minimum bar is <em>learnable suppression</em>.</p>
+
+  <figure class="figure">
+    <img src="figures/fig_ablation_router.png" alt="Router architecture ablation: uniform vs linear vs MLP">
+    <figcaption><strong>Figure 11.</strong> Router architecture ablation. Uniform weighting underperforms learned routing by 7.5pp. Linear and MLP routers perform identically. The key is learning to suppress out-of-domain specialists, not the capacity of the function approximator.</figcaption>
+  </figure>
+
+  <h3>Freeze depth sweep</h3>
+  <p>We swept freeze depth from 0 (no frozen layers) to 12 (half the model). At 2,000 steps, freeze=0 wins. At 10,000 steps, freeze=4 and freeze=8 both outperform freeze=0. Practical guideline: training under 5,000 steps — skip freezing. Over 10,000 steps — freeze 4–8 layers.</p>
+
+  <figure class="figure figure--wide">
+    <img src="figures/fig_ablation_freeze.png" alt="Freeze depth sweep from 0 to 12 layers">
+    <figcaption><strong>Figure 12.</strong> Freeze depth sweep at 410M. Each line is a training duration (500–20,000 steps). The crossover from "freezing hurts" to "freezing helps" occurs at approximately 10,000 steps, consistently across all tested freeze depths.</figcaption>
+  </figure>
+
+  <h3>Specialist count scales gracefully</h3>
+  <p>Three, four, and five specialists all achieve approximately +14.1% with near-zero variance. The mechanism doesn't degrade as you add more contributors. Two-specialist is slightly higher because the evaluation problem is narrower.</p>
+
+  <figure class="figure">
+    <img src="figures/fig_specialist_scaling.png" alt="2 to 5 specialist scaling">
+    <figcaption><strong>Figure 13.</strong> Specialist count scaling at 410M. 3–5 specialists cluster at +14.1% with near-zero variance. Adding more contributors doesn't hurt — it's a stable property of the fusion mechanism.</figcaption>
+  </figure>
+
+  <h3>The mechanism survives base model maturity</h3>
+  <p>Fusion improvement is consistent across Pythia checkpoints from 3.5% to 100% of pre-training at 410M (+13.4% to +15.0%) and 1B (+13.8% to +15.9%). Qwen-1.5B at full training is the boundary condition: &minus;1.0%, because its pre-training corpus already covers the specialist domains — leaving no room for meaningful specialisation.</p>
+
+  <figure class="figure figure--wide">
+    <img src="figures/fig_maturity_curve_combined.png" alt="Maturity sweep across Pythia-410M, 1B, and Qwen-1.5B">
+    <figcaption><strong>Figure 14.</strong> Maturity sweep across model families. Pythia-410M and 1B show consistent improvement at every checkpoint. Qwen-1.5B at full training (&minus;1.0%) defines the boundary condition: when the base model has already seen the specialist data during pre-training, fine-tuning produces insufficient differentiation.</figcaption>
+  </figure>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_maturity_curve_410m.png" alt="410M maturity curve detail">
+      <figcaption><strong>Figure 15.</strong> Pythia-410M maturity sweep in detail. MoE improvement relative to best specialist at each pre-training checkpoint. Stable above +13% across the full trajectory.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_maturity_curve_1b.png" alt="1B maturity curve detail">
+      <figcaption><strong>Figure 16.</strong> Pythia-1B maturity sweep. Slightly higher range (+13.8%–+15.9%) compared to 410M. Consistent pattern — the mechanism is robust to the base model's training stage.</figcaption>
+    </figure>
+  </div>
+
+  <h3>Extra parameters don't explain the gains</h3>
+  <p>Two baselines rule out "more parameters" as the explanation. A wider single model with 3.5&times; the parameters achieves only +5.9%. A multi-head baseline with identical parameter count to the MoE but hard single-expert routing achieves &minus;21.1%. The gain comes from <em>cooperative specialisation plus joint inference</em>, not raw capacity.</p>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_wider_model_baseline.png" alt="Wider model baseline comparison">
+      <figcaption><strong>Figure 17.</strong> Wider model baseline. A 3.5&times; wider model achieves +5.9% — less than half the MoE improvement (+14.2%). Extra parameters without specialisation can't replicate the cooperative mechanism.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_multihead_baseline.png" alt="Multi-head baseline with hard routing">
+      <figcaption><strong>Figure 18.</strong> Multi-head baseline. Same parameters as the MoE, but hard single-expert routing: &minus;21.1%. This is the same catastrophic forgetting failure as the domain classifier. Joint inference is not optional.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ═══ ROUTING ═══ -->
+  <hr class="sep">
+  <span class="section-label" id="routing">The Router in Action</span>
+  <h2>Token-level routing, not document classification</h2>
+
+  <p>On hybrid-domain prompts, the router switches experts mid-sentence. The prompt <em>"Derive the equation for protein folding using Python pandas"</em> forces a domain switch within a single sentence: science tokens ("derive," "equation," "protein," "folding") should activate the science specialist; code tokens ("Python," "pandas") should activate the code specialist. The router discovers this structure from the training signal alone — no supervision, no domain labels, no explicit boundaries.</p>
+
+  <figure class="figure figure--wide">
+    <img src="figures/fig_hybrid_routing_1.png" alt="Token-level gate weight heatmap — science/code hybrid prompt">
+    <figcaption><strong>Figure 19.</strong> Token-level routing on a hybrid science/code prompt. Each column is a token; each row is an expert (code, science, fiction from top to bottom). The router assigns science weights to scientific vocabulary and code weights to programming terms — mid-sentence, without any supervision signal.</figcaption>
+  </figure>
+
+  <p>The pattern is robust across multiple hybrid prompt types, including narrative/science, technical/narrative, and multi-domain sentences with three or more domain switches:</p>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_hybrid_routing_0.png" alt="Token-level routing — narrative/science hybrid">
+      <figcaption><strong>Figure 20.</strong> Routing on a narrative/science hybrid. Fiction tokens get fiction-specialist weight; scientific terms get science-specialist weight. Clean switching at domain boundaries.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_hybrid_routing_2.png" alt="Token-level routing — technical/narrative hybrid">
+      <figcaption><strong>Figure 21.</strong> Routing on a technical/narrative hybrid. Clean domain switching at the structural boundary between instruction and narrative context.</figcaption>
+    </figure>
+  </div>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_hybrid_routing_3.png" alt="Token-level routing — code-heavy with embedded claim">
+      <figcaption><strong>Figure 22.</strong> Code-heavy prompt with embedded scientific claim. Router stays on code specialist but briefly shifts weight toward science on the embedded claim.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_hybrid_routing_4.png" alt="Token-level routing — multi-domain with three switches">
+      <figcaption><strong>Figure 23.</strong> Multi-domain sentence with three domain switches. The router tracks all three correctly, switching at each domain boundary.</figcaption>
+    </figure>
+  </div>
+
+  <h3>Router confidence distribution</h3>
+  <p>In practice, the router operates as a near-hard switch: the highest-weight expert receives over 95% of the routing weight in more than 99.7% of tokens. Crucially, hard routing (argmax dispatch) and soft routing (learned softmax weights) produce identical perplexity — confirming that the value is <em>selection and suppression</em>, not the specific weighting scheme.</p>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_router_distribution.png" alt="Router gate weight distribution at 410M">
+      <figcaption><strong>Figure 24.</strong> Router gate weight distribution at 410M. The top-1 expert receives &gt;95% weight in 99.7% of tokens. The router behaves as a near-hard switch with a small residual from other experts.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_1b_router_distribution.png" alt="Router gate weight distribution at 1B">
+      <figcaption><strong>Figure 25.</strong> Router distribution at 1B. Same near-hard switching behaviour. The router confidence increases slightly with model scale.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ═══ BENCHMARKS ═══ -->
+  <hr class="sep">
+  <span class="section-label">Beyond Perplexity</span>
+  <h2>Downstream benchmarks</h2>
+
+  <p>Perplexity improvements are clear and consistent. Downstream benchmark accuracy is more modest — less than 1pp on standard tasks at 1B. This is expected at these scales: perplexity and benchmark accuracy don't reliably track below 7B parameters. The KALAVAI paper is explicit about this gap.</p>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_benchmarks.png" alt="Downstream benchmark results at 410M">
+      <figcaption><strong>Figure 26.</strong> Downstream benchmarks at 410M. Modest &lt;1pp gains across ARC, HellaSwag, WinoGrande, and PIQA. The training domains (code, science, fiction) are somewhat off-distribution for commonsense benchmarks.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_benchmarks_1b.png" alt="Downstream benchmark results at 1B">
+      <figcaption><strong>Figure 27.</strong> Downstream benchmarks at 1B. Similar pattern to 410M. A cooperative trained on knowledge-intensive domains more directly aligned to the benchmark tasks would likely show stronger downstream gains.</figcaption>
+    </figure>
+  </div>
+
+  <div class="callout callout--gold">
+    <p><strong>On the benchmark gap.</strong> Standard commonsense benchmarks (ARC, HellaSwag) are factual Q&amp;A, while the training domains are code, science, and fiction — a partial mismatch. A cooperative aligned to benchmark-relevant domains (e.g., world knowledge, reasoning, factual recall) would present a stronger evaluation of downstream gain potential.</p>
+  </div>
+
+  <!-- ═══ TRAINING DYNAMICS ═══ -->
+  <hr class="sep">
+  <span class="section-label">Training Dynamics</span>
+  <h2>How specialists diverge during training</h2>
+
+  <p>Each specialist rapidly improves on its own domain while degrading on out-of-domain content. This divergence is exactly what makes the MoE valuable — if specialists didn't degrade on other domains, the router would have nothing useful to select between. The code specialist's catastrophic forgetting of science is a feature, not a bug.</p>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_training_curves_seed42.png" alt="Per-specialist training curves at 410M, seed 42">
+      <figcaption><strong>Figure 28.</strong> Training curves at 410M, seed 42. Each specialist improves on its target domain (downward) while degrading on others (upward). Divergence is clear by step 500.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_1b_training_curves_seed42.png" alt="Per-specialist training curves at 1B, seed 42">
+      <figcaption><strong>Figure 29.</strong> Training curves at 1B, seed 42. Same divergence pattern at larger scale. The 1B model diverges somewhat faster.</figcaption>
+    </figure>
+  </div>
+
+  <div class="figure-grid figure-grid--2">
+    <figure class="figure">
+      <img src="figures/fig_specialist_own_domain.png" alt="Specialist performance on own domain">
+      <figcaption><strong>Figure 30.</strong> Own-domain loss across training steps. All three specialists improve monotonically on their target domain. Peak own-domain performance is typically reached by step 2,000–3,000.</figcaption>
+    </figure>
+    <figure class="figure">
+      <img src="figures/fig_specialist_cross_domain.png" alt="Specialist cross-domain forgetting">
+      <figcaption><strong>Figure 31.</strong> Cross-domain loss across training steps. Each specialist progressively forgets out-of-domain content — creating the routing opportunity that the MoE exploits.</figcaption>
+    </figure>
+  </div>
+
+  <figure class="figure">
+    <img src="figures/fig_fusion_trajectory.png" alt="MoE router training trajectory">
+    <figcaption><strong>Figure 32.</strong> Router training trajectory. The router learns rapidly — most of the MoE's performance gain is achieved within the first 100–200 router training steps. 500 steps is conservative; 200 would likely suffice.</figcaption>
+  </figure>
+
+  <!-- ═══ BOUNDARY CONDITIONS ═══ -->
+  <hr class="sep">
+  <span class="section-label">Boundary Conditions</span>
+  <h2>What we don't claim</h2>
+
+  <p>The paper is explicit about five things it does not claim.</p>
+
+  <div class="callout callout--red">
+    <p><strong>No inference efficiency.</strong> The fused model runs all N specialists in parallel. For N=3, inference overhead is approximately 2.5&times;. This is a training-time democratisation that trades inference cost for training accessibility.</p>
+  </div>
+
+  <p><strong>No universal architecture generality.</strong> All primary results use Pythia. Qwen-1.5B at full training shows &minus;1.0% — when the base model's pre-training already covers the specialist domains, fine-tuning produces insufficient differentiation.</p>
+
+  <p><strong>No guaranteed downstream gains.</strong> Perplexity improvements are clear; benchmark accuracy improvements are modest (&lt;1pp at 1B). Perplexity and downstream accuracy don't reliably track at these scales.</p>
+
+  <p><strong>No real cooperative demonstrated.</strong> All experiments are simulated cooperatives on single machines. Heterogeneous hardware, asynchronous submission, and contributor reliability are open engineering problems.</p>
+
+  <p><strong>No frontier-scale evidence.</strong> The 6.9B result (+2.4%) suggests scale-dependent sensitivity requiring further investigation.</p>
+
+  <!-- ═══ LIVE EXPERIMENTS ═══ -->
+  <hr class="sep">
+  <span class="section-label">Live Experiments</span>
+  <h2>Phase A: the NeurIPS gate</h2>
+
+  <p>Three experiments stand between this work and NeurIPS submission. Results will be committed to the repository and will update the paper before submission. Gate criterion: if A1 shows &gt;5% MoE vs monolithic at 1B <em>and</em> A3 shows clear degradation with mismatched checkpoints, the paper proceeds to NeurIPS 2026. Otherwise, COLM/TMLR.</p>
+
+  <div class="experiment-card">
+    <span class="experiment-card__status status--done">Done</span>
+    <div class="experiment-card__body">
+      <div class="experiment-card__title">A1 — 1B equal-compute monolithic baseline</div>
+      <div class="experiment-card__desc">Does KALAVAI beat monolithic at 1B scale? Gate requires &gt;5% MoE vs. monolithic.</div>
+      <div class="experiment-card__result">+14.5% (seeds 42, 137 complete — clears gate by 3&times;)</div>
+    </div>
+  </div>
+
+  <div class="experiment-card">
+    <span class="experiment-card__status status--queued">Queued</span>
+    <div class="experiment-card__body">
+      <div class="experiment-card__title">A2 — Inference cost benchmark</div>
+      <div class="experiment-card__desc">Dense vs. sparse top-1 MoE latency at 410M and 1B. Routing agreement % between sparse (frozen-layer router input) and dense (mean of final hidden states from all three specialists). This measurement directly quantifies whether removing the other experts' activations from the router input changes routing decisions.</div>
+    </div>
+  </div>
+
+  <div class="experiment-card">
+    <span class="experiment-card__status status--queued">Queued</span>
+    <div class="experiment-card__body">
+      <div class="experiment-card__title">A3 — Shared initialisation necessity</div>
+      <div class="experiment-card__desc">Does fusion break if specialists start from different checkpoints? Three conditions: control (all step10000), large gap (step5000/step10000/step20000), small gap (step8000/step10000/step12000). If the large-gap condition degrades, this confirms shared initialisation as a hard requirement.</div>
+    </div>
+  </div>
+
+  <div class="callout callout--teal">
+    <p><strong>After A1+A3:</strong> If both gate criteria are met, two further experiments are planned — B1 (6.9B step-budget sweep: does more training recover the full improvement at large scale?) and C1 (heterogeneous cooperative: does fusion survive different batch sizes, learning rates, and training durations per contributor?).</p>
+  </div>
+
+  <!-- ═══ IMPACT ═══ -->
+  <hr class="sep">
+  <span class="section-label" id="impact">What This Makes Possible</span>
+  <h2>Five problems cooperative training solves</h2>
+
+  <p>The protocol's zero-communication property — contributors share only a starting checkpoint and a final trained checkpoint, never data — opens applications that are structurally impossible with synchronous training or federated learning.</p>
+
+  <div class="use-case">
+    <span class="kicker">Healthcare</span>
+    <div class="use-case__number">01</div>
+    <h3>A hospital network that can't share patient data</h3>
+    <p>Five hospitals, each with thousands of records in different specialties — cardiology, oncology, pediatrics, radiology, neurology. Privacy laws prevent pooling. Today, each can fine-tune a model on their own data, but it only knows their specialty.</p>
+    <p>With KALAVAI, each hospital trains a specialist on their private data that never leaves their servers. They share only the trained checkpoint — not a single patient record. The fused model understands all five specialties. No data was shared. No privacy was violated.</p>
+    <p><strong>This was impossible before.</strong> Federated learning requires gradient sharing during training, which leaks information. KALAVAI requires zero communication during training — only the final checkpoint is shared.</p>
+  </div>
+
+  <div class="use-case">
+    <span class="kicker">Low-Resource Languages</span>
+    <div class="use-case__number">02</div>
+    <h3>Endangered languages get a real language model</h3>
+    <p>There are maybe 50,000 pages of digitised text in Yoruba. Or Quechua. Or Tamil literary archives. Not enough for any organisation to justify training a model. But a university in Nigeria trains a Yoruba specialist. A lab in Peru trains a Quechua specialist. A team in Chennai trains a classical Tamil specialist. A group in Wales trains a Welsh specialist.</p>
+    <p>Each trains on whatever they have — even a few thousand pages is enough to produce meaningful specialisation from a shared base model. The fused model handles all four languages plus the base model's English. No single institution had enough data or compute to build this. The cooperative did.</p>
+    <p><strong>KALAVAI changes the economics</strong> from "one organisation needs all the data and all the compute" to "each community contributes what they have."</p>
+  </div>
+
+  <div class="use-case">
+    <span class="kicker">Legal AI</span>
+    <div class="use-case__number">03</div>
+    <h3>A legal AI built across jurisdictions</h3>
+    <p>Indian contract law, UK common law, US constitutional law, EU regulatory law, Brazilian civil law — each a specialised domain with its own corpus and reasoning patterns. No single firm has expertise across all five. Today you either build a generic legal model that's mediocre everywhere, or a narrow one that knows one jurisdiction deeply.</p>
+    <p>With KALAVAI, a firm in Mumbai trains the Indian law specialist. A firm in London trains the UK specialist. A firm in São Paulo trains the Brazilian specialist. The fused model can analyse a cross-border contract touching Indian, UK, and EU law — routing the relevant clauses to the relevant specialist. Each firm contributed domain expertise without sharing proprietary case databases with competitors.</p>
+  </div>
+
+  <div class="use-case">
+    <span class="kicker">Interdisciplinary Science</span>
+    <div class="use-case__number">04</div>
+    <h3>Scientific research across fields that don't talk to each other</h3>
+    <p>A climate science lab trains on atmospheric modelling. A marine biology lab trains on ocean ecosystems. A geology department trains on seismology. An economics department trains on resource economics. Individually, each model knows its field. Fused, the model can reason about questions at the intersection — "how do seismic events in the Pacific affect marine ecosystems and what are the economic implications for coastal fisheries?"</p>
+    <p><strong>A new kind of interdisciplinary tool</strong> that emerges from collaboration without anyone needing to be interdisciplinary themselves.</p>
+  </div>
+
+  <div class="use-case">
+    <span class="kicker">Digital Sovereignty</span>
+    <div class="use-case__number">05</div>
+    <h3>A country builds its own sovereign AI without a hyperscaler</h3>
+    <p>A small country — Sri Lanka, Estonia, Rwanda — wants a national language model that understands their language, laws, culture, geography, educational curriculum. They can't afford to train from scratch. They can't rely on OpenAI or Google to prioritise Sinhala or Kinyarwanda.</p>
+    <p>With KALAVAI, the country's university trains a language specialist. The ministry of justice trains a legal specialist on national law. The education department trains on school textbooks. The health ministry trains on local medical guidelines. Each institution uses the GPUs they already have.</p>
+    <p><strong>The fused model is a national AI that no foreign company built and no foreign company controls.</strong> Digital sovereignty through cooperative intelligence. It was not feasible before because no single institution in a small country has the compute or data. KALAVAI turns that constraint from a blocker into an irrelevance.</p>
+  </div>
+
+  <!-- ═══ REPRODUCE ═══ -->
+  <hr class="sep">
+  <span class="section-label" id="reproduce">Reproduce It</span>
+  <h2>30 minutes. One GPU. The whole protocol.</h2>
+
+  <pre><code>git clone https://github.com/mechramc/Kalavai.git
+cd Kalavai
+pip install transformers datasets torch accelerate
+python experiments/kalavai_pythia_experiment.py</code></pre>
+
+  <p>Requires any GPU with 24GB+ VRAM (RTX 3090, 4090, 5090, A100, or equivalent). Produces trained specialists, fused MoE, all evaluation numbers, and figures. Expected output: <code>+14.2% &plusmn; 0.016%</code> on held-out mixed evaluation.</p>
+
+  <table class="data-table">
+    <thead><tr><th>Script</th><th>Scale</th><th>Hardware</th><th>Time</th><th>Expected output</th></tr></thead>
+    <tbody>
+      <tr><td><code>kalavai_pythia_experiment.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~30 min</td><td>+14.2% &plusmn; 0.016%</td></tr>
+      <tr><td><code>kalavai_pythia_1b_experiment.py</code></td><td>1B</td><td>Any 24GB GPU</td><td>~2 hours</td><td>+14.8% &plusmn; 0.003%</td></tr>
+      <tr><td><code>kalavai_pythia_6b_experiment.py</code></td><td>6.9B</td><td>A100 80GB</td><td>~8 hours</td><td>+2.43% &plusmn; 0.00%</td></tr>
+      <tr><td><code>kalavai_training_duration_crossover.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~4 hours</td><td>Crossover at 10k steps</td></tr>
+      <tr><td><code>kalavai_domain_classifier_baseline.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~45 min</td><td>&minus;21.1% (classifier)</td></tr>
+    </tbody>
+  </table>
+
+  <p>Every experiment is a self-contained Python file. No config files, no YAML. Read the script, understand the experiment, run it. 322 automated audit checks verify every result before any paper-ready number is reported.</p>
+
+</article>
+
+<footer class="site-footer">
+  <p><strong>KALAVAI</strong> &mdash; கலவை &mdash; fusion, mixing, blending</p>
+  <p>Ramchand Kumaresan &middot; Murai Labs &middot; முறை &middot; method, order, disciplined process</p>
+  <p style="margin-top: 1rem;"><a href="https://github.com/mechramc/Kalavai">GitHub</a> &middot; <a href="kalavai_neurips2026.pdf">paper PDF</a></p>
+</footer>
+
+</body>
+</html>
