@@ -1,0 +1,68 @@
+{
+  "seed": 2026,
+  "revision": "step10000",
+  "eval_heldout": {
+    "base": {
+      "code": 1.888488,
+      "science": 2.576374,
+      "fiction": 2.495285,
+      "mixed": 2.700397
+    },
+    "code_spec": {
+      "code": 1.711729,
+      "science": 2.584341,
+      "fiction": 2.502721,
+      "mixed": 2.670121
+    },
+    "science_spec": {
+      "code": 1.950108,
+      "science": 2.314472,
+      "fiction": 2.571536,
+      "mixed": 2.73679
+    },
+    "fiction_spec": {
+      "code": 1.891532,
+      "science": 2.580888,
+      "fiction": 2.330376,
+      "mixed": 2.633606
+    },
+    "weight_avg": {
+      "code": 1.822122,
+      "science": 2.44792,
+      "fiction": 2.421789,
+      "mixed": 2.646984
+    },
+    "moe": {
+      "code": 1.711733,
+      "science": 2.314457,
+      "fiction": 2.330433,
+      "mixed": 2.569434
+    }
+  },
+  "improvement_pct": 2.4367,
+  "best_individual_mixed": 2.633606,
+  "moe_mixed": 2.569434,
+  "router_distribution": {
+    "code": [
+      0.9998,
+      0.0001,
+      0.0001
+    ],
+    "science": [
+      0.0,
+      0.9997,
+      0.0003
+    ],
+    "fiction": [
+      0.0008,
+      0.0002,
+      0.999
+    ],
+    "mixed": [
+      0.9998,
+      0.0001,
+      0.0001
+    ]
+  },
+  "timestamp": "2026-03-17T00:38:44Z"
+}
