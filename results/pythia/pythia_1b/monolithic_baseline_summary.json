@@ -1,0 +1,58 @@
+{
+  "experiment": "1b_monolithic_baseline",
+  "model_id": "EleutherAI/pythia-1b",
+  "revision": "step10000",
+  "total_steps": 6000,
+  "equivalent_compute": "3 specialists \u00d7 2000 steps",
+  "freeze_layers": 4,
+  "seeds": [
+    42,
+    137,
+    2026
+  ],
+  "base_losses": {
+    "code": 2.008226,
+    "science": 2.772743,
+    "fiction": 2.642392,
+    "mixed": 2.159901
+  },
+  "results": {
+    "mean": {
+      "monolithic_mixed": 1.985432,
+      "moe_fused_mixed": 1.696563,
+      "best_specialist_mixed": 1.991841,
+      "weight_avg_mixed": 2.069196,
+      "fused_vs_monolithic_pct": 14.5494,
+      "monolithic_vs_base_pct": 8.0777,
+      "moe_vs_base_pct": 14.8244
+    },
+    "std": {
+      "monolithic_mixed": 0.001112
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 42,
+      "final_mixed": 1.9861,
+      "final_code": 1.856092,
+      "final_science": 2.511709,
+      "final_fiction": 1.923599
+    },
+    {
+      "seed": 137,
+      "final_mixed": 1.984148,
+      "final_code": 1.853717,
+      "final_science": 2.511401,
+      "final_fiction": 1.920921
+    },
+    {
+      "seed": 2026,
+      "final_mixed": 1.986047,
+      "final_code": 1.855735,
+      "final_science": 2.512597,
+      "final_fiction": 1.922814
+    }
+  ],
+  "interpretation": "KALAVAI MoE beats 1B monolithic by 14.5%",
+  "timestamp": "2026-03-17T14:25:16Z"
+}
