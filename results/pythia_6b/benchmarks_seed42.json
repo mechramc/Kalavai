@@ -1,0 +1,27 @@
+{
+  "model_id": "EleutherAI/pythia-6.9b",
+  "revision": "step10000",
+  "seed": 42,
+  "n_examples": 500,
+  "results": {
+    "base": {
+      "hellaswag": 35.4,
+      "arc_easy": 43.6,
+      "lambada": 61.2,
+      "sciq": 66.8,
+      "winogrande": 51.0,
+      "average": 51.6
+    },
+    "moe": {
+      "hellaswag": 35.6,
+      "arc_easy": 45.2,
+      "lambada": 62.8,
+      "sciq": 67.8,
+      "winogrande": 49.4,
+      "average": 52.16
+    }
+  },
+  "moe_avg_accuracy": 52.16,
+  "base_avg_accuracy": 51.6,
+  "timestamp": "2026-03-17T05:35:14Z"
+}
