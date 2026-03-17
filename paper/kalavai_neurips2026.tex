@@ -134,7 +134,7 @@ where $\mathcal{D}_i$ is contributor $i$'s domain-specific dataset and $\theta_i
 \[
 g_t = \mathrm{softmax}\left(W_r \cdot h_t\right), \quad W_r \in \mathbb{R}^{N \times d}
 \]
-where $h_t$ is the hidden state at layer $K+1$ (first non-frozen layer), $N$ is the number of specialists, and $d$ is the hidden dimension. At inference, all $N$ specialists process each token in parallel and the output is a weighted combination of their logit distributions:
+where $h_t$ is the hidden state at layer $K+1$ (first non-frozen layer)\footnote{In our implementation, $h_t$ is the mean-pooled final hidden state averaged across all specialists' forward passes; see Appendix~\ref{app:dynamics} for implementation details.}, $N$ is the number of specialists, and $d$ is the hidden dimension. At inference, all $N$ specialists process each token in parallel and the output is a weighted combination of their logit distributions:
 \[
 p_\text{fused}(x_t \mid x_{<t}) = \sum_{i=1}^{N} g_t^{(i)} \cdot p_{\theta_i}(x_t \mid x_{<t})
 \]
@@ -281,11 +281,9 @@ The crossover occurs at approximately 10,000 training steps. Below this threshol
   \label{fig:failure}
 \end{figure}
 
-A natural simplification of the \kalavai architecture would route each input to a single specialist rather than combining all specialists' outputs. If the router achieves high classification accuracy, this would reduce inference cost by $N\times$. We test this hypothesis directly.
+A natural simplification would route each input to a single specialist, reducing inference cost by $N\times$. We test this directly: a logistic regression classifier on mean-pooled backbone representations achieves 99.3\% accuracy on held-out inputs. We then route each sequence to the single matching specialist.
 
-We train a logistic regression classifier on mean-pooled frozen backbone representations to predict the domain of each input. The classifier achieves 99.3\% accuracy on held-out inputs. We then use this classifier to route each token sequence to the single matching specialist at inference time, suppressing the other two specialists entirely.
-
-The result is catastrophic: single-specialist dispatch with 99.3\%-accurate routing achieves a mixed-domain loss of 2.931, representing a \emph{$-$21.1\% degradation} relative to the base model (loss 2.420) rather than the +14.1\% improvement from joint inference (Table~\ref{tab:dispatch}). An alternative multi-head baseline---three independent output heads on a shared frozen trunk, each trained on one domain, with classifier-based selection---achieves the identical $-$21.1\% degradation, ruling out the single-model-with-heads variant.
+The result is catastrophic: single-specialist dispatch achieves a mixed-domain loss of 2.931---a \emph{$-$21.1\% degradation} relative to the base model (loss 2.420) rather than the +14.1\% improvement from joint inference (Table~\ref{tab:dispatch}). A multi-head baseline (same parameter count as MoE, classifier-selected head) achieves the identical $-$21.1\% degradation.
 
 \begin{table}[h]
 \centering
@@ -304,9 +302,7 @@ Multi-head hard routing       & 1 of 3 & Classifier (100\% acc.)  & 2.931 & $-$2
 \end{tabular}
 \end{table}
 
-The mechanism is catastrophic forgetting. Each specialist is fine-tuned on a single domain and, in the process, loses accuracy on the other two domains. The code specialist evaluated on science text (loss 2.908) is \emph{worse than base} (loss 2.892). The science specialist evaluated on fiction text (loss 3.061) is substantially worse than base (loss 2.974). When only one specialist runs and the input happens to cross domain boundaries, there is no fallback. Joint inference with all specialists restores coverage for every token.
-
-This finding has an important implication: the improvement from \kalavai is not primarily about routing quality. Hard routing (argmax, all experts run) achieves +14.1\%---essentially identical to soft routing's +14.2\%. Whether the combination is a weighted average or a selection among all specialists is immaterial; what matters is that all specialists participate in every forward pass.
+The mechanism is catastrophic forgetting: each specialist loses accuracy on non-specialist domains (code specialist on science: loss 2.908 vs.\ base 2.892). When only one specialist runs, out-of-domain tokens have no fallback. Joint inference restores coverage. Notably, hard routing (argmax, all experts run) achieves +14.1\%---essentially identical to soft routing---confirming that what matters is specialist participation, not weighting precision.
 
 \subsection{Capacity Controls: Parameter Count Is Not the Mechanism}
 \label{sec:capacity}
@@ -338,11 +334,11 @@ Multi-head baseline (same params as MoE) & 3$\times$ unfrozen & $-$21.1\% \\
 
 \paragraph{Router architecture does not matter.} A uniform router (fixed weights of $1/N$ per expert, no training) achieves +6.7\% over base---the same as the monolithic baseline. A linear router achieves +14.2\%; a 2-layer MLP router achieves an identical +14.2\%. The gap between uniform and learned routing (+7.5pp) is entirely explained by the router's ability to assign domain-appropriate weights; the specific function class used to compute those weights is irrelevant. Full results in Appendix~\ref{app:router}.
 
-\paragraph{Improvement is robust across training maturities.} We evaluate fusion at six Pythia checkpoints (step 5,000 through step 143,000) at 410M and five checkpoints at 1B. At 410M, improvement ranges from +13.4\% to +15.0\%; at 1B, from +13.8\% to +15.9\%. The mechanism does not depend on the base model being under-trained. Full maturity curves in Appendix~\ref{app:maturity}.
+\paragraph{Improvement is robust across training maturities.} Fusion improvement is consistent across Pythia checkpoints from step 5,000 to step 143,000 at both 410M (+13.4\%--+15.0\%) and 1B (+13.8\%--+15.9\%); the mechanism does not depend on the base model being under-trained (Appendix~\ref{app:maturity}).
 
-\paragraph{Improvement is robust across specialist count.} Scaling from 2 to 5 specialists on five domains: 2 specialists achieve +17.7\% (narrower evaluation makes the score higher), 3--5 specialists all achieve approximately +14.1\% with near-zero variance. The gain neither grows nor declines substantially as more specialists are added. Full scaling analysis in Appendix~\ref{app:scaling}.
+\paragraph{Improvement is robust across specialist count.} Scaling from 2 to 5 specialists shows no meaningful degradation: 3--5 specialists all achieve $\approx$+14.1\% with near-zero variance across seeds (Appendix~\ref{app:scaling}).
 
-\paragraph{Token-level routing confirms mid-sequence switching.} On five hybrid-domain prompts (e.g., ``Derive the equation for protein folding using Python pandas''), the router produces 11 expert switches across the full prompt sequences (2.2 switches per prompt on average). On the prompt above, the router assigns fiction-domain weights to narrative tokens (``Derive'', ``the'', ``equation''), science-domain weights to biology tokens (``protein'', ``folding''), and code-domain weights to programming tokens (``Python'', ``pandas''). This confirms the router operates at token granularity, not at document level. Routing visualisations in Appendix~\ref{app:routing}.
+\paragraph{Token-level routing confirms mid-sequence switching.} On hybrid-domain prompts, the router produces 2.2 expert switches per prompt on average, assigning domain-appropriate weights within a single sentence---confirming the router operates at token granularity, not document level (Appendix~\ref{app:routing}).
 
 \paragraph{Representational divergence confirms specialisation.} Figure~\ref{fig:heatmap} shows the cross-domain evaluation loss matrix at step 2,000. The pronounced diagonal structure confirms that each specialist has learned domain-specific representations: each specialist achieves its lowest loss on its own domain and highest loss on the furthest domain. The code specialist evaluates at 1.879 on code data and 2.909 on science data---a gap of 0.032 above base on science, confirming out-of-domain degradation. The off-diagonal pattern directly motivates MoE fusion: a router that dispatches each token to the appropriate diagonal entry recovers all specialist gains.
 
@@ -467,7 +463,7 @@ The total spread across all tested freeze depths is 2.49 percentage points (14.8
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.72\textwidth]{fig_monolithic_comparison}
-  \caption{Mixed-domain held-out loss for each method at Pythia-410M scale. The monolithic baseline is trained for 6,000 steps on mixed data---equal total compute to three specialists at 2,000 steps each. \kalavai MoE (1.793) improves over both the best specialist (2.089) and the monolithic baseline (2.098). Weight averaging (2.158) underperforms the best specialist. Error bars are smaller than markers (variance across 3 seeds: $\pm$0.016\%).}
+  \caption{Mixed-domain held-out loss for Base model, Monolithic baseline, and \kalavai MoE at Pythia-410M scale. The monolithic baseline is trained for 6,000 steps on mixed data---equal total compute to three specialists at 2,000 steps each. \kalavai MoE (1.793) improves over both the base model (2.248) and the monolithic baseline (2.098). Full comparison including best specialist and weight averaging is in Table~\ref{tab:monolithic}.}
   \label{fig:monolithic}
 \end{figure}
 

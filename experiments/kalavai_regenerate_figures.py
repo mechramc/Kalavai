@@ -970,7 +970,7 @@ try:
                     arrowprops=dict(arrowstyle="->", color="#6b7280", lw=1))
 
     ax.set_xscale("log")
-    ax.set_xlabel("Router Training Steps (log scale)")
+    ax.set_xlabel("Specialist Training Steps (log scale)")
     ax.set_ylabel("Improvement over Base (%)")
     ax.set_title("Training Duration vs Fusion Improvement")
     ax.legend(fontsize=8)
