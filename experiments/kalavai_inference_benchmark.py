@@ -199,8 +199,23 @@ class SparseTopKMoE(nn.Module):
                 p.requires_grad_(False)
 
     def _frozen_forward(self, input_ids):
-        """Run embedding + first freeze_n layers (identical across specialists)."""
-        model = self.specs[0]   # all frozen layers are identical
+        """Run embedding + first freeze_n layers (identical across specialists).
+
+        KEY MEASUREMENT NOTE: In the dense MoE (ThreeExpertMoE), the router input
+        is mean-pooled across all three specialists' FINAL hidden states (per
+        Appendix H of the paper). Here, in the sparse variant, the router input is
+        mean-pooled from the frozen layers ONLY — a single forward pass through
+        shared weights, NOT the mean of three full-model hidden states.
+
+        These two router inputs are mathematically different:
+          - Dense:  h_avg = (h_spec_a[-1] + h_spec_b[-1] + h_spec_c[-1]) / 3
+          - Sparse: h_avg = frozen_layer_output (same weights as all three frozen layers)
+
+        The routing_agreement measurement directly quantifies whether this difference
+        matters in practice: if >95%, sparse inference is viable; if it drops
+        significantly, that is an important negative result to report.
+        """
+        model = self.specs[0]   # all frozen layers are identical (shared init + frozen)
         with torch.no_grad():
             x = model.gpt_neox.embed_in(input_ids)
             for i in range(self.freeze_n):

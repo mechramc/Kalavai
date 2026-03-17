@@ -457,36 +457,81 @@ def main():
     del base_model
     torch.cuda.empty_cache()
 
-    # Load 1B MoE reference results
-    moe_info = {}
-    if MOE_RESULTS_PATH.exists():
-        with open(MOE_RESULTS_PATH) as f:
-            s = json.load(f)
-        moe_info["improvement_mean_pct"] = s["summary"]["improvement_mean_pct"]
-        moe_info["improvement_std_pct"]  = s["summary"]["improvement_std_pct"]
+    # Load 1B MoE reference results — HARD FAIL if missing or malformed.
+    # We must not silently compute against wrong baselines.
+    if not MOE_RESULTS_PATH.exists():
+        raise FileNotFoundError(
+            f"\nERROR: 1B MoE reference results not found at:\n  {MOE_RESULTS_PATH}\n"
+            f"Run kalavai_pythia_1b_experiment.py first, then re-run this script."
+        )
 
-        moe_mixed_vals  = []
-        best_spec_vals  = []
-        weight_avg_vals = []
-        for _, sd in s.get("per_seed_fusion", {}).items():
-            eh = sd.get("eval_heldout", {})
-            v = eh.get("moe", {}).get("mixed")
-            if v: moe_mixed_vals.append(v)
-            best_ind = min(
-                eh.get("code_spec",    {}).get("mixed", float("inf")),
-                eh.get("science_spec", {}).get("mixed", float("inf")),
-                eh.get("fiction_spec", {}).get("mixed", float("inf")),
+    with open(MOE_RESULTS_PATH) as f:
+        s = json.load(f)
+
+    # Validate required keys before touching anything else
+    REQUIRED_TOP   = ["summary", "per_seed_fusion"]
+    REQUIRED_SUM   = ["improvement_mean_pct", "improvement_std_pct"]
+    REQUIRED_SEEDS = 3
+
+    for k in REQUIRED_TOP:
+        if k not in s:
+            raise KeyError(
+                f"\nERROR: Missing top-level key '{k}' in {MOE_RESULTS_PATH}\n"
+                f"File may be incomplete or from a different experiment."
             )
-            if best_ind < float("inf"): best_spec_vals.append(best_ind)
-            wavg = eh.get("weight_avg", {}).get("mixed")
-            if wavg: weight_avg_vals.append(wavg)
+    for k in REQUIRED_SUM:
+        if k not in s["summary"]:
+            raise KeyError(
+                f"\nERROR: Missing key 'summary.{k}' in {MOE_RESULTS_PATH}"
+            )
+    n_seeds = len(s["per_seed_fusion"])
+    if n_seeds < REQUIRED_SEEDS:
+        raise ValueError(
+            f"\nERROR: Expected {REQUIRED_SEEDS} seeds in per_seed_fusion, "
+            f"found {n_seeds} in {MOE_RESULTS_PATH}"
+        )
+    # Spot-check one seed for expected structure
+    sample_seed = next(iter(s["per_seed_fusion"].values()))
+    if "eval_heldout" not in sample_seed or "moe" not in sample_seed.get("eval_heldout", {}):
+        raise KeyError(
+            f"\nERROR: per_seed_fusion entries missing 'eval_heldout.moe' in "
+            f"{MOE_RESULTS_PATH}"
+        )
 
-        if moe_mixed_vals:
-            moe_info["moe_mixed_mean"] = statistics.mean(moe_mixed_vals)
-            moe_info["moe_mixed_std"]  = (statistics.stdev(moe_mixed_vals)
-                                          if len(moe_mixed_vals) > 1 else 0.0)
-        if best_spec_vals:
-            moe_info["best_spec_mean"] = statistics.mean(best_spec_vals)
+    print(f"  MoE reference loaded: improvement={s['summary']['improvement_mean_pct']:.4f}% "
+          f"(±{s['summary']['improvement_std_pct']:.4f}%)")
+
+    moe_info = {}
+    moe_info["improvement_mean_pct"] = s["summary"]["improvement_mean_pct"]
+    moe_info["improvement_std_pct"]  = s["summary"]["improvement_std_pct"]
+
+    moe_mixed_vals  = []
+    best_spec_vals  = []
+    weight_avg_vals = []
+    for _, sd in s["per_seed_fusion"].items():
+        eh = sd.get("eval_heldout", {})
+        v = eh.get("moe", {}).get("mixed")
+        if v: moe_mixed_vals.append(v)
+        best_ind = min(
+            eh.get("code_spec",    {}).get("mixed", float("inf")),
+            eh.get("science_spec", {}).get("mixed", float("inf")),
+            eh.get("fiction_spec", {}).get("mixed", float("inf")),
+        )
+        if best_ind < float("inf"): best_spec_vals.append(best_ind)
+        wavg = eh.get("weight_avg", {}).get("mixed")
+        if wavg: weight_avg_vals.append(wavg)
+
+    if not moe_mixed_vals:
+        raise ValueError(
+            f"\nERROR: Could not extract any MoE mixed-loss values from "
+            f"{MOE_RESULTS_PATH}\nCheck per_seed_fusion[*].eval_heldout.moe.mixed"
+        )
+
+    moe_info["moe_mixed_mean"] = statistics.mean(moe_mixed_vals)
+    moe_info["moe_mixed_std"]  = (statistics.stdev(moe_mixed_vals)
+                                  if len(moe_mixed_vals) > 1 else 0.0)
+    if best_spec_vals:
+        moe_info["best_spec_mean"] = statistics.mean(best_spec_vals)
         if weight_avg_vals:
             moe_info["weight_avg_mean"] = statistics.mean(weight_avg_vals)
     else:

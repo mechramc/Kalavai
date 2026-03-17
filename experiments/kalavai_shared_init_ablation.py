@@ -48,6 +48,52 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 
+
+# ============================================================================
+# Preflight: verify all required HuggingFace checkpoints exist
+# ============================================================================
+
+def verify_checkpoints_exist(conditions, model_id):
+    """
+    Verify every revision referenced in CONDITIONS is available on HuggingFace
+    before starting any training. Pythia releases checkpoints at steps:
+      1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1000, then every 1000 steps.
+    step8000 and step12000 should exist, but we verify rather than assume.
+
+    Uses huggingface_hub.file_exists to check for config.json at each revision.
+    Fails loudly with all missing checkpoints listed at once.
+    """
+    try:
+        from huggingface_hub import file_exists as hf_file_exists
+    except ImportError:
+        print("  WARNING: huggingface_hub not available — skipping preflight check.")
+        print("  Install with: pip install huggingface_hub")
+        return
+
+    all_revisions = set()
+    for cond in conditions:
+        for rev in cond["inits"].values():
+            all_revisions.add(rev)
+
+    print(f"\nPreflight: verifying {len(all_revisions)} checkpoint revisions on HuggingFace...")
+    missing = []
+    for rev in sorted(all_revisions):
+        exists = hf_file_exists(model_id, "config.json", revision=rev)
+        status = "OK" if exists else "MISSING"
+        print(f"  {model_id} @ {rev}: {status}")
+        if not exists:
+            missing.append(rev)
+
+    if missing:
+        raise RuntimeError(
+            f"\nERROR: The following checkpoints are not available on HuggingFace Hub:\n"
+            + "\n".join(f"  {model_id} @ {r}" for r in missing)
+            + f"\n\nPythia checkpoints are released at steps: 1, 2, 4, 8, 16, 32, 64, "
+              f"128, 256, 512, 1000, then every 1000 steps.\n"
+              f"Adjust the CONDITIONS dict in this script to use available revisions."
+        )
+    print("  All checkpoints verified.\n")
+
 # ============================================================================
 # Config — matches kalavai_pythia_experiment.py exactly
 # ============================================================================
@@ -666,6 +712,9 @@ def main():
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
+
+    # Preflight: verify all HuggingFace checkpoints exist before wasting compute
+    verify_checkpoints_exist(CONDITIONS, MODEL_ID)
 
     # Load tokenizer (revision doesn't matter for tokenizer on same model family)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, revision="step10000")
