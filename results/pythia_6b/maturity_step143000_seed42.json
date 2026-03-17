@@ -1,0 +1,46 @@
+{
+  "model_id": "EleutherAI/pythia-6.9b",
+  "revision": "step143000",
+  "training_pct": 100.0,
+  "seed": 42,
+  "improvement_pct": 2.2594,
+  "eval_heldout": {
+    "base": {
+      "code": 1.5744,
+      "science": 2.166999,
+      "fiction": 1.959757,
+      "mixed": 2.242125
+    },
+    "code_spec": {
+      "code": 1.428146,
+      "science": 2.165259,
+      "fiction": 1.970063,
+      "mixed": 2.221193
+    },
+    "science_spec": {
+      "code": 1.637002,
+      "science": 1.95352,
+      "fiction": 2.061021,
+      "mixed": 2.302593
+    },
+    "fiction_spec": {
+      "code": 1.569963,
+      "science": 2.160395,
+      "fiction": 1.89287,
+      "mixed": 2.207992
+    },
+    "weight_avg": {
+      "code": 1.508951,
+      "science": 2.044001,
+      "fiction": 1.931184,
+      "mixed": 2.206508
+    },
+    "moe": {
+      "code": 1.428174,
+      "science": 1.953482,
+      "fiction": 1.892865,
+      "mixed": 2.158105
+    }
+  },
+  "timestamp": "2026-03-17T04:04:21Z"
+}
