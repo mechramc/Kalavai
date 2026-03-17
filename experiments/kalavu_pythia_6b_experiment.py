@@ -529,19 +529,19 @@ def eval_loss(model, dataset, device: str, batch_size: int = 1,
 # ============================================================================
 
 def weight_average_three(spec_a, spec_b, spec_c):
-    """Three-way weight average on CPU to save GPU memory."""
-    print("  Computing 3-way weight average...")
-    avg = copy.deepcopy(spec_a)
-    sa = spec_a.state_dict()
-    sb = spec_b.state_dict()
-    sc = spec_c.state_dict()
+    """Three-way weight average computed entirely on CPU to avoid GPU OOM."""
+    print("  Computing 3-way weight average on CPU...")
+    sa = {k: v.cpu().float() for k, v in spec_a.state_dict().items()}
+    sb = {k: v.cpu().float() for k, v in spec_b.state_dict().items()}
+    sc = {k: v.cpu().float() for k, v in spec_c.state_dict().items()}
     avg_state = {
-        k: ((sa[k].float() + sb[k].float() + sc[k].float()) / 3.0).to(torch.bfloat16)
+        k: ((sa[k] + sb[k] + sc[k]) / 3.0).to(torch.bfloat16)
         for k in sa
     }
+    avg = copy.deepcopy(spec_a).cpu()
     avg.load_state_dict(avg_state)
     avg.eval()
-    return avg
+    return avg  # caller moves to GPU when needed
 
 
 # ============================================================================
