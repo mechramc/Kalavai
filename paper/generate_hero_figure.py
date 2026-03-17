@@ -106,7 +106,7 @@ bars_a = ax_a.bar(
 ax_a.set_xticks(x_a)
 ax_a.set_xticklabels(labels_a)
 ax_a.set_ylabel("Improvement over best specialist (%)")
-ax_a.set_title("A.  Scale Comparison: KALAVAI MoE vs Best Specialist")
+ax_a.set_title("(A)  Scale Comparison: KALAVAI MoE vs Best Specialist")
 clean_axes(ax_a)
 
 # label bars with +X.X%
@@ -142,7 +142,7 @@ ax_b.text(crossover * 1.12, y_annot,
 ax_b.set_xscale("log")
 ax_b.set_xlabel("Training steps (log scale)")
 ax_b.set_ylabel("MoE improvement over base (%)")
-ax_b.set_title("B.  Training Duration Crossover: Freeze=0 vs Freeze=4")
+ax_b.set_title("(B)  Training Duration Crossover: Freeze=0 vs Freeze=4")
 ax_b.legend(loc="upper left")
 clean_axes(ax_b)
 
@@ -171,7 +171,7 @@ ax_c.axhline(0, color="#374151", lw=1.0, linestyle="-")
 ax_c.set_xticks(x_c)
 ax_c.set_xticklabels(routing_labels)
 ax_c.set_ylabel("Improvement vs. base (%)")
-ax_c.set_title("C.  Routing Failure: Why Architecture Matters")
+ax_c.set_title("(C)  Routing Failure: Why Architecture Matters")
 
 # accommodate negative bars
 y_min = min(routing_values) * 1.2
@@ -212,7 +212,7 @@ bars_d = ax_d.bar(
 ax_d.set_xticks(x_d)
 ax_d.set_xticklabels(mono_labels, rotation=12, ha="right")
 ax_d.set_ylabel("Held-out mixed loss (lower is better)")
-ax_d.set_title("D.  Monolithic vs KALAVAI: Same Compute Budget")
+ax_d.set_title("(D)  Monolithic vs KALAVAI: Same Compute Budget")
 clean_axes(ax_d)
 
 # label bars with loss values

@@ -66,7 +66,7 @@ We identify three governing conditions: (1) \emph{Shared initialisation is neces
 
 Supporting evidence: the fused model beats the best individual specialist by +14.2\% (410M, 3 seeds), +14.8\% (1B), and +2.4\% (6.9B), and outperforms equal-compute monolithic training by +14.5\%.
 
-Boundary conditions: Qwen-1.5B at full training shows $-$1.0\% (model-family-specific); 6.9B improvement is reduced due to training budget constraints. We do not claim inference efficiency (the fused model is ${\approx}N\times$ more expensive than a single specialist), universal architecture generality, or that downstream benchmarks reliably improve.
+Boundary conditions: Qwen-1.5B at full training shows $-$1.0\% (model-family-specific); 6.9B improvement is reduced due to a ${\sim}34\times$ weaker per-parameter training signal relative to 410M. We do not claim inference efficiency (the fused model is ${\approx}N\times$ more expensive than a single specialist), universal architecture generality, or that downstream benchmarks reliably improve.
 \end{abstract}
 
 % ============================================================
@@ -97,7 +97,7 @@ This observation is not entirely new---the branch-train-mix (BTX) paradigm \cite
 \label{sec:related}
 % ============================================================
 
-\paragraph{Branch-Train-Mix (BTX).} The closest prior work is BTX \citep{sukhbaatar2024branchtrainmix}, which demonstrates that models branched from a shared checkpoint, independently trained, and mixed via MoE routing form a better model than any individual branch. Specifically, BTX does not characterise: (i) when shared initialisation alone is sufficient versus when frozen layers become necessary (our training-duration crossover, Section~\ref{sec:crossover}); (ii) whether the improvement persists against a compute-matched monolithic baseline (Section~\ref{sec:monolithic}); (iii) why single-specialist dispatch fails despite near-perfect domain classification (Section~\ref{sec:failure}); or (iv) whether the improvement is explained by increased parameter count (Section~\ref{sec:capacity}). These four questions define our empirical contribution.
+\paragraph{Branch-Train-Mix (BTX).} The closest prior work is BTX \citep{sukhbaatar2024branchtrainmix}, which demonstrates that models branched from a shared checkpoint, independently trained, and mixed via MoE routing form a better model than any individual branch. Specifically, BTX does not characterise: (i) when shared initialisation alone is sufficient versus when frozen layers become necessary (our training-duration crossover, Section~\ref{sec:crossover}); (ii) whether the improvement persists against a compute-matched monolithic baseline (Section~\ref{sec:monolithic}); (iii) why single-specialist dispatch fails despite near-perfect domain classification (Section~\ref{sec:failure}); or (iv) whether the improvement is explained by increased parameter count (Section~\ref{sec:capacity}). These four questions define our empirical contribution. We note that BTX demonstrates fusion at comparable model scales with substantially longer specialist training budgets; our contribution is the empirical characterisation of when and why fusion succeeds or fails, not a performance claim over BTX.
 
 \paragraph{MoErging and PHATGOOSE.} The MoErging survey \citep{yadav2024merging} taxonomises approaches for recycling and routing among independently trained experts. PHATGOOSE \citep{muqeeth2024phatgoose} achieves +11\% zero-shot generalisation improvement via learned routing among fine-tuned models, compared to \kalavai's +14.2\% held-out improvement with task-specific training. \kalavai adds a monolithic baseline, training duration analysis, and explicit capacity controls not present in PHATGOOSE.
 
@@ -105,13 +105,13 @@ This observation is not entirely new---the branch-train-mix (BTX) paradigm \cite
 
 \paragraph{Weight interpolation methods.} Model soups \citep{wortsman2022modelsoups}, TIES-Merging \citep{yadav2023tiesmerging}, and DARE \citep{yu2023dare} combine fine-tuned models via weight interpolation. These methods require specialised merging procedures and typically produce smaller gains than routing-based approaches. In our experiments, simple weight averaging achieves +4.0\% versus +14.2\% for learned MoE routing.
 
-\paragraph{Federated learning.} Federated approaches \citep{mcmahan2017federated} distribute training across clients with periodic gradient synchronisation. \kalavai requires \emph{zero communication} during training: specialists are never synchronised until the fusion step. The protocol is fully asynchronous, making it compatible with contributors operating on different hardware, in different time zones, with different data.
+\paragraph{Federated learning.} Federated approaches \citep{mcmahan2017federated} distribute training with periodic gradient synchronisation. \kalavai requires \emph{zero communication} during training; contributors are never synchronised until the fusion step, making the protocol fully asynchronous.
 
-\paragraph{FuseLLM.} FuseLLM \citep{wan2024fusellm} fuses multiple LLMs via knowledge distillation, producing a single model whose parameters are modified. \kalavai preserves all specialist parameters intact; the router is the only new component.
+\paragraph{FuseLLM.} FuseLLM \citep{wan2024fusellm} fuses LLMs via knowledge distillation into a modified single model; \kalavai preserves all specialist parameters intact.
 
-\paragraph{Sparse Upcycling.} \citet{komatsuzaki2023sparseupcycling} initialise MoE models from a dense checkpoint by replicating FFN layers into expert slots, then continue training jointly. \kalavai differs: specialists are trained \emph{independently} without shared computation, making the protocol compatible with contributors who never interact during training.
+\paragraph{Sparse Upcycling.} \citet{komatsuzaki2023sparseupcycling} initialise MoE models from dense checkpoints and continue training jointly; \kalavai trains specialists \emph{independently} with no shared computation.
 
-\paragraph{STAR and related concurrent work.} \citet{qin2025star} and related work on freeze-then-stack for multimodal learning demonstrate the same underlying principle---modular composition over frozen foundations---applied to visual grounding and video models. \kalavai provides the language modelling instantiation with explicit analysis of the crossover point where freezing transitions from optional to required.
+\paragraph{STAR and related concurrent work.} \citet{qin2025star} demonstrate modular composition over frozen foundations for multimodal learning; \kalavai provides the language modelling instantiation with analysis of the crossover point where freezing transitions from optional to required.
 
 % ============================================================
 \section{Method}
@@ -141,12 +141,7 @@ where $h_t$ is the hidden state at layer $K+1$ (first non-frozen layer)\footnote
 p_\text{fused}(x_t \mid x_{<t}) = \sum_{i=1}^{N} g_t^{(i)} \cdot p_{\theta_i}(x_t \mid x_{<t})
 \]
 
-\paragraph{Design decisions.}
-\begin{itemize}[leftmargin=*, itemsep=1pt]
-  \item \textbf{Why not LoRA?} Preliminary experiments showed LoRA-trained specialists failed to diverge sufficiently in representation space; their domain-specific improvements were insufficient to produce meaningful fusion gains. Full fine-tuning of unfrozen layers is required.
-  \item \textbf{Why softmax over argmax?} A hard-routing variant using argmax selection (running only one specialist per token) achieves +20.27\% over base; soft routing achieves +20.24\%---a 0.03pp difference that is not practically meaningful. We use softmax as the default. Critically, \emph{both} variants run all specialists at inference; routing to a single specialist while suppressing the others causes catastrophic failure (Section~\ref{sec:failure}).
-  \item \textbf{Why a linear router?} A 2-layer MLP router achieves +14.17\% versus +14.16\% for a linear router---an immaterial difference. Router complexity is irrelevant; the representational structure created by shared initialisation, not the routing mechanism, drives improvement.
-\end{itemize}
+Design decisions---LoRA vs.\ full fine-tuning, softmax vs.\ argmax, linear vs.\ MLP router---are discussed in Appendix~\ref{app:design}; none meaningfully affects the core results.
 
 % ============================================================
 \section{Experiments}
@@ -169,6 +164,8 @@ p_\text{fused}(x_t \mid x_{<t}) = \sum_{i=1}^{N} g_t^{(i)} \cdot p_{\theta_i}(x_
 where $\mathcal{L}$ is average cross-entropy loss on the held-out mixed-domain evaluation set (equal weighting across three domains). Lower loss is better; positive $\Delta$ indicates improvement over the baseline. The baseline for the main result is the best individual specialist on mixed evaluation; the baseline for the monolithic comparison is the monolithic model.
 
 \paragraph{Seeds.} All main results are reported across 3 random seeds (42, 137, 2026).
+
+\paragraph{Evaluation consistency.} Base model loss varies slightly across experimental setups (e.g., 2.248 in Table~\ref{tab:main} vs.\ 2.420 in the dispatch experiments) due to different evaluation batch compositions. All improvement percentages are computed within the same evaluation setup; cross-table loss values should not be compared directly.
 
 \subsection{Core Results}
 \label{sec:core}
@@ -213,7 +210,7 @@ The 6.9B improvement of +2.4\% is smaller than at smaller scales. We attribute t
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{fig_hero_4panel}
-  \caption{\textbf{\kalavai core results.} \textbf{(A)} Fusion improvement over the best individual specialist across model scales: +14.2\% at 410M, +14.8\% at 1B, +2.4\% at 6.9B. \textbf{(B)} Training duration crossover: freeze=0 peaks at 5k steps then degrades; freeze=4 plateaus through 20k steps; crossover at $\approx$10k steps. \textbf{(C)} Routing failure modes: learned MoE routing achieves +14.1\%; single-specialist classifier dispatch degrades by $-$21.1\%. \textbf{(D)} \kalavai vs.\ equal-compute alternatives at 410M: MoE achieves +14.5\% over the equal-compute monolithic baseline. All results are means over 3 seeds.}
+  \caption{\textbf{\kalavai core results.} \textbf{(A)} Fusion improvement over the best individual specialist across model scales: +14.2\% at 410M, +14.8\% at 1B, +2.4\% at 6.9B. \textbf{(B)} Training duration crossover: freeze=0 peaks at 5k steps then degrades; freeze=4 plateaus through 20k steps; crossover at $\approx$10k steps. \textbf{(C)} Routing failure modes: learned MoE routing achieves +14.1\%; single-specialist classifier dispatch degrades by $-$21.1\% (negative values indicate degradation below base). \textbf{(D)} \kalavai vs.\ equal-compute alternatives at 410M: MoE achieves +14.5\% over the equal-compute monolithic baseline. All results are means over 3 seeds.}
   \label{fig:hero}
 \end{figure}
 
@@ -240,18 +237,9 @@ Best specialist (code, 2000 steps) & 2.089 & +7.1\% & +0.4\% \\
 \subsection{Training Duration and the Role of Frozen Layers}
 \label{sec:crossover}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.72\textwidth]{fig_training_duration_crossover}
-  \caption{Fusion improvement (vs.\ best specialist) as a function of specialist training duration, with and without frozen layers. Freeze=0 (no frozen layers) peaks at 5,000 steps (+16.4\%) and degrades to +13.6\% at 20,000 steps. Freeze=4 (first 4 layers frozen) plateaus at +14.8\% through 20,000 steps. Crossover occurs at approximately 10,000 steps. Pythia-410M, seed 42.}
-  \label{fig:crossover}
-\end{figure}
-
 A key design question is whether frozen layers are necessary. The freeze depth sweep (Appendix~\ref{app:freeze}) shows only 2.5 percentage points of variation across freeze depths from 0 to 50\% of layers, suggesting freezing is largely optional at 2,000-step training horizons. However, this masks a training duration dependence.
 
-Figure~\ref{fig:crossover} and Table~\ref{tab:crossover} show fusion improvement as a function of specialist training duration, at both freeze=0 and freeze=4. Without frozen layers, the fused model improvement peaks at 5,000 steps (+16.4\%) and then degrades monotonically: at 10,000 steps the improvement is +15.4\%, and at 20,000 steps it is +13.6\%. Specialists fine-tuned for too long overfit their domains and become less compatible during fusion. With four frozen layers, improvement plateaus at +15.8\% at 5,000 steps and remains at +14.8\% at 20,000 steps---a stable plateau rather than degradation.
-
-The crossover occurs at approximately 10,000 training steps. Below this threshold, freeze=0 outperforms freeze=4 because more plastic representations allow specialists to diverge more effectively. Above this threshold, freeze=4 outperforms freeze=0 because frozen layers prevent over-specialisation that makes post-hoc fusion difficult.
+Table~\ref{tab:crossover} (and Figure~\ref{fig:crossover} in Appendix~\ref{app:crossoverfig}) show fusion improvement as a function of specialist training duration. Without frozen layers, improvement peaks at 5,000 steps (+16.4\%) and then degrades monotonically to +13.6\% at 20,000 steps. With four frozen layers, improvement plateaus at +15.8\% through 20,000 steps. The crossover occurs at approximately 10,000 training steps: above this threshold, frozen layers prevent over-specialisation that degrades post-hoc fusion.
 
 \begin{table}[h]
 \centering
@@ -276,58 +264,12 @@ The crossover occurs at approximately 10,000 training steps. Below this threshol
 \subsection{All Specialists Must Run: Single-Specialist Dispatch Fails Catastrophically}
 \label{sec:failure}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.65\textwidth]{fig_domain_classifier}
-  \caption{Comparison of routing strategies at Pythia-410M. MoE soft routing (all 3 specialists, softmax combination): +14.1\%. Domain classifier dispatch (route to single best specialist, 99.3\% accuracy): $-$21.1\%. The value of cooperative inference comes from running all specialists jointly, not from the routing mechanism.}
-  \label{fig:failure}
-\end{figure}
-
-A natural simplification would route each input to a single specialist, reducing inference cost by $N\times$. We test this directly: a logistic regression classifier on mean-pooled backbone representations achieves 99.3\% accuracy on held-out inputs. We then route each sequence to the single matching specialist.
-
-The result is catastrophic: single-specialist dispatch achieves a mixed-domain loss of 2.931---a \emph{$-$21.1\% degradation} relative to the base model (loss 2.420) rather than the +14.1\% improvement from joint inference (Table~\ref{tab:dispatch}). A multi-head baseline (same parameter count as MoE, classifier-selected head) achieves the identical $-$21.1\% degradation.
-
-\begin{table}[h]
-\centering
-\caption{Routing strategies at Pythia-410M (freeze=4, seed=42). All configurations use the same three specialist models trained on the same checkpoint. The improvement column uses the base model (loss 2.420, from the classifier evaluation setup) as baseline; this eval differs slightly from Table~\ref{tab:main}'s mixed evaluation (base 2.248), producing 14.1\% vs.\ 14.2\% for MoE---a 0.1pp difference from evaluation batch variation, not a methodological inconsistency. Single-specialist dispatch degrades performance despite near-perfect routing accuracy because specialists exhibit catastrophic forgetting on out-of-domain tokens.}
-\label{tab:dispatch}
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Method} & \textbf{Specialists Run} & \textbf{Routing} & \textbf{Mixed Loss} & \textbf{vs.\ Base} \\
-\midrule
-Base model                    & ---    & ---                    & 2.420 & ---       \\
-MoE soft routing              & 3 of 3 & Softmax weights        & 2.080 & +14.1\%   \\
-MoE hard routing (argmax)     & 3 of 3 & Argmax (all run)       & 2.079 & +14.1\%   \\
-Single-specialist dispatch    & 1 of 3 & Classifier (99.3\% acc.) & 2.931 & $-$21.1\% \\
-Multi-head hard routing       & 1 of 3 & Classifier (100\% acc.)  & 2.931 & $-$21.1\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The mechanism is catastrophic forgetting: each specialist loses accuracy on non-specialist domains (code specialist on science: loss 2.908 vs.\ base 2.892). When only one specialist runs, out-of-domain tokens have no fallback. Joint inference restores coverage. Notably, hard routing (argmax, all experts run) achieves +14.1\%---essentially identical to soft routing---confirming that what matters is specialist participation, not weighting precision.
+A natural simplification would route each input to a single specialist. We test this with a logistic regression classifier achieving 99.3\% accuracy on held-out inputs. The result is catastrophic: single-specialist dispatch degrades performance by $-$21.1\% relative to base, compared to +14.1\% for joint MoE inference. A multi-head baseline with identical parameter count produces the same $-$21.1\% degradation. The mechanism is catastrophic forgetting: each specialist loses accuracy on non-specialist domains, and single-specialist dispatch provides no fallback. Hard routing (argmax, all experts run) achieves +14.1\%---identical to soft routing---confirming that specialist participation, not weighting precision, drives improvement. Full results in Appendix~\ref{app:dispatch}.
 
 \subsection{Capacity Controls: Parameter Count Is Not the Mechanism}
 \label{sec:capacity}
 
-The fused model has $N$ times the unfrozen parameters of any individual specialist ($N=3$ in our experiments). An alternative explanation for the improvement is that more parameters, rather than routing between specialised representations, drives the gain.
-
-We test this with two controls. First, a \emph{wider single model}: Pythia-1.4B (3.5$\times$ the total parameters of a 410M specialist) is trained for 6,000 steps on mixed data. This model achieves +5.9\% over the Pythia-410M base---less than half the \kalavai improvement. Second, a \emph{multi-head baseline} (Section~\ref{sec:failure}) with the same parameter count as the MoE fusion achieves $-$21.1\%. The improvement from \kalavai is not explained by parameter count; it requires the combination of (a) specialised representations acquired through domain-specific training, and (b) joint inference that aggregates those specialised representations at each token position.
-
-\begin{table}[h]
-\centering
-\caption{Capacity control comparison. All methods share the same base checkpoint (Pythia-410M, step10000). Wider model = Pythia-1.4B trained 6,000 steps on mixed data.}
-\label{tab:capacity}
-\begin{tabular}{lccc}
-\toprule
-\textbf{Method} & \textbf{Parameters (unfrozen)} & \textbf{vs.\ Base} \\
-\midrule
-Monolithic Pythia-410M (6,000 steps) & 1$\times$ & +6.7\% \\
-Wider single model (Pythia-1.4B, 6,000 steps) & 3.5$\times$ total & +5.9\% \\
-Multi-head baseline (same params as MoE) & 3$\times$ unfrozen & $-$21.1\% \\
-\kalavai MoE (3 specialists, 2,000 steps each) & 3$\times$ unfrozen & \textbf{+14.2\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
+The fused model has $3\times$ the unfrozen parameters of any individual specialist. To rule out parameter count as the mechanism, we train Pythia-1.4B ($3.5\times$ total parameters of a 410M specialist) for 6,000 steps on mixed data; it achieves +5.9\%---less than half the \kalavai improvement. The multi-head baseline (same parameter count as MoE, classifier-selected head) achieves $-$21.1\%. The improvement requires specialised representations combined via joint inference, not additional capacity. Full comparison in Appendix~\ref{app:dispatch}.
 
 % ============================================================
 \section{Analysis}
@@ -347,7 +289,7 @@ Multi-head baseline (same params as MoE) & 3$\times$ unfrozen & $-$21.1\% \\
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.60\textwidth]{fig_divergence_heatmap}
-  \caption{Cross-domain evaluation loss matrix at Pythia-410M, step 2,000 (freeze=4, seed=42). Rows are specialists; columns are evaluation domains. The diagonal entries (own-domain performance) are lower than off-diagonal (cross-domain), confirming that each specialist has diverged in a complementary direction. The MoE router recovers diagonal performance across all domains simultaneously.}
+  \caption{Cross-domain evaluation loss matrix at Pythia-410M, step 2,000 (freeze=4, seed=42). Rows are specialists; columns are evaluation domains. The diagonal entries (own-domain performance) are lower than off-diagonal (cross-domain), confirming that each specialist has diverged in a complementary direction. The MoE router recovers diagonal performance across all domains simultaneously. Color scale: green indicates lower loss (better performance), red indicates higher loss.}
   \label{fig:heatmap}
 \end{figure}
 
@@ -362,7 +304,7 @@ Multi-head baseline (same params as MoE) & 3$\times$ unfrozen & $-$21.1\% \\
 
 \paragraph{What the Qwen result means.} Experiments with Qwen-1.5B at full training produced $-$1.0\% fusion improvement ($\pm$0.0\%, 3 seeds). This is the boundary condition: when a model has been pre-trained on a very large corpus that already encompasses the specialist domains, specialist fine-tuning produces minimal differentiation and fusion adds nothing. The Pythia maturity sweeps (both 410M and 1B at step 143,000 show $\sim$14--15\% improvement) suggest this is specific to Qwen's pre-training distribution rather than a universal maturity effect.
 
-\paragraph{Inference cost.} The \kalavai fused model runs all $N$ specialists in parallel at inference, increasing compute by a factor of $N$ for the unfrozen layers. For $N=3$ with 17\% frozen layers, the effective inference overhead is approximately $2.5\times$ (frozen layers run once; unfrozen layers run $3\times$). This is comparable to Mixtral-8x7B, which activates 2 of 8 experts per token. The observed hard-switching behaviour ($>$99.7\% weight on one expert) suggests a potential optimisation: running only the top-1 expert per token, which our hard-routing verification shows incurs only 0.03pp loss (Section~\ref{sec:failure}). We leave efficient sparse inference to future work. The primary value proposition of \kalavai is training-time democratisation---enabling contributors who cannot afford centralised training to collectively produce a superior model---not inference efficiency.
+\paragraph{Inference cost.} The \kalavai fused model runs all $N$ specialists in parallel at inference, increasing compute by a factor of $N$ for the unfrozen layers. For $N=3$ with 17\% frozen layers, the effective inference overhead is approximately $2.5\times$ (frozen layers run once; unfrozen layers run $3\times$). The inference overhead is structurally different from Mixtral-8x7B, which routes at the FFN level within a single forward pass; \kalavai requires $N$ separate full forward passes through distinct model copies, with correspondingly higher memory requirements. The observed hard-switching behaviour ($>$99.7\% weight on one expert) suggests a potential optimisation: running only the top-1 expert per token, which our hard-routing verification shows incurs only 0.03pp loss (Section~\ref{sec:failure}). However, our hard-routing verification runs all specialists in parallel and selects via argmax---it does not test the sparse case where only the top-1 expert computes a forward pass. Verifying that single-expert forward passes produce equivalent routing decisions without the other experts' hidden states contributing to the router input is necessary before sparse inference can be claimed. The memory footprint also remains $N\times$, since all specialist weights must be loaded regardless of routing sparsity. We leave efficient sparse inference implementation to future work. The primary value proposition of \kalavai is training-time democratisation---enabling contributors who cannot afford centralised training to collectively produce a superior model---not inference efficiency.
 
 \paragraph{Applications.} The zero-communication-during-training property enables cooperative training scenarios that are infeasible with synchronous methods: multi-hospital medical language models where patient data cannot leave the facility; multi-jurisdictional legal AI where training data is subject to national regulations; low-resource language coverage where each language community trains a specialist on their language.
 
@@ -371,7 +313,7 @@ Multi-head baseline (same params as MoE) & 3$\times$ unfrozen & $-$21.1\% \\
   \item We do not claim inference efficiency. The fused model is approximately $N\times$ more expensive to run than a single specialist.
   \item We do not claim universal architecture generality. All primary results use Pythia (GPT-NeoX). The Qwen result provides a second architecture data point but is a negative result.
   \item We do not claim that downstream task performance reliably improves. Perplexity gains are clear; benchmark gains are modest ($<$1pp at 1B scale).
-  \item We do not claim that a real multi-contributor cooperative has been demonstrated. All experiments are simulated cooperatives on single machines.
+  \item We do not claim that a real multi-contributor cooperative has been demonstrated. All experiments are simulated cooperatives on single machines. The gap between simulated and deployed cooperative training---including data heterogeneity across contributors, checkpoint verification, contributor reliability, and communication of freeze specifications---remains open engineering work.
   \item We do not claim the method scales to frontier model sizes. The 6.9B result (+2.4\%) suggests scale-dependent hyperparameter sensitivity that requires further investigation.
 \end{itemize}
 
@@ -441,6 +383,25 @@ Results integrity audit & All & 322/322 checks passed, 0 issues & --- & Done \\
 
 To validate the mechanism on a fully controlled setting, we ran the cooperative protocol on a custom 25M-parameter GPT-style model (6 layers, hidden size 256) trained from scratch on synthetic domain data. Three specialists were trained independently for 5,000 steps each. The fused model achieves $+$60.7\% $\pm$ 0.7\% over the best individual specialist on held-out evaluation (3 seeds). The larger improvement compared to Pythia experiments is expected: the synthetic model starts from random initialisation (greater diversity between specialists) and the synthetic domains are maximally distinct. This experiment confirms the mechanism functions end-to-end before any Pythia-scale computation.
 
+\section{Design Decisions}
+\label{app:design}
+
+\begin{itemize}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Why not LoRA?} Preliminary experiments showed LoRA-trained specialists failed to diverge sufficiently in representation space; their domain-specific improvements were insufficient to produce meaningful fusion gains. Full fine-tuning of unfrozen layers is required.
+  \item \textbf{Why softmax over argmax?} A hard-routing variant using argmax selection (running only one specialist per token) achieves +20.27\% over base; soft routing achieves +20.24\%---a 0.03pp difference that is not practically meaningful. We use softmax as the default. Critically, \emph{both} variants run all specialists at inference; routing to a single specialist while suppressing the others causes catastrophic failure (Appendix~\ref{app:dispatch}).
+  \item \textbf{Why a linear router?} A 2-layer MLP router achieves +14.17\% versus +14.16\% for a linear router---an immaterial difference. Router complexity is irrelevant; the representational structure created by shared initialisation, not the routing mechanism, drives improvement.
+\end{itemize}
+
+\section{Training Duration Crossover Figure}
+\label{app:crossoverfig}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\textwidth]{fig_training_duration_crossover}
+  \caption{Fusion improvement vs.\ best specialist as a function of specialist training steps, with and without frozen layers. Pythia-410M, seed 42. See Table~\ref{tab:crossover} in Section~\ref{sec:crossover} for exact values.}
+  \label{fig:crossover}
+\end{figure}
+
 \section{Freeze Depth Sweep}
 \label{app:freeze}
 
@@ -504,6 +465,53 @@ Figure~\ref{fig:routerdist} shows the learned gate weight distributions for all 
   \caption{Learned gate weight distributions for all three domain evaluation sets (Pythia-410M, freeze=4, seed=42). Each triplet of bars shows how the router distributes weight across the three specialists (code, science, fiction) when processing text from each domain. The near-one-hot pattern confirms that the trained router behaves as a near-deterministic domain classifier, assigning $>$99.7\% weight to the correct specialist.}
   \label{fig:routerdist}
 \end{figure}
+
+\section{Dispatch Failure and Capacity Controls}
+\label{app:dispatch}
+
+\subsection*{Single-Specialist Dispatch}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.65\textwidth]{fig_domain_classifier}
+  \caption{Comparison of routing strategies at Pythia-410M. MoE soft routing (all 3 specialists, softmax combination): +14.1\%. Domain classifier dispatch (route to single best specialist, 99.3\% accuracy): $-$21.1\%. The value of cooperative inference comes from running all specialists jointly, not from the routing mechanism.}
+  \label{fig:failure}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\caption{Routing strategies at Pythia-410M (freeze=4, seed=42). All configurations use the same three specialist models trained on the same checkpoint. The improvement column uses the base model (loss 2.420) as baseline; this differs slightly from Table~\ref{tab:main}'s base (2.248) due to evaluation batch composition---a 0.1pp artefact, not a methodological inconsistency.}
+\label{tab:dispatch}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{Specialists Run} & \textbf{Routing} & \textbf{Mixed Loss} & \textbf{vs.\ Base} \\
+\midrule
+Base model                    & ---    & ---                    & 2.420 & ---       \\
+MoE soft routing              & 3 of 3 & Softmax weights        & 2.080 & +14.1\%   \\
+MoE hard routing (argmax)     & 3 of 3 & Argmax (all run)       & 2.079 & +14.1\%   \\
+Single-specialist dispatch    & 1 of 3 & Classifier (99.3\% acc.) & 2.931 & $-$21.1\% \\
+Multi-head hard routing       & 1 of 3 & Classifier (100\% acc.)  & 2.931 & $-$21.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Capacity Controls}
+
+\begin{table}[h]
+\centering
+\caption{Capacity control comparison. All methods share the same base checkpoint (Pythia-410M, step10000). Wider model = Pythia-1.4B trained 6,000 steps on mixed data.}
+\label{tab:capacity}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Parameters (unfrozen)} & \textbf{vs.\ Base} \\
+\midrule
+Monolithic Pythia-410M (6,000 steps) & 1$\times$ & +6.7\% \\
+Wider single model (Pythia-1.4B, 6,000 steps) & 3.5$\times$ total & +5.9\% \\
+Multi-head baseline (same params as MoE) & 3$\times$ unfrozen & $-$21.1\% \\
+\kalavai MoE (3 specialists, 2,000 steps each) & 3$\times$ unfrozen & \textbf{+14.2\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Maturity Sweeps}
 \label{app:maturity}
