@@ -1,0 +1,387 @@
+KALAVAI Phase 2 Experiment 1 — Cross-Lingual Fusion
+  model:    EleutherAI/pythia-410m @ step10000
+  domains:  ['tamil', 'yoruba', 'welsh', 'code']
+  freeze:   0
+  seeds:    [42, 137, 2026]
+  device:   cuda
+  GPU:      NVIDIA GeForce RTX 5090
+  VRAM:     34.2GB
+
+Loading data...
+  Loading cc100 lang=ta (n=50000)...
+  cc100 unavailable — loading wikimedia/wikipedia 20231101.ta...
+    50000 articles (wikipedia)
+  tamil   : total=208366  train=166692  held_out=20837
+  Loading cc100 lang=yo (n=50000)...
+  cc100 unavailable — loading wikimedia/wikipedia 20231101.yo...
+    33819 articles (wikipedia)
+  yoruba  : total=13703  train=10962  held_out=1371
+  Loading cc100 lang=cy (n=50000)...
+  cc100 unavailable — loading wikimedia/wikipedia 20231101.cy...
+    50000 articles (wikipedia)
+  welsh   : total=37472  train=29977  held_out=3748
+  Loading code_search_net python (n=3000)...
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+    3000 functions
+  code    : total= 1485  train= 1188  held_out= 149
+
+======================================================================
+SEED 42
+======================================================================
+
+[base]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:  93%|█████████▎| 272/292 [00:00<00:00, 2682.89it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 2779.97it/s]
+    tamil   : 1.4307  (200/20837 chunks, 0.9s)
+    yoruba  : 3.7364  (200/1371 chunks, 0.7s)
+    welsh   : 4.6315  (200/3748 chunks, 0.7s)
+    code    : 2.0985  (148/149 chunks, 0.5s)
+
+[tamil_spec]  training (seed=42, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3605.18it/s]
+  [tamil] trainable: 405.3M / 405.3M
+    [tamil] step 500/2000 | loss 4.8117 | 80s
+    [tamil] step 1000/2000 | loss 4.5372 | 159s
+    [tamil] step 1500/2000 | loss 4.4230 | 242s
+    [tamil] step 2000/2000 | loss 4.3627 | 323s
+  [tamil] done in 323s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\tamil_specialist_seed42.pt
+
+[yoruba_spec]  training (seed=42, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3142.42it/s]
+  [yoruba] trainable: 405.3M / 405.3M
+    [yoruba] step 500/2000 | loss 8.7123 | 81s
+    [yoruba] step 1000/2000 | loss 7.8963 | 162s
+    [yoruba] step 1500/2000 | loss 7.5381 | 244s
+    [yoruba] step 2000/2000 | loss 7.3305 | 325s
+  [yoruba] done in 325s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\yoruba_specialist_seed42.pt
+
+[welsh_spec]  training (seed=42, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3508.55it/s]
+  [welsh] trainable: 405.3M / 405.3M
+    [welsh] step 500/2000 | loss 14.9335 | 82s
+    [welsh] step 1000/2000 | loss 13.4823 | 163s
+    [welsh] step 1500/2000 | loss 12.8388 | 245s
+    [welsh] step 2000/2000 | loss 12.5190 | 327s
+  [welsh] done in 327s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\welsh_specialist_seed42.pt
+
+[code_spec]  training (seed=42, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3504.46it/s]
+  [code] trainable: 405.3M / 405.3M
+    [code] step 500/2000 | loss 6.9173 | 82s
+    [code] step 1000/2000 | loss 6.5272 | 163s
+    [code] step 1500/2000 | loss 6.2993 | 245s
+    [code] step 2000/2000 | loss 6.1740 | 326s
+  [code] done in 326s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\code_specialist_seed42.pt
+
+[tamil_spec eval]
+    tamil   : 1.0976  (200/20837 chunks, 0.8s)
+    yoruba  : 3.7255  (200/1371 chunks, 0.8s)
+    welsh   : 4.6437  (200/3748 chunks, 0.8s)
+    code    : 2.1118  (148/149 chunks, 0.6s)
+
+[yoruba_spec eval]
+    tamil   : 1.4712  (200/20837 chunks, 0.8s)
+    yoruba  : 2.0348  (200/1371 chunks, 0.8s)
+    welsh   : 4.9981  (200/3748 chunks, 0.8s)
+    code    : 2.1316  (148/149 chunks, 0.6s)
+
+[welsh_spec eval]
+    tamil   : 1.4820  (200/20837 chunks, 0.8s)
+    yoruba  : 4.0400  (200/1371 chunks, 0.8s)
+    welsh   : 3.0711  (200/3748 chunks, 0.8s)
+    code    : 2.1496  (148/149 chunks, 0.6s)
+
+[code_spec eval]
+    tamil   : 1.4876  (200/20837 chunks, 0.8s)
+    yoruba  : 3.8571  (200/1371 chunks, 0.8s)
+    welsh   : 4.6805  (200/3748 chunks, 0.8s)
+    code    : 2.0895  (148/149 chunks, 0.6s)
+
+[weight_avg]
+    tamil   : 1.3290  (200/20837 chunks, 0.8s)
+    yoruba  : 3.2908  (200/1371 chunks, 0.8s)
+    welsh   : 4.2187  (200/3748 chunks, 0.8s)
+    code    : 2.0849  (148/149 chunks, 0.6s)
+
+[moe]  building + training router (500 steps)...
+
+  Training router (500 steps)...
+    Router step 100/500: loss=1.5156
+    Router step 200/500: loss=1.0494
+    Router step 300/500: loss=1.6383
+    Router step 400/500: loss=0.9766
+    Router step 500/500: loss=2.0772
+
+[moe eval]
+    tamil   : 1.0976  (200/20837 chunks, 3.1s)
+    yoruba  : 3.7259  (200/1371 chunks, 3.1s)
+    welsh   : 3.0711  (200/3748 chunks, 3.1s)
+    code    : 2.0881  (148/149 chunks, 2.3s)
+
+  Router gate distribution:
+    tamil: tamil=1.0000  yoruba=0.0000  welsh=0.0000  code=0.0000
+    yoruba: tamil=0.9984  yoruba=0.0000  welsh=0.0015  code=0.0001
+    welsh: tamil=0.0000  yoruba=0.0000  welsh=0.9999  code=0.0001
+    code: tamil=0.0104  yoruba=0.0007  welsh=0.0026  code=0.9863
+
+==================================================
+STOP/GO [seed=42]:
+  Mean divergence: 25.74%  |  Fusion gain: +6.14%
+
+  Perplexity table:
+  Domain     Base PPL   Spec PPL   MoE PPL
+  tamil           4.2        3.0       3.0
+  yoruba         41.9        7.7      41.5
+  welsh         102.7       21.6      21.6
+  code            8.2        8.1       8.1
+  → PIVOT (diverge>15% but gain<7% — check router)
+==================================================
+
+  Saved: results\phase2\cross_lingual\result_seed42.json
+
+======================================================================
+SEED 137
+======================================================================
+
+[base]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3465.04it/s]
+    tamil   : 1.4307  (200/20837 chunks, 0.8s)
+    yoruba  : 3.7364  (200/1371 chunks, 0.8s)
+    welsh   : 4.6315  (200/3748 chunks, 0.8s)
+    code    : 2.0985  (148/149 chunks, 0.6s)
+
+[tamil_spec]  training (seed=137, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3067.13it/s]
+  [tamil] trainable: 405.3M / 405.3M
+    [tamil] step 500/2000 | loss 4.8084 | 82s
+    [tamil] step 1000/2000 | loss 4.5415 | 161s
+    [tamil] step 1500/2000 | loss 4.4177 | 240s
+    [tamil] step 2000/2000 | loss 4.3577 | 319s
+  [tamil] done in 319s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\tamil_specialist_seed137.pt
+
+[yoruba_spec]  training (seed=137, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3477.99it/s]
+  [yoruba] trainable: 405.3M / 405.3M
+    [yoruba] step 500/2000 | loss 8.7686 | 78s
+    [yoruba] step 1000/2000 | loss 7.8843 | 157s
+    [yoruba] step 1500/2000 | loss 7.5460 | 235s
+    [yoruba] step 2000/2000 | loss 7.3261 | 314s
+  [yoruba] done in 314s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\yoruba_specialist_seed137.pt
+
+[welsh_spec]  training (seed=137, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3519.55it/s]
+  [welsh] trainable: 405.3M / 405.3M
+    [welsh] step 500/2000 | loss 14.9019 | 79s
+    [welsh] step 1000/2000 | loss 13.4430 | 157s
+    [welsh] step 1500/2000 | loss 12.8352 | 236s
+    [welsh] step 2000/2000 | loss 12.5138 | 314s
+  [welsh] done in 314s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\welsh_specialist_seed137.pt
+
+[code_spec]  training (seed=137, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3196.85it/s]
+  [code] trainable: 405.3M / 405.3M
+    [code] step 500/2000 | loss 6.9301 | 78s
+    [code] step 1000/2000 | loss 6.5289 | 156s
+    [code] step 1500/2000 | loss 6.3041 | 234s
+    [code] step 2000/2000 | loss 6.1808 | 312s
+  [code] done in 312s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\code_specialist_seed137.pt
+
+[tamil_spec eval]
+    tamil   : 1.0980  (200/20837 chunks, 0.7s)
+    yoruba  : 3.7259  (200/1371 chunks, 0.7s)
+    welsh   : 4.6444  (200/3748 chunks, 0.7s)
+    code    : 2.1114  (148/149 chunks, 0.5s)
+
+[yoruba_spec eval]
+    tamil   : 1.4668  (200/20837 chunks, 0.7s)
+    yoruba  : 2.0355  (200/1371 chunks, 0.7s)
+    welsh   : 4.9960  (200/3748 chunks, 0.8s)
+    code    : 2.1311  (148/149 chunks, 0.5s)
+
+[welsh_spec eval]
+    tamil   : 1.4854  (200/20837 chunks, 0.7s)
+    yoruba  : 4.0141  (200/1371 chunks, 0.7s)
+    welsh   : 3.0943  (200/3748 chunks, 0.7s)
+    code    : 2.1491  (148/149 chunks, 0.5s)
+
+[code_spec eval]
+    tamil   : 1.4874  (200/20837 chunks, 0.7s)
+    yoruba  : 3.8575  (200/1371 chunks, 0.7s)
+    welsh   : 4.6798  (200/3748 chunks, 0.7s)
+    code    : 2.0892  (148/149 chunks, 0.5s)
+
+[weight_avg]
+    tamil   : 1.3285  (200/20837 chunks, 0.7s)
+    yoruba  : 3.2887  (200/1371 chunks, 0.7s)
+    welsh   : 4.2226  (200/3748 chunks, 0.7s)
+    code    : 2.0845  (148/149 chunks, 0.5s)
+
+[moe]  building + training router (500 steps)...
+
+  Training router (500 steps)...
+    Router step 100/500: loss=1.0466
+    Router step 200/500: loss=1.7360
+    Router step 300/500: loss=1.0896
+    Router step 400/500: loss=1.3701
+    Router step 500/500: loss=1.6182
+
+[moe eval]
+    tamil   : 1.0980  (200/20837 chunks, 2.9s)
+    yoruba  : 2.0357  (200/1371 chunks, 2.9s)
+    welsh   : 3.0943  (200/3748 chunks, 2.9s)
+    code    : 2.0886  (148/149 chunks, 2.2s)
+
+  Router gate distribution:
+    tamil: tamil=1.0000  yoruba=0.0000  welsh=0.0000  code=0.0000
+    yoruba: tamil=0.0001  yoruba=0.9999  welsh=0.0000  code=0.0001
+    welsh: tamil=0.0000  yoruba=0.0000  welsh=1.0000  code=0.0000
+    code: tamil=0.0115  yoruba=0.0010  welsh=0.0012  code=0.9863
+
+==================================================
+STOP/GO [seed=137]:
+  Mean divergence: 25.60%  |  Fusion gain: +21.76%
+
+  Perplexity table:
+  Domain     Base PPL   Spec PPL   MoE PPL
+  tamil           4.2        3.0       3.0
+  yoruba         41.9        7.7       7.7
+  welsh         102.7       22.1      22.1
+  code            8.2        8.1       8.1
+  → GO (diverge>15% AND gain>7%)
+==================================================
+
+  Saved: results\phase2\cross_lingual\result_seed137.json
+
+======================================================================
+SEED 2026
+======================================================================
+
+[base]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3299.61it/s]
+    tamil   : 1.4307  (200/20837 chunks, 0.7s)
+    yoruba  : 3.7364  (200/1371 chunks, 0.7s)
+    welsh   : 4.6315  (200/3748 chunks, 0.7s)
+    code    : 2.0985  (148/149 chunks, 0.5s)
+
+[tamil_spec]  training (seed=2026, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3260.29it/s]
+  [tamil] trainable: 405.3M / 405.3M
+    [tamil] step 500/2000 | loss 4.7998 | 78s
+    [tamil] step 1000/2000 | loss 4.5341 | 156s
+    [tamil] step 1500/2000 | loss 4.4141 | 234s
+    [tamil] step 2000/2000 | loss 4.3539 | 313s
+  [tamil] done in 313s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\tamil_specialist_seed2026.pt
+
+[yoruba_spec]  training (seed=2026, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3293.88it/s]
+  [yoruba] trainable: 405.3M / 405.3M
+    [yoruba] step 500/2000 | loss 8.7506 | 76s
+    [yoruba] step 1000/2000 | loss 7.8943 | 154s
+    [yoruba] step 1500/2000 | loss 7.5393 | 232s
+    [yoruba] step 2000/2000 | loss 7.3447 | 310s
+  [yoruba] done in 310s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\yoruba_specialist_seed2026.pt
+
+[welsh_spec]  training (seed=2026, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3420.48it/s]
+  [welsh] trainable: 405.3M / 405.3M
+    [welsh] step 500/2000 | loss 14.8896 | 78s
+    [welsh] step 1000/2000 | loss 13.4371 | 155s
+    [welsh] step 1500/2000 | loss 12.8165 | 234s
+    [welsh] step 2000/2000 | loss 12.5116 | 312s
+  [welsh] done in 312s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\welsh_specialist_seed2026.pt
+
+[code_spec]  training (seed=2026, 2000 steps)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3482.90it/s]
+  [code] trainable: 405.3M / 405.3M
+    [code] step 500/2000 | loss 6.9228 | 78s
+    [code] step 1000/2000 | loss 6.5276 | 156s
+    [code] step 1500/2000 | loss 6.3002 | 234s
+    [code] step 2000/2000 | loss 6.1769 | 313s
+  [code] done in 313s
+  Checkpoint saved: checkpoints\phase2\cross_lingual\code_specialist_seed2026.pt
+
+[tamil_spec eval]
+    tamil   : 1.0967  (200/20837 chunks, 0.7s)
+    yoruba  : 3.7267  (200/1371 chunks, 0.7s)
+    welsh   : 4.6417  (200/3748 chunks, 0.7s)
+    code    : 2.1119  (148/149 chunks, 0.5s)
+
+[yoruba_spec eval]
+    tamil   : 1.4690  (200/20837 chunks, 0.7s)
+    yoruba  : 2.0363  (200/1371 chunks, 0.7s)
+    welsh   : 4.9900  (200/3748 chunks, 0.7s)
+    code    : 2.1317  (148/149 chunks, 0.5s)
+
+[welsh_spec eval]
+    tamil   : 1.4841  (200/20837 chunks, 0.7s)
+    yoruba  : 4.0438  (200/1371 chunks, 0.7s)
+    welsh   : 3.0936  (200/3748 chunks, 0.7s)
+    code    : 2.1490  (148/149 chunks, 0.5s)
+
+[code_spec eval]
+    tamil   : 1.4882  (200/20837 chunks, 0.7s)
+    yoruba  : 3.8577  (200/1371 chunks, 0.7s)
+    welsh   : 4.6796  (200/3748 chunks, 0.8s)
+    code    : 2.0894  (148/149 chunks, 0.6s)
+
+[weight_avg]
+    tamil   : 1.3286  (200/20837 chunks, 0.7s)
+    yoruba  : 3.2904  (200/1371 chunks, 0.7s)
+    welsh   : 4.2232  (200/3748 chunks, 0.7s)
+    code    : 2.0849  (148/149 chunks, 0.5s)
+
+[moe]  building + training router (500 steps)...
+
+  Training router (500 steps)...
+    Router step 100/500: loss=1.2726
+    Router step 200/500: loss=1.2926
+    Router step 300/500: loss=1.0402
+    Router step 400/500: loss=1.0215
+    Router step 500/500: loss=1.6407
+
+[moe eval]
+    tamil   : 1.0967  (200/20837 chunks, 2.9s)
+    yoruba  : 2.0363  (200/1371 chunks, 2.9s)
+    welsh   : 3.0936  (200/3748 chunks, 2.9s)
+    code    : 2.0886  (148/149 chunks, 2.2s)
+
+  Router gate distribution:
+    tamil: tamil=0.9999  yoruba=0.0001  welsh=0.0000  code=0.0000
+    yoruba: tamil=0.0001  yoruba=0.9998  welsh=0.0001  code=0.0000
+    welsh: tamil=0.0000  yoruba=0.0001  welsh=0.9999  code=0.0000
+    code: tamil=0.0164  yoruba=0.0061  welsh=0.0131  code=0.9645
+
+==================================================
+STOP/GO [seed=2026]:
+  Mean divergence: 25.62%  |  Fusion gain: +21.75%
+
+  Perplexity table:
+  Domain     Base PPL   Spec PPL   MoE PPL
+  tamil           4.2        3.0       3.0
+  yoruba         41.9        7.7       7.7
+  welsh         102.7       22.1      22.1
+  code            8.2        8.1       8.1
+  → GO (diverge>15% AND gain>7%)
+==================================================
+
+  Saved: results\phase2\cross_lingual\result_seed2026.json
+
+============================================================
+FINAL SUMMARY — 3 seeds
+  Gain vs spec: +16.55% ± 9.02pp
+  Mean div:     25.65%
+  Verdicts:     ['PIVOT', 'GO', 'GO']
+  Summary saved: results\phase2\cross_lingual\summary.json
+============================================================

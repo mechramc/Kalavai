@@ -1,0 +1,352 @@
+{
+  "experiment": "phase2_exp2_private_domain",
+  "domains": [
+    "medical",
+    "legal",
+    "patent"
+  ],
+  "model": "EleutherAI/pythia-410m",
+  "seeds": [
+    42,
+    137,
+    2026
+  ],
+  "per_seed": [
+    {
+      "seed": 42,
+      "model_id": "EleutherAI/pythia-410m",
+      "revision": "step10000",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "medical",
+        "legal",
+        "patent"
+      ],
+      "eval_matrix": {
+        "base": {
+          "medical": 3.411749,
+          "legal": 2.778237,
+          "patent": 2.671926,
+          "equal_weight_avg": 2.953971
+        },
+        "monolithic": {
+          "medical": 2.998165,
+          "legal": 1.932248,
+          "patent": 2.455068,
+          "equal_weight_avg": 2.461827
+        },
+        "medical_spec": {
+          "medical": 2.978226,
+          "legal": 2.892579,
+          "patent": 2.727723,
+          "equal_weight_avg": 2.866176
+        },
+        "legal_spec": {
+          "medical": 3.483382,
+          "legal": 1.829212,
+          "patent": 2.768039,
+          "equal_weight_avg": 2.693544
+        },
+        "patent_spec": {
+          "medical": 3.407395,
+          "legal": 2.817293,
+          "patent": 2.439983,
+          "equal_weight_avg": 2.888224
+        },
+        "weight_avg": {
+          "medical": 3.192925,
+          "legal": 2.380071,
+          "patent": 2.5539,
+          "equal_weight_avg": 2.708965
+        },
+        "moe": {
+          "medical": 2.978226,
+          "legal": 1.830504,
+          "patent": 2.445058,
+          "equal_weight_avg": 2.417929
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.953971,
+        "monolithic_equal_weight": 2.461827,
+        "best_spec_equal_weight": 2.693544,
+        "best_spec_domain": "legal",
+        "weight_avg_equal_weight": 2.708965,
+        "moe_equal_weight": 2.417929,
+        "improvement_vs_spec": 10.2324,
+        "improvement_vs_base": 18.1465,
+        "improvement_vs_mono": 1.7831,
+        "mean_divergence": 18.52,
+        "per_domain_divergence": {
+          "medical": 12.71,
+          "legal": 34.16,
+          "patent": 8.68
+        }
+      },
+      "router_distribution": {
+        "medical": [
+          0.9998,
+          0.0,
+          0.0002
+        ],
+        "legal": [
+          0.0001,
+          0.9977,
+          0.0022
+        ],
+        "patent": [
+          0.0227,
+          0.002,
+          0.9753
+        ]
+      },
+      "stop_go": {
+        "verdict": "GO",
+        "reason": "diverge>15% AND gain>7%"
+      },
+      "config": {
+        "freeze_layers": 0,
+        "lr": 2e-05,
+        "max_steps": 2000,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "monolithic_steps": 6000,
+        "router_steps": 500,
+        "router_lr": 0.001,
+        "domains": [
+          "medical",
+          "legal",
+          "patent"
+        ]
+      }
+    },
+    {
+      "seed": 137,
+      "model_id": "EleutherAI/pythia-410m",
+      "revision": "step10000",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "medical",
+        "legal",
+        "patent"
+      ],
+      "eval_matrix": {
+        "base": {
+          "medical": 3.411749,
+          "legal": 2.778237,
+          "patent": 2.671926,
+          "equal_weight_avg": 2.953971
+        },
+        "monolithic": {
+          "medical": 2.998133,
+          "legal": 1.934204,
+          "patent": 2.454933,
+          "equal_weight_avg": 2.462423
+        },
+        "medical_spec": {
+          "medical": 2.978182,
+          "legal": 2.893916,
+          "patent": 2.72821,
+          "equal_weight_avg": 2.866769
+        },
+        "legal_spec": {
+          "medical": 3.483657,
+          "legal": 1.829333,
+          "patent": 2.768201,
+          "equal_weight_avg": 2.69373
+        },
+        "patent_spec": {
+          "medical": 3.407436,
+          "legal": 2.817384,
+          "patent": 2.440333,
+          "equal_weight_avg": 2.888384
+        },
+        "weight_avg": {
+          "medical": 3.192993,
+          "legal": 2.379859,
+          "patent": 2.553927,
+          "equal_weight_avg": 2.708926
+        },
+        "moe": {
+          "medical": 2.978489,
+          "legal": 1.829332,
+          "patent": 2.443662,
+          "equal_weight_avg": 2.417161
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.953971,
+        "monolithic_equal_weight": 2.462423,
+        "best_spec_equal_weight": 2.69373,
+        "best_spec_domain": "legal",
+        "weight_avg_equal_weight": 2.708926,
+        "moe_equal_weight": 2.417161,
+        "improvement_vs_spec": 10.2671,
+        "improvement_vs_base": 18.1725,
+        "improvement_vs_mono": 1.8381,
+        "mean_divergence": 18.51,
+        "per_domain_divergence": {
+          "medical": 12.71,
+          "legal": 34.15,
+          "patent": 8.67
+        }
+      },
+      "router_distribution": {
+        "medical": [
+          0.9998,
+          0.0,
+          0.0002
+        ],
+        "legal": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "patent": [
+          0.0,
+          0.0125,
+          0.9875
+        ]
+      },
+      "stop_go": {
+        "verdict": "GO",
+        "reason": "diverge>15% AND gain>7%"
+      },
+      "config": {
+        "freeze_layers": 0,
+        "lr": 2e-05,
+        "max_steps": 2000,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "monolithic_steps": 6000,
+        "router_steps": 500,
+        "router_lr": 0.001,
+        "domains": [
+          "medical",
+          "legal",
+          "patent"
+        ]
+      }
+    },
+    {
+      "seed": 2026,
+      "model_id": "EleutherAI/pythia-410m",
+      "revision": "step10000",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "medical",
+        "legal",
+        "patent"
+      ],
+      "eval_matrix": {
+        "base": {
+          "medical": 3.411749,
+          "legal": 2.778237,
+          "patent": 2.671926,
+          "equal_weight_avg": 2.953971
+        },
+        "monolithic": {
+          "medical": 2.998179,
+          "legal": 1.933534,
+          "patent": 2.45499,
+          "equal_weight_avg": 2.462234
+        },
+        "medical_spec": {
+          "medical": 2.978173,
+          "legal": 2.894358,
+          "patent": 2.728023,
+          "equal_weight_avg": 2.866851
+        },
+        "legal_spec": {
+          "medical": 3.483684,
+          "legal": 1.829585,
+          "patent": 2.768569,
+          "equal_weight_avg": 2.693946
+        },
+        "patent_spec": {
+          "medical": 3.407389,
+          "legal": 2.817167,
+          "patent": 2.439901,
+          "equal_weight_avg": 2.888152
+        },
+        "weight_avg": {
+          "medical": 3.192953,
+          "legal": 2.379448,
+          "patent": 2.554015,
+          "equal_weight_avg": 2.708805
+        },
+        "moe": {
+          "medical": 2.978173,
+          "legal": 1.829586,
+          "patent": 2.46599,
+          "equal_weight_avg": 2.424583
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.953971,
+        "monolithic_equal_weight": 2.462234,
+        "best_spec_equal_weight": 2.693946,
+        "best_spec_domain": "legal",
+        "weight_avg_equal_weight": 2.708805,
+        "moe_equal_weight": 2.424583,
+        "improvement_vs_spec": 9.9988,
+        "improvement_vs_base": 17.9212,
+        "improvement_vs_mono": 1.5291,
+        "mean_divergence": 18.51,
+        "per_domain_divergence": {
+          "medical": 12.71,
+          "legal": 34.15,
+          "patent": 8.68
+        }
+      },
+      "router_distribution": {
+        "medical": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "legal": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "patent": [
+          0.0681,
+          0.0154,
+          0.9165
+        ]
+      },
+      "stop_go": {
+        "verdict": "GO",
+        "reason": "diverge>15% AND gain>7%"
+      },
+      "config": {
+        "freeze_layers": 0,
+        "lr": 2e-05,
+        "max_steps": 2000,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "monolithic_steps": 6000,
+        "router_steps": 500,
+        "router_lr": 0.001,
+        "domains": [
+          "medical",
+          "legal",
+          "patent"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "improvement_mean": 10.1661,
+    "improvement_std": 0.1459,
+    "divergence_mean": 18.51
+  },
+  "final_verdict": "GO"
+}

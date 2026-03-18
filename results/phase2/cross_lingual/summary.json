@@ -1,0 +1,581 @@
+{
+  "experiment": "phase2_exp1_cross_lingual",
+  "domains": [
+    "tamil",
+    "yoruba",
+    "welsh",
+    "code"
+  ],
+  "model": "EleutherAI/pythia-410m",
+  "seeds": [
+    42,
+    137,
+    2026
+  ],
+  "per_seed": [
+    {
+      "seed": 42,
+      "model_id": "EleutherAI/pythia-410m",
+      "revision": "step10000",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "tamil",
+        "yoruba",
+        "welsh",
+        "code"
+      ],
+      "eval_matrix": {
+        "base": {
+          "tamil": 1.430747,
+          "yoruba": 3.736443,
+          "welsh": 4.631496,
+          "code": 2.098477,
+          "equal_weight_avg": 2.974291,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "tamil_spec": {
+          "tamil": 1.0976,
+          "yoruba": 3.725517,
+          "welsh": 4.643699,
+          "code": 2.111845,
+          "equal_weight_avg": 2.894665,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "yoruba_spec": {
+          "tamil": 1.471234,
+          "yoruba": 2.034847,
+          "welsh": 4.998065,
+          "code": 2.131598,
+          "equal_weight_avg": 2.658936,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "welsh_spec": {
+          "tamil": 1.482009,
+          "yoruba": 4.039977,
+          "welsh": 3.071064,
+          "code": 2.14958,
+          "equal_weight_avg": 2.685658,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "code_spec": {
+          "tamil": 1.487555,
+          "yoruba": 3.857128,
+          "welsh": 4.680457,
+          "code": 2.089501,
+          "equal_weight_avg": 3.02866,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "weight_avg": {
+          "tamil": 1.328956,
+          "yoruba": 3.290831,
+          "welsh": 4.21866,
+          "code": 2.08488,
+          "equal_weight_avg": 2.730832,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "moe": {
+          "tamil": 1.097602,
+          "yoruba": 3.725906,
+          "welsh": 3.071069,
+          "code": 2.088131,
+          "equal_weight_avg": 2.495677,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.974291,
+        "best_spec_equal_weight": 2.658936,
+        "best_spec_domain": "yoruba",
+        "weight_avg_equal_weight": 2.730832,
+        "moe_equal_weight": 2.495677,
+        "improvement_vs_spec": 6.14,
+        "improvement_vs_base": 16.0917,
+        "mean_divergence": 25.74,
+        "per_domain_divergence": {
+          "tamil": 23.28,
+          "yoruba": 45.54,
+          "welsh": 33.69,
+          "code": 0.43
+        },
+        "perplexity": {
+          "tamil": {
+            "base": 4.2,
+            "specialist": 3.0,
+            "moe": 3.0
+          },
+          "yoruba": {
+            "base": 41.9,
+            "specialist": 7.7,
+            "moe": 41.5
+          },
+          "welsh": {
+            "base": 102.7,
+            "specialist": 21.6,
+            "moe": 21.6
+          },
+          "code": {
+            "base": 8.2,
+            "specialist": 8.1,
+            "moe": 8.1
+          }
+        }
+      },
+      "router_distribution": {
+        "tamil": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "yoruba": [
+          0.9984,
+          0.0,
+          0.0015,
+          0.0001
+        ],
+        "welsh": [
+          0.0,
+          0.0,
+          0.9999,
+          0.0001
+        ],
+        "code": [
+          0.0104,
+          0.0007,
+          0.0026,
+          0.9863
+        ]
+      },
+      "stop_go": {
+        "verdict": "PIVOT",
+        "reason": "diverge>15% but gain<7% \u2014 check router"
+      },
+      "config": {
+        "freeze_layers": 0,
+        "lr": 2e-05,
+        "max_steps": 2000,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "router_steps": 500,
+        "router_lr": 0.001,
+        "n_samples_language": 50000,
+        "n_samples_code": 3000
+      }
+    },
+    {
+      "seed": 137,
+      "model_id": "EleutherAI/pythia-410m",
+      "revision": "step10000",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "tamil",
+        "yoruba",
+        "welsh",
+        "code"
+      ],
+      "eval_matrix": {
+        "base": {
+          "tamil": 1.430747,
+          "yoruba": 3.736443,
+          "welsh": 4.631496,
+          "code": 2.098477,
+          "equal_weight_avg": 2.974291,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "tamil_spec": {
+          "tamil": 1.097982,
+          "yoruba": 3.725875,
+          "welsh": 4.644415,
+          "code": 2.111417,
+          "equal_weight_avg": 2.894922,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "yoruba_spec": {
+          "tamil": 1.466795,
+          "yoruba": 2.0355,
+          "welsh": 4.995978,
+          "code": 2.131083,
+          "equal_weight_avg": 2.657339,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "welsh_spec": {
+          "tamil": 1.48541,
+          "yoruba": 4.014064,
+          "welsh": 3.094251,
+          "code": 2.149096,
+          "equal_weight_avg": 2.685705,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "code_spec": {
+          "tamil": 1.487352,
+          "yoruba": 3.857545,
+          "welsh": 4.679774,
+          "code": 2.089172,
+          "equal_weight_avg": 3.028461,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "weight_avg": {
+          "tamil": 1.32849,
+          "yoruba": 3.288666,
+          "welsh": 4.222622,
+          "code": 2.084543,
+          "equal_weight_avg": 2.73108,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "moe": {
+          "tamil": 1.097987,
+          "yoruba": 2.035656,
+          "welsh": 3.094252,
+          "code": 2.088643,
+          "equal_weight_avg": 2.079134,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.974291,
+        "best_spec_equal_weight": 2.657339,
+        "best_spec_domain": "yoruba",
+        "weight_avg_equal_weight": 2.73108,
+        "moe_equal_weight": 2.079134,
+        "improvement_vs_spec": 21.7588,
+        "improvement_vs_base": 30.0965,
+        "mean_divergence": 25.6,
+        "per_domain_divergence": {
+          "tamil": 23.26,
+          "yoruba": 45.52,
+          "welsh": 33.19,
+          "code": 0.44
+        },
+        "perplexity": {
+          "tamil": {
+            "base": 4.2,
+            "specialist": 3.0,
+            "moe": 3.0
+          },
+          "yoruba": {
+            "base": 41.9,
+            "specialist": 7.7,
+            "moe": 7.7
+          },
+          "welsh": {
+            "base": 102.7,
+            "specialist": 22.1,
+            "moe": 22.1
+          },
+          "code": {
+            "base": 8.2,
+            "specialist": 8.1,
+            "moe": 8.1
+          }
+        }
+      },
+      "router_distribution": {
+        "tamil": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "yoruba": [
+          0.0001,
+          0.9999,
+          0.0,
+          0.0001
+        ],
+        "welsh": [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        "code": [
+          0.0115,
+          0.001,
+          0.0012,
+          0.9863
+        ]
+      },
+      "stop_go": {
+        "verdict": "GO",
+        "reason": "diverge>15% AND gain>7%"
+      },
+      "config": {
+        "freeze_layers": 0,
+        "lr": 2e-05,
+        "max_steps": 2000,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "router_steps": 500,
+        "router_lr": 0.001,
+        "n_samples_language": 50000,
+        "n_samples_code": 3000
+      }
+    },
+    {
+      "seed": 2026,
+      "model_id": "EleutherAI/pythia-410m",
+      "revision": "step10000",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "tamil",
+        "yoruba",
+        "welsh",
+        "code"
+      ],
+      "eval_matrix": {
+        "base": {
+          "tamil": 1.430747,
+          "yoruba": 3.736443,
+          "welsh": 4.631496,
+          "code": 2.098477,
+          "equal_weight_avg": 2.974291,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "tamil_spec": {
+          "tamil": 1.096706,
+          "yoruba": 3.726697,
+          "welsh": 4.641657,
+          "code": 2.111937,
+          "equal_weight_avg": 2.894249,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "yoruba_spec": {
+          "tamil": 1.468965,
+          "yoruba": 2.036312,
+          "welsh": 4.989967,
+          "code": 2.131672,
+          "equal_weight_avg": 2.656729,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "welsh_spec": {
+          "tamil": 1.484148,
+          "yoruba": 4.043775,
+          "welsh": 3.093556,
+          "code": 2.148991,
+          "equal_weight_avg": 2.692617,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "code_spec": {
+          "tamil": 1.488207,
+          "yoruba": 3.857732,
+          "welsh": 4.679578,
+          "code": 2.089417,
+          "equal_weight_avg": 3.028733,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "weight_avg": {
+          "tamil": 1.328597,
+          "yoruba": 3.290429,
+          "welsh": 4.223174,
+          "code": 2.084879,
+          "equal_weight_avg": 2.73177,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        },
+        "moe": {
+          "tamil": 1.096743,
+          "yoruba": 2.036301,
+          "welsh": 3.093569,
+          "code": 2.08861,
+          "equal_weight_avg": 2.078806,
+          "_chunks_evaluated": {
+            "tamil": 200,
+            "yoruba": 200,
+            "welsh": 200,
+            "code": 148
+          }
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.974291,
+        "best_spec_equal_weight": 2.656729,
+        "best_spec_domain": "yoruba",
+        "weight_avg_equal_weight": 2.73177,
+        "moe_equal_weight": 2.078806,
+        "improvement_vs_spec": 21.7532,
+        "improvement_vs_base": 30.1075,
+        "mean_divergence": 25.62,
+        "per_domain_divergence": {
+          "tamil": 23.35,
+          "yoruba": 45.5,
+          "welsh": 33.21,
+          "code": 0.43
+        },
+        "perplexity": {
+          "tamil": {
+            "base": 4.2,
+            "specialist": 3.0,
+            "moe": 3.0
+          },
+          "yoruba": {
+            "base": 41.9,
+            "specialist": 7.7,
+            "moe": 7.7
+          },
+          "welsh": {
+            "base": 102.7,
+            "specialist": 22.1,
+            "moe": 22.1
+          },
+          "code": {
+            "base": 8.2,
+            "specialist": 8.1,
+            "moe": 8.1
+          }
+        }
+      },
+      "router_distribution": {
+        "tamil": [
+          0.9999,
+          0.0001,
+          0.0,
+          0.0
+        ],
+        "yoruba": [
+          0.0001,
+          0.9998,
+          0.0001,
+          0.0
+        ],
+        "welsh": [
+          0.0,
+          0.0001,
+          0.9999,
+          0.0
+        ],
+        "code": [
+          0.0164,
+          0.0061,
+          0.0131,
+          0.9645
+        ]
+      },
+      "stop_go": {
+        "verdict": "GO",
+        "reason": "diverge>15% AND gain>7%"
+      },
+      "config": {
+        "freeze_layers": 0,
+        "lr": 2e-05,
+        "max_steps": 2000,
+        "batch_size": 2,
+        "grad_accum": 4,
+        "router_steps": 500,
+        "router_lr": 0.001,
+        "n_samples_language": 50000,
+        "n_samples_code": 3000
+      }
+    }
+  ],
+  "summary": {
+    "improvement_mean": 16.5507,
+    "improvement_std": 9.0159,
+    "divergence_mean": 25.65
+  },
+  "final_verdict": "GO"
+}

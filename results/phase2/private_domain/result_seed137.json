@@ -1,0 +1,110 @@
+{
+  "seed": 137,
+  "model_id": "EleutherAI/pythia-410m",
+  "revision": "step10000",
+  "eval_batch_size": 4,
+  "eval_batches": 50,
+  "eval_method": "per-domain-separate-then-equal-weight-avg",
+  "domains": [
+    "medical",
+    "legal",
+    "patent"
+  ],
+  "eval_matrix": {
+    "base": {
+      "medical": 3.411749,
+      "legal": 2.778237,
+      "patent": 2.671926,
+      "equal_weight_avg": 2.953971
+    },
+    "monolithic": {
+      "medical": 2.998133,
+      "legal": 1.934204,
+      "patent": 2.454933,
+      "equal_weight_avg": 2.462423
+    },
+    "medical_spec": {
+      "medical": 2.978182,
+      "legal": 2.893916,
+      "patent": 2.72821,
+      "equal_weight_avg": 2.866769
+    },
+    "legal_spec": {
+      "medical": 3.483657,
+      "legal": 1.829333,
+      "patent": 2.768201,
+      "equal_weight_avg": 2.69373
+    },
+    "patent_spec": {
+      "medical": 3.407436,
+      "legal": 2.817384,
+      "patent": 2.440333,
+      "equal_weight_avg": 2.888384
+    },
+    "weight_avg": {
+      "medical": 3.192993,
+      "legal": 2.379859,
+      "patent": 2.553927,
+      "equal_weight_avg": 2.708926
+    },
+    "moe": {
+      "medical": 2.978489,
+      "legal": 1.829332,
+      "patent": 2.443662,
+      "equal_weight_avg": 2.417161
+    }
+  },
+  "metrics": {
+    "base_equal_weight": 2.953971,
+    "monolithic_equal_weight": 2.462423,
+    "best_spec_equal_weight": 2.69373,
+    "best_spec_domain": "legal",
+    "weight_avg_equal_weight": 2.708926,
+    "moe_equal_weight": 2.417161,
+    "improvement_vs_spec": 10.2671,
+    "improvement_vs_base": 18.1725,
+    "improvement_vs_mono": 1.8381,
+    "mean_divergence": 18.51,
+    "per_domain_divergence": {
+      "medical": 12.71,
+      "legal": 34.15,
+      "patent": 8.67
+    }
+  },
+  "router_distribution": {
+    "medical": [
+      0.9998,
+      0.0,
+      0.0002
+    ],
+    "legal": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "patent": [
+      0.0,
+      0.0125,
+      0.9875
+    ]
+  },
+  "stop_go": {
+    "verdict": "GO",
+    "reason": "diverge>15% AND gain>7%"
+  },
+  "config": {
+    "freeze_layers": 0,
+    "lr": 2e-05,
+    "max_steps": 2000,
+    "batch_size": 2,
+    "grad_accum": 4,
+    "monolithic_steps": 6000,
+    "router_steps": 500,
+    "router_lr": 0.001,
+    "domains": [
+      "medical",
+      "legal",
+      "patent"
+    ]
+  }
+}
