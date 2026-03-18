@@ -94,7 +94,7 @@ entirely explained by reduced divergence.
 | 3 | Freeze sweep: k=8 at steps=2000 | ⏳ running |
 | 4 | Freeze sweep: k=0 at steps=2000 | ⏳ needs queue (`kalavai_6b_freeze0.py`) |
 | 5 | Router gate analysis JSON | ✅ synced (data in result JSON) |
-| 6 | C1 heterogeneous cooperative | ⏳ running (shuffle fix applied) |
+| 6 | C1 heterogeneous cooperative | ✅ COMPLETE |
 
 **Paper edits begin ONLY after items 3, 4, 6 are complete AND corrected evals for 1B, 6.9B, Qwen are done.**
 
@@ -232,11 +232,13 @@ Per-domain divergences (code 1.76%, fiction 4.56%) remain correct (not affected 
 
 ## Section 4.6 — Add C1 heterogeneous cooperative results
 
+C1 corrected equal-weight results (recomputed from stored per-domain losses, Bug B fixed):
+  Control:    +7.72% vs spec, +16.33% vs base
+  diff_batch: +7.74% (Δ +0.01pp) | diff_lr: +7.73% (Δ +0.01pp) | diff_steps: +7.33% (Δ −0.39pp)
+  Max spread: 0.41pp → ROBUST. Old +3.62% was Bug B (mixed, not equal-weight). Corrected.
+
 - Add result table: control + diff_batch + diff_lr + diff_steps conditions
-- Control (corrected eval, bs=4 for all): +3.62% vs spec — consistent with 410M corrected +3.57% ✓
 - Prose: protocol is robust to realistic heterogeneity in batch size, LR, and step budget
-- NOTE: C1 was never affected by the asymmetry bug (used bs=4 for all models throughout).
-  Its +3.62% is the honest number. The 14.17% "expectation" was always wrong.
 
 ---
 

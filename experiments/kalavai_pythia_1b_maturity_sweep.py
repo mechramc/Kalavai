@@ -84,7 +84,7 @@ MAIN_1B_RESULTS_PATH = Path("results/pythia/pythia_1b/main_result_summary.json")
 MATURITY_SWEEP_410M_PATH = Path("results/pythia/maturity_sweep_410m/summary.json")
 
 # Qwen result for combined figure annotation
-QWEN_IMPROVEMENT_PCT = -1.0
+QWEN_IMPROVEMENT_PCT = 1.06  # corrected: +1.06% vs best spec (equal-weight, seed=42)
 
 
 # ============================================================================

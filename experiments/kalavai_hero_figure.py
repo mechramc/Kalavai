@@ -69,9 +69,9 @@ def main():
         ys1b = [p[1] for p in pairs]
         ax1.plot(xs1b, ys1b, "s-", color=C_1B, linewidth=2, markersize=7, label="Pythia-1B")
 
-    # Qwen reference point
-    ax1.scatter([100], [-1.0], marker="D", color="#7f8c8d", s=90, zorder=5,
-                label="Qwen-1.5B (full train)")
+    # Qwen reference point (corrected: +1.06% vs best spec, routing 100% deterministic)
+    ax1.scatter([100], [1.06], marker="D", color="#7f8c8d", s=90, zorder=5,
+                label="Qwen-1.5B (full train, +1.06%)")
     ax1.axhline(0, color="gray", linestyle="--", linewidth=1, alpha=0.5)
     ax1.axvspan(0, 20, alpha=0.07, color="green")
     ax1.text(10, ax1.get_ylim()[0] + 0.5 if ax1.get_ylim()[0] < -2 else -1.5,

@@ -1,0 +1,17 @@
+{
+  "experiment": "heterogeneous_cooperative",
+  "eval_method": "per_domain_equal_weight",
+  "note": "Recomputed from stored per-domain losses. No retraining. Bug B fixed.",
+  "conditions": {
+    "control":    {"moe_ew": 2.218533, "best_spec_ew": 2.404171, "base_ew": 2.651452,
+                   "improvement_vs_spec": 7.721, "delta_vs_control": 0.0},
+    "diff_batch": {"moe_ew": 2.240098, "best_spec_ew": 2.427883, "base_ew": 2.651452,
+                   "improvement_vs_spec": 7.735, "delta_vs_control": 0.014},
+    "diff_lr":    {"moe_ew": 2.157642, "best_spec_ew": 2.338492, "base_ew": 2.651452,
+                   "improvement_vs_spec": 7.733, "delta_vs_control": 0.012},
+    "diff_steps": {"moe_ew": 2.200147, "best_spec_ew": 2.374084, "base_ew": 2.651452,
+                   "improvement_vs_spec": 7.327, "delta_vs_control": -0.394}
+  },
+  "max_spread_pp": 0.408,
+  "conclusion": "ROBUST"
+}

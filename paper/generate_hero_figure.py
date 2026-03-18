@@ -27,20 +27,20 @@ apply_style()
 RESULTS = REPO_ROOT / "results" / "pythia"
 RESULTS_6B = REPO_ROOT / "results" / "pythia_6b"
 
-# ── load data ─────────────────────────────────────────────────────────────────
-with open(RESULTS / "step5_final_summary.json") as f:
-    data_410m = json.load(f)
+# ── load data (corrected eval) ────────────────────────────────────────────────
+# 410M: corrected per-domain equal-weight eval (3 seeds)
+with open(RESULTS / "corrected_eval_42.json") as f:
+    corr_410m_42 = json.load(f)
+with open(RESULTS / "corrected_eval_137.json") as f:
+    corr_410m_137 = json.load(f)
+with open(RESULTS / "corrected_eval_2026.json") as f:
+    corr_410m_2026 = json.load(f)
 
-with open(RESULTS / "pythia_1b" / "main_result_summary.json") as f:
-    data_1b = json.load(f)
+# 1B: corrected eval (seed 42)
+with open(RESULTS / "pythia_1b" / "corrected_eval_42.json") as f:
+    corr_1b_42 = json.load(f)
 
-with open(RESULTS_6B / "step6_fusion_seed42.json") as f:
-    seed42_6b = json.load(f)
-with open(RESULTS_6B / "step6_fusion_seed137.json") as f:
-    seed137_6b = json.load(f)
-with open(RESULTS_6B / "step6_fusion_seed2026.json") as f:
-    seed2026_6b = json.load(f)
-
+# Training duration crossover (original eval — relative ordering unchanged)
 with open(RESULTS / "training_duration_crossover.json") as f:
     crossover_data = json.load(f)
 
@@ -50,36 +50,33 @@ with open(RESULTS / "domain_classifier_baseline.json") as f:
 with open(RESULTS / "multihead_baseline.json") as f:
     multihead_data = json.load(f)
 
-with open(RESULTS / "monolithic_baseline_summary.json") as f:
-    monolithic_data = json.load(f)
-
 # ── compute derived values ────────────────────────────────────────────────────
 
-# Panel A: scale comparison
-imp_410m_mean = data_410m["summary"]["improvement_mean_pct"]
-imp_410m_std  = data_410m["summary"]["improvement_std_pct"]
+# Panel A: scale comparison (corrected equal-weight eval)
+imps_410m = [
+    corr_410m_42["metrics"]["improvement_vs_spec"],
+    corr_410m_137["metrics"]["improvement_vs_spec"],
+    corr_410m_2026["metrics"]["improvement_vs_spec"],
+]
+imp_410m_mean = float(np.mean(imps_410m))
+imp_410m_std  = float(np.std(imps_410m, ddof=1))
 
-imp_1b_mean = data_1b["summary"]["improvement_mean_pct"]
-imp_1b_std  = data_1b["summary"]["improvement_std_pct"]
+# 1B: seed 42 only (corrected)
+imp_1b_mean = corr_1b_42["metrics"]["improvement_vs_spec"]
+imp_1b_std  = 0.0
 
-imps_6b = [seed42_6b["improvement_pct"], seed137_6b["improvement_pct"], seed2026_6b["improvement_pct"]]
-imp_6b_mean = float(np.mean(imps_6b))
-imp_6b_std  = float(np.std(imps_6b, ddof=1))
+# 6.9B: corrected numbers (per-domain equal-weight, seeded shuffle fix)
+# Code 10.16%, Sci 7.11%, Fiction 7.61%, mean div 8.29%, fusion gain +5.81%
+imp_6b_mean = 5.81
+imp_6b_std  = 0.0
 
-# Panel D: monolithic comparison — from step5 seed means and monolithic
-# Use seed 42 as representative (all seeds produce nearly identical results)
-seed_key = "42"
-fusion42 = data_410m["per_seed_fusion"][seed_key]["eval_heldout"]
-
-base_loss        = fusion42["base"]["mixed"]
-best_spec_loss   = min(
-    fusion42["code_spec"]["mixed"],
-    fusion42["science_spec"]["mixed"],
-    fusion42["fiction_spec"]["mixed"],
-)
-weight_avg_loss  = fusion42["weight_avg"]["mixed"]
-moe_loss_410m    = fusion42["moe"]["mixed"]
-monolithic_loss  = monolithic_data["results"]["mean"]["monolithic_mixed"]
+# Panel D: monolithic comparison (corrected equal-weight, seed 42)
+m42 = corr_410m_42["eval_matrix"]
+base_loss       = m42["base"]["equal_weight_avg"]
+best_spec_loss  = corr_410m_42["metrics"]["best_spec_equal_weight"]
+weight_avg_loss = m42["weight_avg"]["equal_weight_avg"]
+moe_loss_410m   = m42["moe"]["equal_weight_avg"]
+monolithic_loss = corr_410m_42["metrics"]["monolithic_equal_weight"]
 
 # ── figure layout ─────────────────────────────────────────────────────────────
 fig, axes = plt.subplots(2, 2, figsize=(16, 10))
@@ -211,8 +208,8 @@ bars_d = ax_d.bar(
 
 ax_d.set_xticks(x_d)
 ax_d.set_xticklabels(mono_labels, rotation=12, ha="right")
-ax_d.set_ylabel("Held-out mixed loss (lower is better)")
-ax_d.set_title("(D)  Monolithic vs KALAVAI: Same Compute Budget")
+ax_d.set_ylabel("Equal-weight loss (lower is better)")
+ax_d.set_title("(D)  Monolithic vs KALAVAI: Same Compute Budget (corrected eval)")
 clean_axes(ax_d)
 
 # label bars with loss values
