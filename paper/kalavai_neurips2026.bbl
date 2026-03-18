@@ -1,4 +1,4 @@
-\begin{thebibliography}{12}
+\begin{thebibliography}{14}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -16,6 +16,14 @@ Stella Biderman, Hailey Schoelkopf, Quentin~Gregory Anthony, Herbie Bradley,
   and scaling.
 \newblock In \emph{International Conference on Machine Learning (ICML)}, 2023.
 \newblock URL \url{https://arxiv.org/abs/2304.01373}.
+
+\bibitem[Jiang et~al.(2024)Jiang, Sablayrolles, Roux, Mensch, Savary, Bamford,
+  Chaplot, de~las Casas, Bressand, and Lengyel]{jiang2024mixtral}
+Albert~Q. Jiang, Alexandre Sablayrolles, Antoine Roux, Arthur Mensch, Blanche
+  Savary, Chris Bamford, Devendra~Singh Chaplot, Diego de~las Casas, Florian
+  Bressand, and Gianna Lengyel.
+\newblock Mixtral of experts.
+\newblock \emph{arXiv preprint arXiv:2401.04088}, 2024.
 
 \bibitem[Komatsuzaki et~al.(2023)Komatsuzaki, Puigcerver, Lee-Thorp, Ruiz,
   Mustafa, Ainslie, Tay, Dehghani, and Zhai]{komatsuzaki2023sparseupcycling}
@@ -55,6 +63,15 @@ Jie Qin, Jiancheng Huang, Limeng Qiao, and Lin Ma.
 \newblock {STAR}: {ST}acked {A}uto{R}egressive scheme for unified multimodal
   learning.
 \newblock \emph{arXiv preprint arXiv:2512.13752}, 2025.
+
+\bibitem[Shazeer et~al.(2017)Shazeer, Mirhoseini, Maziarz, Davis, Le, Hinton,
+  and Dean]{shazeer2017outrageously}
+Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
+  Geoffrey Hinton, and Jeff Dean.
+\newblock Outrageously large neural networks: The sparsely-gated
+  mixture-of-experts layer.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2017.
 
 \bibitem[Sukhbaatar et~al.(2024)Sukhbaatar, Weston, and
   Szlam]{sukhbaatar2024branchtrainmix}

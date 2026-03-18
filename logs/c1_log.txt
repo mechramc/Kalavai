@@ -1,0 +1,29 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+'The read operation timed out' thrown while requesting GET https://huggingface.co/datasets/emozilla/pg19/resolve/c021754c8e01c5b1cc83a1f549c1f97fbbb756b8/data/train-00001-of-00023-2b13c68dbeba63b5.parquet
+Retrying in 1s [Retry 1/5].
+======================================================================
+KALAVAI: Heterogeneous Cooperative Simulation (C1)
+======================================================================
+Device: cuda
+
+Loading data...
+  code: 3000 samples
+  science: 3000 samples
+  fiction: 3000 samples
+  code: train=1256, held_out=157
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+[skip] Base eval: mixed=2.9817
+
+======================================================================
+CONDITION: control
+  code    : batch=8, lr=2e-05, steps=2000
+  science : batch=8, lr=2e-05, steps=2000
+  fiction : batch=8, lr=2e-05, steps=2000
+======================================================================
+
+  Training code (batch=8, lr=2e-05, steps=2000)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3107.33it/s]

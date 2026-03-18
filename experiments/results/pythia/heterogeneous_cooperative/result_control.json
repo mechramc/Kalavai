@@ -1,0 +1,67 @@
+{
+  "condition": "control",
+  "spec_configs": {
+    "code": {
+      "batch": 2,
+      "accum": 4,
+      "steps": 2000,
+      "lr": 2e-05
+    },
+    "science": {
+      "batch": 2,
+      "accum": 4,
+      "steps": 2000,
+      "lr": 2e-05
+    },
+    "fiction": {
+      "batch": 2,
+      "accum": 4,
+      "steps": 2000,
+      "lr": 2e-05
+    }
+  },
+  "eval_heldout": {
+    "base": {
+      "code": 2.0824,
+      "science": 2.879199,
+      "fiction": 3.058623,
+      "mixed": 2.981701
+    },
+    "code_spec": {
+      "code": 1.877263,
+      "science": 2.893154,
+      "fiction": 3.069004,
+      "mixed": 2.959557
+    },
+    "science_spec": {
+      "code": 2.169218,
+      "science": 2.543885,
+      "fiction": 3.151322,
+      "mixed": 3.039478
+    },
+    "fiction_spec": {
+      "code": 2.097083,
+      "science": 2.8779,
+      "fiction": 2.64263,
+      "mixed": 2.756988
+    },
+    "weight_avg": {
+      "code": 2.010552,
+      "science": 2.718522,
+      "fiction": 2.910677,
+      "mixed": 2.87962
+    },
+    "moe": {
+      "code": 1.877423,
+      "science": 2.543568,
+      "fiction": 2.643023,
+      "mixed": 2.696252
+    }
+  },
+  "base_mixed": 2.981701,
+  "best_spec_mixed": 2.756988,
+  "moe_mixed": 2.696252,
+  "improvement_vs_spec": 2.203,
+  "improvement_vs_base": 9.5734,
+  "timestamp": "2026-03-18T10:34:24Z"
+}
