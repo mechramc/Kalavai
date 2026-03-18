@@ -136,10 +136,12 @@ where $\mathcal{D}_i$ is contributor $i$'s domain-specific dataset and $\theta_i
 \[
 g_t = \mathrm{softmax}\left(W_r \cdot h_t\right), \quad W_r \in \mathbb{R}^{N \times d}
 \]
-where $h_t$ is the hidden state at layer $K+1$ (first non-frozen layer)\footnote{In our implementation, $h_t$ is the mean-pooled final hidden state averaged across all specialists' forward passes; see Appendix~\ref{app:dynamics} for implementation details.}, $N$ is the number of specialists, and $d$ is the hidden dimension. At inference, all $N$ specialists process each token in parallel and the output is a weighted combination of their logit distributions:
+where $h_t$ is the mean-pooled final hidden state averaged across all specialists' forward passes (see Appendix~\ref{app:dynamics}), $N$ is the number of specialists, and $d$ is the hidden dimension. At inference, all $N$ specialists process each token in parallel and the fused output is a weighted combination of their \emph{logit vectors}:
 \[
-p_\text{fused}(x_t \mid x_{<t}) = \sum_{i=1}^{N} g_t^{(i)} \cdot p_{\theta_i}(x_t \mid x_{<t})
+\tilde{l}_t = \sum_{i=1}^{N} g_t^{(i)} \cdot l_{\theta_i,t}, \qquad
+p_\text{fused}(x_t \mid x_{<t}) = \mathrm{softmax}\!\left(\tilde{l}_t\right)
 \]
+where $l_{\theta_i,t} \in \mathbb{R}^{|\mathcal{V}|}$ is the logit vector from specialist $i$ at position $t$. This logit-space combination---equivalent to a log-linear mixture---is standard in MoE architectures~\citep{shazeer2017outrageously,jiang2024mixtral}. An alternative probability-space formulation $\sum_i g_t^{(i)} \cdot \mathrm{softmax}(l_{\theta_i,t})$ would produce a proper mixture distribution; we use logit-space combination throughout all experiments.
 
 Design decisions---LoRA vs.\ full fine-tuning, softmax vs.\ argmax, linear vs.\ MLP router---are discussed in Appendix~\ref{app:design}; none meaningfully affects the core results.
 
