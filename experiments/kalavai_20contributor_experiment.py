@@ -246,15 +246,36 @@ def load_fiction_texts(n):
 
 def load_dialogue_texts(n):
     from datasets import load_dataset
-    ds = load_dataset("daily_dialog", split="train", streaming=True)
+    # daily_dialog zip is corrupt on this env. Use blended_skill_talk (freely available).
+    # Fallback: conv_ai_2
+    try:
+        ds = load_dataset("blended_skill_talk", split="train", streaming=True,
+                          trust_remote_code=True)
+        texts = []
+        for _, s in zip(range(n * 2), ds):
+            turns = s.get("previous_utterance", []) + [s.get("free_messages", [""])[0]]
+            t = " ".join(turns).strip()
+            if t:
+                texts.append(t[:5000])
+                if len(texts) >= n:
+                    break
+        if texts:
+            return texts
+    except Exception:
+        pass
+    # Fallback: conv_ai_2
+    ds = load_dataset("conv_ai_2", split="train", streaming=True, trust_remote_code=True)
     texts = []
     for _, s in zip(range(n * 2), ds):
-        dialog = s.get("dialog", [])
-        if dialog:
-            texts.append(" ".join(dialog)[:5000])
-            if len(texts) >= n:
-                break
-    return texts[:n]
+        utterances = s.get("utterances", [])
+        if utterances:
+            history = utterances[-1].get("history", [])
+            t = " ".join(history).strip()
+            if t:
+                texts.append(t[:5000])
+                if len(texts) >= n:
+                    break
+    return texts
 
 
 def load_instructions_texts(n):
