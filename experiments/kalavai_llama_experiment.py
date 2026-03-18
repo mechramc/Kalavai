@@ -18,8 +18,7 @@ Key differences from Pythia experiments:
 Requires: Llama-3.2-1B access on HuggingFace
   huggingface-cli login   (or set HF_TOKEN env var)
 
-Primary: meta-llama/Llama-3.2-1B
-Fallback: TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T (if Llama access unavailable)
+Model: meta-llama/Llama-3.2-1B (no fallback — set HF_TOKEN before running)
 
 3-domain experiment (code, science, fiction), 3 seeds, freeze=4 layers.
 Same evaluation pipeline as all other experiments.
@@ -55,8 +54,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 # Config
 # ============================================================================
 
-PRIMARY_MODEL_ID = "meta-llama/Llama-3.2-1B"
-FALLBACK_MODEL_ID = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+MODEL_ID = "meta-llama/Llama-3.2-1B"
 
 FREEZE_LAYERS    = 4
 LR               = 2e-5
@@ -83,18 +81,24 @@ CHECKPOINT_DIR = Path("checkpoints/llama")
 # Model ID selection
 # ============================================================================
 
-def select_model_id() -> str:
-    """Try primary model; fall back if access denied."""
+def verify_model_access():
+    """Verify Llama-3.2-1B is accessible. Raises if not — no fallback."""
     hf_token = os.environ.get("HF_TOKEN", None)
+    if not hf_token:
+        raise RuntimeError(
+            "HF_TOKEN not set. Run: export HF_TOKEN=your_token\n"
+            "Then accept the Llama-3.2 license at: "
+            "https://huggingface.co/meta-llama/Llama-3.2-1B"
+        )
     try:
         from huggingface_hub import model_info
-        model_info(PRIMARY_MODEL_ID, token=hf_token)
-        print(f"  Using primary: {PRIMARY_MODEL_ID}")
-        return PRIMARY_MODEL_ID
+        model_info(MODEL_ID, token=hf_token)
+        print(f"  Access confirmed: {MODEL_ID}")
     except Exception as e:
-        print(f"  Primary model unavailable ({e})")
-        print(f"  Falling back to: {FALLBACK_MODEL_ID}")
-        return FALLBACK_MODEL_ID
+        raise RuntimeError(
+            f"Cannot access {MODEL_ID}: {e}\n"
+            "Accept the license at https://huggingface.co/meta-llama/Llama-3.2-1B"
+        )
 
 # ============================================================================
 # Helpers
@@ -195,10 +199,10 @@ def load_fiction_texts(n):
 # Model — Llama-specific freeze
 # ============================================================================
 
-def load_model(model_id: str, device: str):
+def load_model(device: str):
     hf_token = os.environ.get("HF_TOKEN", None)
     model = AutoModelForCausalLM.from_pretrained(
-        model_id,
+        MODEL_ID,
         token=hf_token,
         trust_remote_code=True,
         torch_dtype=torch.float32,
@@ -206,25 +210,17 @@ def load_model(model_id: str, device: str):
     model.to(device)
     model.eval()
     total = sum(p.numel() for p in model.parameters())
-    print(f"  {model_id}: {total/1e9:.2f}B params")
+    print(f"  {MODEL_ID}: {total/1e9:.2f}B params")
     return model
 
-def apply_freeze(model, n: int, model_id: str):
-    """Freeze first n layers. Handles both Llama and GPT-NeoX architectures."""
-    if "llama" in model_id.lower() or "tinyllama" in model_id.lower():
+def apply_freeze(model, n: int):
+    """Freeze first n layers. Handles Llama architecture."""
+    if "llama" in MODEL_ID.lower():
         model.model.embed_tokens.requires_grad_(False)
         for i in range(n):
             model.model.layers[i].requires_grad_(False)
-    elif "pythia" in model_id.lower() or "neox" in model_id.lower():
-        model.gpt_neox.embed_in.requires_grad_(False)
-        for i in range(n):
-            model.gpt_neox.layers[i].requires_grad_(False)
     else:
-        # Generic fallback: freeze by parameter name pattern
-        for name, param in model.named_parameters():
-            for i in range(n):
-                if f"layers.{i}." in name or f"layer.{i}." in name:
-                    param.requires_grad_(False)
+        raise RuntimeError(f"Unknown architecture for freeze: {MODEL_ID}")
 
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total     = sum(p.numel() for p in model.parameters())
@@ -270,9 +266,9 @@ class NExpertMoE(nn.Module):
 # Training
 # ============================================================================
 
-def train_specialist(model, domain, train_chunks, device, seed, model_id, log_every=50):
+def train_specialist(model, domain, train_chunks, device, seed, log_every=50):
     set_seed(seed)
-    apply_freeze(model, FREEZE_LAYERS, model_id)
+    apply_freeze(model, FREEZE_LAYERS)
     model.train()
 
     dataset = make_dataset_from_chunks(train_chunks)
@@ -357,7 +353,7 @@ def train_router(moe, train_datasets, device):
 # Run one seed
 # ============================================================================
 
-def run_seed(seed: int, model_id: str, device: str, tokenizer,
+def run_seed(seed: int, device: str, tokenizer,
              all_domain_chunks: dict, base_losses: dict) -> dict:
     rpath = result_path(seed)
     if rpath.exists():
@@ -365,7 +361,7 @@ def run_seed(seed: int, model_id: str, device: str, tokenizer,
         return json.loads(rpath.read_text(encoding="utf-8"))
 
     print(f"\n{'='*70}")
-    print(f"SEED {seed} | model={model_id}")
+    print(f"SEED {seed} | model={MODEL_ID}")
     print(f"{'='*70}")
 
     # ── Train specialists ─────────────────────────────────────────────────
@@ -375,15 +371,15 @@ def run_seed(seed: int, model_id: str, device: str, tokenizer,
         ckpt = specialist_ckpt(domain, seed)
         if ckpt.exists():
             print(f"\n  Loading {domain} from {ckpt}...")
-            model = load_model(model_id, device)
+            model = load_model(device)
             state = torch.load(ckpt, map_location="cpu", weights_only=True)
             model.load_state_dict(state)
             model.eval()
         else:
             print(f"\n  Training {domain} (seed={seed})...")
-            model = load_model(model_id, device)
+            model = load_model(device)
             train_specialist(model, domain, all_domain_chunks[domain]["train"],
-                             device, seed, model_id)
+                             device, seed)
             if seed == 42:
                 CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
                 torch.save(model.state_dict(), ckpt)
@@ -434,7 +430,7 @@ def run_seed(seed: int, model_id: str, device: str, tokenizer,
     print(f"    vs spec: +{imp_vs_spec:.2f}%  vs base: +{imp_vs_base:.2f}%")
 
     result = {
-        "seed": seed, "model_id": model_id,
+        "seed": seed, "MODEL_ID": MODEL_ID,
         "eval_heldout": fusion_losses,
         "best_spec_mixed": best_spec,
         "moe_mixed": moe_mixed,
@@ -466,10 +462,10 @@ def main():
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
-    model_id = select_model_id()
+    verify_model_access()
     hf_token = os.environ.get("HF_TOKEN", None)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token,
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, token=hf_token,
                                                trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -495,7 +491,7 @@ def main():
         print(f"\n[skip] Base eval: mixed={base_losses['mixed']:.4f}")
     else:
         print("\nBase eval...")
-        base_model = load_model(model_id, device)
+        base_model = load_model(device)
         held_out   = {d: make_dataset_from_chunks(all_domain_chunks[d]["held_out"])
                       for d in DOMAINS}
         mixed_held = []
@@ -510,7 +506,7 @@ def main():
     # Run 3 seeds
     seed_results = []
     for seed in SEEDS:
-        result = run_seed(seed, model_id, device, tokenizer,
+        result = run_seed(seed, device, tokenizer,
                           all_domain_chunks, base_losses)
         seed_results.append(result)
 
@@ -521,7 +517,7 @@ def main():
 
     summary = {
         "experiment":  "cross_arch_llama",
-        "model_id":    model_id,
+        "MODEL_ID":    MODEL_ID,
         "mean_improvement_vs_spec": mean,
         "std_improvement_vs_spec":  std,
         "per_seed": improvements,
@@ -538,7 +534,7 @@ def main():
     print("\n" + "=" * 70)
     print("D2 COMPLETE")
     print("=" * 70)
-    print(f"  Model:       {model_id}")
+    print(f"  Model:       {MODEL_ID}")
     print(f"  Result:      +{mean:.2f}% ± {std:.2f}% vs best specialist (3 seeds)")
     print(f"  Conclusion:  {summary['conclusion']}")
     print("=" * 70)
