@@ -1,0 +1,93 @@
+{
+  "experiment": "corrected_eval_410m",
+  "model_id": "EleutherAI/pythia-410m",
+  "revision": "step10000",
+  "seed": 42,
+  "eval_batch_size": 4,
+  "eval_batches": 50,
+  "mixed_eval_composition": {
+    "total_chunks": 1003,
+    "chunks_evaluated": 200,
+    "code_chunks": 158,
+    "science_chunks": 42,
+    "fiction_chunks": 0
+  },
+  "eval_matrix": {
+    "base": {
+      "code": 2.087168,
+      "science": 2.89201,
+      "fiction": 2.973911,
+      "mixed": 2.248017
+    },
+    "monolithic": {
+      "code": 1.964438,
+      "science": 2.638889,
+      "fiction": 2.083184,
+      "mixed": 2.098787
+    },
+    "code_spec": {
+      "code": 1.879066,
+      "science": 2.908456,
+      "fiction": 2.976753,
+      "mixed": 2.089038
+    },
+    "science_spec": {
+      "code": 2.173822,
+      "science": 2.556521,
+      "fiction": 3.061315,
+      "mixed": 2.245203
+    },
+    "fiction_spec": {
+      "code": 2.101796,
+      "science": 2.890426,
+      "fiction": 2.219371,
+      "mixed": 2.259231
+    },
+    "weight_avg": {
+      "code": 2.014185,
+      "science": 2.732346,
+      "fiction": 2.710613,
+      "mixed": 2.157677
+    },
+    "moe": {
+      "code": 1.879069,
+      "science": 2.556514,
+      "fiction": 2.219398,
+      "mixed": 2.014441
+    }
+  },
+  "metrics": {
+    "base_mixed": 2.248017,
+    "best_spec_mixed": 2.089038,
+    "weight_avg_mixed": 2.157677,
+    "moe_mixed": 2.014441,
+    "improvement_vs_spec": 3.5709,
+    "improvement_vs_base": 10.3903,
+    "improvement_wa_vs_base": 4.0187
+  },
+  "router_distribution": {
+    "code": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "science": [
+      0.0,
+      0.9999,
+      0.0001
+    ],
+    "fiction": [
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "original_vs_corrected": {
+    "note": "Original used bs=2 for MoE (100 code-only chunks) vs bs=4 for specialists (200 code+science chunks)",
+    "original_best_spec": 2.089038,
+    "original_moe_mixed": 1.793054,
+    "original_improvement": 14.1684,
+    "corrected_improvement": 3.5709
+  },
+  "timestamp": "2026-03-18T11:48:34Z"
+}
