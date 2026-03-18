@@ -73,7 +73,9 @@ ROUTER_BATCH    = 4
 EVAL_BATCH_SIZE = 4
 EVAL_BATCHES    = 50
 
-N_SAMPLES       = 2000     # per domain/language (smaller than exp2 — 20 contributors)
+N_SAMPLES          = 2000   # per domain (long articles — 2000 texts → thousands of chunks)
+N_SAMPLES_LANGUAGE = 50000  # per cc100 language (short sentences ~20-50 tokens each;
+                             # need 50k lines to get ~1000+ packed 512-token chunks)
 
 SEEDS           = [42]
 
@@ -130,9 +132,13 @@ def _load_or_build_chunks(name: str, loader_fn, tokenizer) -> list:
 
 def _make_cc100_loader(lang_code: str):
     def loader(n):
+        # n is ignored — always pull N_SAMPLES_LANGUAGE lines because cc100 entries
+        # are short sentences (~20-50 tokens); need 50k lines to get ~1000+ chunks.
         from datasets import load_dataset
-        ds = load_dataset("cc100", lang=lang_code, split="train", streaming=True)
-        texts = [s["text"][:5000] for _, s in zip(range(n), ds) if s["text"].strip()]
+        ds = load_dataset("cc100", lang=lang_code, split="train", streaming=True,
+                          trust_remote_code=True)
+        texts = [s["text"][:5000] for _, s in zip(range(N_SAMPLES_LANGUAGE), ds)
+                 if s["text"].strip()]
         return texts
     return loader
 
