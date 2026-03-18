@@ -197,20 +197,25 @@ def load_math_texts(n):
 
 def load_finance_texts(n):
     from datasets import load_dataset
-    # financial_phrasebank: sentiment + financial sentence pairs
+    # Use reuters21578 or financial news with full article text (not just headlines)
     try:
-        ds = load_dataset("nickmuchi/financial-news-sentiment-analysis",
-                          split="train", streaming=True)
-        texts = [s["Headline"][:5000] for _, s in zip(range(n * 3), ds)
-                 if s.get("Headline", "").strip()]
-        if len(texts) >= n:
-            return texts[:n]
+        ds = load_dataset("reuters21578", "ModHayes", split="train", streaming=True,
+                          trust_remote_code=True)
+        texts = []
+        for _, s in zip(range(n * 3), ds):
+            t = (s.get("title", "") + " " + s.get("text", "")).strip()
+            if len(t) > 100:
+                texts.append(t[:5000])
+                if len(texts) >= n:
+                    break
+        if len(texts) >= n // 2:
+            return texts
     except Exception:
         pass
-    # Fallback: financial_phrasebank
-    ds = load_dataset("financial_phrasebank", "sentences_allagree", split="train")
+    # Fallback: financial_phrasebank repeated to fill n (short sentences, but reliable)
+    ds = load_dataset("financial_phrasebank", "sentences_allagree", split="train",
+                      trust_remote_code=True)
     texts = [s["sentence"][:5000] for s in ds if s.get("sentence", "").strip()]
-    # Repeat if not enough samples
     while len(texts) < n:
         texts = texts + texts
     return texts[:n]
