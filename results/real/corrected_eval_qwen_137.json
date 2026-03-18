@@ -1,0 +1,57 @@
+{
+  "seed": 137,
+  "model_id": "Qwen/Qwen2.5-1.5B",
+  "eval_batch_size": 4,
+  "eval_batches": 50,
+  "eval_method": "per-domain-separate-then-equal-weight-avg",
+  "domains": [
+    "code",
+    "fiction"
+  ],
+  "eval_matrix": {
+    "base": {
+      "code": 1.340131,
+      "fiction": 2.578742,
+      "equal_weight_avg": 1.959437
+    },
+    "code_spec": {
+      "code": 1.316472,
+      "fiction": 2.584643,
+      "equal_weight_avg": 1.950557
+    },
+    "fiction_spec": {
+      "code": 1.357025,
+      "fiction": 2.462527,
+      "equal_weight_avg": 1.909776
+    },
+    "weight_avg": {
+      "code": 1.317664,
+      "fiction": 2.490799,
+      "equal_weight_avg": 1.904231
+    },
+    "moe": {
+      "code": 1.316472,
+      "fiction": 2.462527,
+      "equal_weight_avg": 1.8895
+    }
+  },
+  "metrics": {
+    "base_equal_weight": 1.959437,
+    "best_spec_equal_weight": 1.909776,
+    "best_spec_domain": "fiction",
+    "weight_avg_equal_weight": 1.904231,
+    "moe_equal_weight": 1.8895,
+    "improvement_vs_spec": 1.0617,
+    "improvement_vs_base": 3.5692
+  },
+  "router_distribution": {
+    "code": [
+      1.0,
+      0.0
+    ],
+    "fiction": [
+      0.0,
+      1.0
+    ]
+  }
+}

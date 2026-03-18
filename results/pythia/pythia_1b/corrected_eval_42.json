@@ -1,0 +1,85 @@
+{
+  "seed": 42,
+  "model_id": "EleutherAI/pythia-1b",
+  "eval_batch_size": 4,
+  "eval_batches": 50,
+  "eval_method": "per-domain-separate-then-equal-weight-avg",
+  "domains": [
+    "code",
+    "science",
+    "fiction"
+  ],
+  "eval_matrix": {
+    "base": {
+      "code": 2.008226,
+      "science": 2.772743,
+      "fiction": 2.642392,
+      "equal_weight_avg": 2.474454
+    },
+    "monolithic": {
+      "code": 1.856092,
+      "science": 2.511709,
+      "fiction": 1.923599,
+      "equal_weight_avg": 2.097133
+    },
+    "code_spec": {
+      "code": 1.786265,
+      "science": 2.794975,
+      "fiction": 2.657347,
+      "equal_weight_avg": 2.412862
+    },
+    "science_spec": {
+      "code": 2.130461,
+      "science": 2.512278,
+      "fiction": 2.800786,
+      "equal_weight_avg": 2.481175
+    },
+    "fiction_spec": {
+      "code": 2.026687,
+      "science": 2.779696,
+      "fiction": 1.971058,
+      "equal_weight_avg": 2.259147
+    },
+    "weight_avg": {
+      "code": 1.930839,
+      "science": 2.626865,
+      "fiction": 2.35174,
+      "equal_weight_avg": 2.303148
+    },
+    "moe": {
+      "code": 1.786425,
+      "science": 2.512089,
+      "fiction": 1.971568,
+      "equal_weight_avg": 2.090027
+    }
+  },
+  "metrics": {
+    "base_equal_weight": 2.474454,
+    "best_spec_equal_weight": 2.259147,
+    "best_spec_domain": "fiction",
+    "weight_avg_equal_weight": 2.303148,
+    "moe_equal_weight": 2.090027,
+    "improvement_vs_spec": 7.486,
+    "improvement_vs_base": 15.5358,
+    "improvement_wa_vs_base": 6.923,
+    "monolithic_equal_weight": 2.097133,
+    "improvement_vs_monolithic": 0.3388
+  },
+  "router_distribution": {
+    "code": [
+      0.9985,
+      0.0004,
+      0.0011
+    ],
+    "science": [
+      0.0002,
+      0.9989,
+      0.0009
+    ],
+    "fiction": [
+      0.0009,
+      0.0005,
+      0.9985
+    ]
+  }
+}
