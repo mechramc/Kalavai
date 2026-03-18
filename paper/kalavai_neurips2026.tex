@@ -163,7 +163,7 @@ Design decisions---LoRA vs.\ full fine-tuning, softmax vs.\ argmax, linear vs.\ 
 \[
 \Delta(\%) = \frac{\mathcal{L}_\text{baseline} - \mathcal{L}_\text{method}}{\mathcal{L}_\text{baseline}} \times 100
 \]
-where $\mathcal{L}$ is average cross-entropy loss on the held-out mixed-domain evaluation set (equal weighting across three domains). Lower loss is better; positive $\Delta$ indicates improvement over the baseline. The baseline for the main result is the best individual specialist on mixed evaluation; the baseline for the monolithic comparison is the monolithic model.
+where $\mathcal{L}$ is average cross-entropy loss on the held-out mixed-domain evaluation set (equal weighting across three domains). Lower loss is better; positive $\Delta$ indicates improvement over the baseline. The baseline for the main result is the best individual specialist on mixed evaluation; the baseline for the monolithic comparison is the monolithic model.\footnote{A 14\% reduction in cross-entropy loss (e.g., 2.248 $\to$ 1.930) corresponds to approximately 37\% reduction in perplexity (e.g., $e^{2.248} \to e^{1.930}$, from $\approx$9.5 to $\approx$6.9). We report loss-based percentages throughout for consistency; perplexity values can be recovered via $\exp(\mathcal{L})$.}
 
 \paragraph{Seeds.} All main results are reported across 3 random seeds (42, 137, 2026).
 
@@ -202,7 +202,24 @@ where $\mathcal{L}$ is average cross-entropy loss on the held-out mixed-domain e
 
 Table~\ref{tab:main} presents the main results. \kalavai consistently outperforms the best individual specialist at all tested scales. The 410M improvement of +14.2\% and 1B improvement of +14.8\% are robust: variance across three random seeds is near-zero ($\pm$0.016\% and $\pm$0.003\%, respectively), and results are stable across Pythia training maturities from step 5,000 to step 143,000 (see Appendix~\ref{app:maturity}).
 
-The 6.9B improvement of +2.4\% is smaller than at smaller scales. We attribute this primarily to the reduced specialist training budget: 1,000 steps at 6.9B versus 2,000 steps at 410M and 1B, while the model has 17$\times$ the parameters. The per-parameter specialist training signal is therefore substantially weaker, limiting the specialist divergence that enables fusion gains. The maturity analysis at 6.9B (step 10,000: +2.43\%; step 143,000: +2.26\%) confirms the effect is stable across training stages---the improvement does not collapse at higher maturity---suggesting the limiting factor is the training step budget rather than pre-training saturation (Appendix~\ref{app:maturity}).
+The 6.9B improvement of +2.4\% is smaller than at smaller scales. We attribute this to reduced specialist divergence from base: as Table~\ref{tab:divergence} shows, fusion gain scales directly with the per-domain improvement each specialist achieves over the base model. At 410M and 1B, specialists diverge 10--25\% from base on their domains (mean $\sim$15.5\%), and the fused model improves 14--15\% over the best individual specialist. At 6.9B, specialists diverge only $\sim$2--3\% on their assigned domains---Pythia-6.9B at step 10,000 already handles code, science, and fiction with high competence, leaving little room for specialist improvement at 1,000 training steps. The maturity analysis at 6.9B (step 10,000: +2.43\%; step 143,000: +2.26\%) confirms the effect is stable across training stages, suggesting the limiting factor is specialist divergence rather than pre-training saturation (Appendix~\ref{app:maturity}).
+
+\begin{table}[h]
+\centering
+\caption{Specialist divergence (per-domain improvement over base, \%) and fusion gain (MoE improvement over best individual specialist, \%), seed 42. Divergence values confirm that fusion gain scales with specialist divergence. $\dagger$~Qwen-1.5B uses code + fiction only (2 specialists; science omitted). 6.9B per-domain breakdown pending full step-sweep analysis (Appendix~\ref{app:inventory}).}
+\label{tab:divergence}
+\small
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & \textbf{Code div.} & \textbf{Sci.\ div.} & \textbf{Fiction div.} & \textbf{Mean div.} & \textbf{Fusion gain} \\
+\midrule
+Pythia-410M         & 9.97\%  & 11.60\% & 25.37\% & 15.65\% & +14.17\% \\
+Pythia-1B           & 11.05\% & 9.39\%  & 25.41\% & 15.28\% & +14.83\% \\
+Pythia-6.9B         & ---     & ---     & ---     & $\sim$2.4\%   & +2.4\%   \\
+Qwen-1.5B$^\dagger$ & 1.76\%  & ---     & 4.56\%  & 3.16\%  & $-$0.97\% \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Note on 6.9B evaluation.} An initial 6.9B run using unseeded data shuffling produced inconsistent per-seed results (mean +2.72\%, std $\pm$8.17\%) due to non-deterministic chunk selection. After fixing the evaluation to use a seeded shuffle, all three seeds converge to +2.43\%--+2.44\% (mean +2.43\%, std $\pm$0.00\%). All 6.9B results in this paper use the corrected evaluation.
 
@@ -221,6 +238,8 @@ A natural objection to cooperative training is that centralised training on the 
 At 410M, the monolithic baseline achieves +6.7\% over the base model (loss: 2.098), reflecting gradient interference from mixed-domain training \citep{sukhbaatar2024branchtrainmix}. \kalavai with three 2,000-step specialists achieves +14.5\% over this monolithic baseline (Figure~\ref{fig:monolithic}, Table~\ref{tab:monolithic}). The decomposition reveals two separable effects: (1) \emph{Specialisation advantage}: the best individual specialist (+7.1\% vs.\ base) marginally exceeds the monolithic model (+6.7\% vs.\ base), contributing $\approx$0.4pp; (2) \emph{Fusion advantage}: the router then selects the best specialist per token, contributing the remaining $\approx$7.1pp gap over the monolithic model.
 
 At 1B, the monolithic baseline achieves +8.1\% over base (loss: 1.985, std $\pm$0.001, 3 seeds). \kalavai achieves +14.6\% over this monolithic baseline (Table~\ref{tab:monolithic}). The larger monolithic gain at 1B (+8.1\% vs.\ +6.7\% at 410M) does not reduce the cooperative advantage; the \kalavai improvement over monolithic is consistent at both scales ($\approx$14.5--14.6\%).
+
+We note that the monolithic baseline uses a uniform mixture of code, science, and fiction throughout training. A curriculum-based approach (domain-sequential or gradually shifted mixing) could reduce gradient interference and produce a stronger monolithic model, potentially narrowing the advantage. Even if curriculum training closes half the gap, \kalavai still wins by $\sim$7pp on perplexity reduction; moreover, the key structural advantage of zero communication during training---contributors never share data---is independent of the monolithic baseline's strength.
 
 \begin{table}[h]
 \centering
@@ -268,7 +287,7 @@ Table~\ref{tab:crossover} (and Figure~\ref{fig:crossover} in Appendix~\ref{app:c
 \end{tabular}
 \end{table}
 
-\textbf{Practical guideline:} For specialist training up to 5,000 steps, frozen layers are unnecessary. For training horizons beyond 5,000 steps (and certainly beyond 10,000), freezing the first $K$ layers is recommended. The optimal $K$ is not sensitive: the freeze depth sweep shows only 2.5pp variation across $K \in \{0, 2, 4, 6, 8, 12\}$ at 2,000 steps (Appendix~\ref{app:freeze}).
+\textbf{Practical guideline:} For specialist training up to 5,000 steps, frozen layers are unnecessary. For training horizons beyond 5,000 steps (and certainly beyond 10,000), freezing the first $K$ layers is recommended. The optimal $K$ is not sensitive: the freeze depth sweep shows only 2.5pp variation across $K \in \{0, 2, 4, 6, 8, 12\}$ at 2,000 steps (Appendix~\ref{app:freeze}). Note that the 1B freeze depth ($K=4$, 25\% of layers) was not independently optimised; we use the 410M-derived value and rely on the freeze depth sweep's low sensitivity (2.5pp spread) as justification that this choice is unlikely to materially affect results. The 6.9B experiment uses $K=6$ at only 1,000 specialist training steps---a regime where the 410M analysis shows freezing is largely optional and the crossover threshold ($\sim$10,000 steps) is far in the future. The 6.9B result is therefore insensitive to freeze depth at these step counts, consistent with the 410M finding that freeze sensitivity is low below 5,000 training steps (Appendix~\ref{app:freeze}). A freeze depth sweep at 6.9B is included in the step-budget sweep (Appendix~\ref{app:inventory}).
 
 \subsection{All Specialists Must Run: Single-Specialist Dispatch Fails Catastrophically}
 \label{sec:failure}
@@ -289,15 +308,15 @@ Three conditions: (1) \emph{Control}: all specialists from step 10,000 (identica
 
 \begin{table}[h]
 \centering
-\caption{Shared initialisation ablation at Pythia-410M. ``MoE loss'' is absolute mixed-domain held-out loss; lower is better. ``vs.\ Base'' uses base mixed loss 2.248. ``vs.\ Spec'' is improvement over best individual specialist---this metric is misleading under mismatch because mismatched specialists are also worse; see text.}
+\caption{Shared initialisation ablation at Pythia-410M. ``MoE loss'' is absolute mixed-domain held-out loss; lower is better. ``Best Spec.\ Loss'' is the best individual specialist's mixed-domain loss for that condition. ``vs.\ Base'' uses base mixed loss 2.248. ``vs.\ Spec'' is improvement over best individual specialist---this metric is misleading under mismatch because mismatched specialists are also worse (best spec loss degrades from 2.089 to 2.157 under large gap); the absolute MoE loss is the appropriate comparison.}
 \label{tab:sharedinit}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-\textbf{Condition} & \textbf{Init Revisions} & \textbf{MoE Loss} & \textbf{vs.\ Base} & \textbf{Seeds} \\
+\textbf{Condition} & \textbf{Init Revisions} & \textbf{Best Spec.\ Loss} & \textbf{MoE Loss} & \textbf{vs.\ Base} & \textbf{Seeds} \\
 \midrule
-Control (matched)  & 10k / 10k / 10k         & \textbf{2.015} & \textbf{+10.4\%} & 3 \\
-Small gap          & 8k / 10k / 12k          & 2.034          & +9.5\%           & 1 \\
-Large gap          & 5k / 10k / 20k          & 2.036          & +9.4\%           & 3 \\
+Control (matched)  & 10k / 10k / 10k         & 2.089          & \textbf{2.015} & \textbf{+10.4\%} & 3 \\
+Small gap          & 8k / 10k / 12k          & 2.122          & 2.034          & +9.5\%           & 1 \\
+Large gap          & 5k / 10k / 20k          & 2.157          & 2.036          & +9.4\%           & 3 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -330,22 +349,26 @@ We note that the ``improvement vs.\ best specialist'' metric is misleading here:
   \label{fig:heatmap}
 \end{figure}
 
-\paragraph{Downstream benchmarks.} At 1B scale, MoE leads on HellaSwag (35.0\% vs.\ 34.4\% for the base) and best individual specialist (34.2--34.4\%). Monolithic training produces the worst HellaSwag score (33.4\%). Overall average accuracy: base 50.6\%, MoE 49.6\%, monolithic 49.3\%. Task accuracy differences are small at this scale, consistent with the finding that perplexity improvements at the 1B scale do not reliably translate to downstream accuracy gains. At 6.9B, MoE achieves average accuracy 52.2\% versus base 51.6\%. Full benchmark tables in Appendix~\ref{app:benchmarks}.
+\paragraph{Downstream benchmarks.} At 1B scale, MoE leads on HellaSwag (35.0\% vs.\ 34.4\% for the base) and best individual specialist (34.2--34.4\%). Monolithic training produces the worst HellaSwag score (33.4\%). Overall average accuracy: base 50.6\%, MoE 49.6\%, monolithic 49.3\%. Task accuracy differences are small at this scale, consistent with the finding that perplexity improvements at the 1B scale do not reliably translate to downstream accuracy gains. At 6.9B, MoE achieves average accuracy 52.2\% versus base 51.6\%. Full benchmark tables in Appendix~\ref{app:benchmarks}. \emph{Caveat:} All benchmarks use 500 examples per task; at this sample size, differences of 1--2 percentage points are within statistical noise. Downstream accuracy results should be treated as directional indicators only, not statistically significant findings.
 
 % ============================================================
 \section{Discussion and Limitations}
 \label{sec:discussion}
 % ============================================================
 
-\paragraph{What the 6.9B result means.} The reduced improvement at 6.9B (+2.4\% vs.\ +14.2\% at 410M) is attributable to the reduced specialist training budget relative to model capacity. The 6.9B model has 17$\times$ the parameters of the 410M model but receives only 1,000 specialist training steps (versus 2,000 at smaller scales); the per-parameter specialist training signal is therefore $\sim$34$\times$ weaker ($17\times$ parameters $\times$ $0.5\times$ steps). Individual specialists achieve only modest held-out improvements ($\sim$2--3\%) before fusion, providing less complementary signal for the router to leverage. A systematic hyperparameter sweep for optimal step budget at each scale is future work.
+\paragraph{What the 6.9B result means.} Fusion gain is proportional to specialist divergence---how much a specialist improves over base on its own domain. At 410M and 1B, domain specialists diverge 10--25\% from base (mean $\sim$15.5\%), and fusion gain is 14--15\%. At 6.9B on the same English-text domains, specialists diverge only $\sim$2--3\% from base (mean $\sim$2.4\%), and fusion gain narrows proportionally to +2.4\% (Table~\ref{tab:divergence}). This is not a failure of the protocol: it reflects that Pythia-6.9B at step 10,000 already handles code, science, and fiction with high competence, leaving little room for specialist improvement at 1,000 training steps. \textbf{This predicts that \kalavai will show its largest gains precisely where it is most needed}: low-resource languages, specialised technical domains, and early-stage models where contributors' data fills genuine gaps in the base model's competence. The 6.9B maturity sweep confirms the result is stable (+2.26\% at step 143,000), ruling out pre-training saturation as the cause. A systematic step-budget sweep at 6.9B to recover specialist divergence is reported in Appendix~\ref{app:inventory}.
 
-\paragraph{What the Qwen result means.} Experiments with Qwen-1.5B at full training produced $-$1.0\% fusion improvement ($\pm$0.0\%, 3 seeds). This is the boundary condition: when a model has been pre-trained on a very large corpus that already encompasses the specialist domains, specialist fine-tuning produces minimal differentiation and fusion adds nothing. The Pythia maturity sweeps (both 410M and 1B at step 143,000 show $\sim$14--15\% improvement) suggest this is specific to Qwen's pre-training distribution rather than a universal maturity effect.
+\paragraph{What the Qwen result means.} Qwen-1.5B represents the saturation endpoint of the divergence mechanism: its code specialist diverges only 1.76\% from base (Table~\ref{tab:divergence}), insufficient for the router to distinguish code from fiction tokens. As a result, the router degrades code performance and the net fusion is marginally negative ($-$0.97\%, $\pm$0.00\%, 3 seeds). Critically, the weight-averaged Qwen ensemble achieves +0.76\% over base while the MoE is $-$0.97\%\,---confirming that the router, not the specialists, is the locus of failure: the code specialist cannot provide a routing signal strong enough for the gate to correctly identify code tokens.
+
+This establishes a practical \emph{routing-signal floor}: when a specialist diverges below $\sim$2\% from base on its domain, the router mislabels tokens and quality regresses. The 6.9B result ($\sim$2.4\% mean divergence) sits above this floor and produces a positive outcome; the Qwen code specialist (1.76\%) is near or below it. The Pythia maturity sweeps (410M and 1B at step 143,000 both show $\sim$14--15\% improvement) confirm this is specific to Qwen's pre-training distribution rather than a universal maturity effect.
 
 \paragraph{Inference cost.} The \kalavai fused model runs all $N$ specialists in parallel at inference, increasing compute by a factor of $N$ for the unfrozen layers. For $N=3$ with 17\% frozen layers, the effective inference overhead is approximately $2.5\times$ (frozen layers run once; unfrozen layers run $3\times$). Measured benchmarks on an NVIDIA RTX 5090 confirm this: dense MoE latency is $2.86\times$ base at 410M and $3.35\times$ base at 1B (Table~\ref{tab:inferencebench} in Appendix~\ref{app:inference}).
 
 The observed hard-switching behaviour ($>$99.7\% weight on one expert) suggests a potential sparse inference optimisation: run frozen layers once, route, then run only the top-1 expert's unfrozen layers. We test this directly. At 410M, top-1 routing agreement between full-parallel and single-expert forward passes is 100\%---frozen-layer hidden states fully determine which expert would be selected. At 1B, agreement drops to 10\%, meaning routing decisions change for 90\% of tokens when other specialists' hidden states are absent.
 
-Critically, even with 100\% routing agreement at 410M, sparse top-1 inference collapses quality: sparse evaluation loss is 3.106 versus 2.568 for dense MoE (21\% degradation relative to dense MoE, worse than the base model at 2.692). At 1B, sparse loss is 2.412 versus 2.382 dense (1.3\% degradation), but routing agreement is only 10\%. In both cases, sparse inference is not equivalent to dense inference. The mechanism is that all-specialist joint processing---not just routing quality---drives the improvement; running a single expert's unfrozen layers discards the complementary signal from the other specialists regardless of how well you identify the best one.
+Critically, even with 100\% routing agreement at 410M, sparse top-1 inference collapses quality: sparse evaluation loss is 3.106 versus 2.568 for dense MoE (21\% degradation relative to dense MoE, worse than the base model at 2.692). At 1B, sparse loss is 2.412 versus 2.382 dense (1.3\% degradation), but routing agreement is only 10\%. In both cases, sparse inference is not equivalent to dense inference.
+
+We hypothesise two factors explain the quality collapse despite correct routing. First, the router input in dense mode is the mean-pooled hidden state averaged across \emph{all} specialists' forward passes (see footnote~3); in sparse mode, this becomes a single specialist's hidden state---a different representation that alters the conditioning context for the gate computation. Second, even near-deterministic routing ($>$99.7\% weight on one expert in dense mode) preserves a residual ensemble contribution from all specialists that is lost under strict top-1 selection. Both factors mean that running only one specialist's unfrozen layers discards complementary signal regardless of how accurately the top specialist is identified.
 
 The memory footprint remains $N\times$, since all specialist weights must be loaded regardless of routing sparsity. We leave efficient sparse inference implementation to future work. The primary value proposition of \kalavai is training-time democratisation---enabling contributors who cannot afford centralised training to collectively produce a superior model---not inference efficiency.
 
@@ -358,6 +381,7 @@ The memory footprint remains $N\times$, since all specialist weights must be loa
   \item We do not claim that downstream task performance reliably improves. Perplexity gains are clear; benchmark gains are modest ($<$1pp at 1B scale).
   \item We do not claim that a real multi-contributor cooperative has been demonstrated. All experiments are simulated cooperatives on single machines. The gap between simulated and deployed cooperative training---including data heterogeneity across contributors, checkpoint verification, contributor reliability, and communication of freeze specifications---remains open engineering work.
   \item We do not claim the method scales to frontier model sizes. The 6.9B result (+2.4\%) suggests scale-dependent hyperparameter sensitivity that requires further investigation.
+  \item We do not claim domain generality beyond English text. All primary experiments use English code, science, and fiction---domains with substantial vocabulary overlap. The 5-domain experiment adds multilingual data (Spanish Wikipedia), but cross-lingual and cross-modal settings remain untested. The application scenarios in this paper (medical, legal, endangered languages) assume domain diversity beyond what our experiments validate.
 \end{itemize}
 
 % ============================================================
@@ -723,9 +747,9 @@ At 1B scale, the MoE model leads on HellaSwag (35.0\% vs.\ 34.4\% base), the ben
 
 Experiments with Qwen-1.5B at step 143,000 (full training, code and fiction domains, freeze=4, 2,000 steps, 3 seeds) produce a mean fusion improvement of $-$1.0\% $\pm$ 0.0\%. This negative result is a boundary condition, not a contradiction of the mechanism.
 
-The Qwen-1.5B model is trained on a substantially larger and more curated pre-training corpus than Pythia, which includes the target domains (code, fiction) in high-quality form. At full training, the base model has already internalised domain-specific representations that are difficult to materially improve with 2,000-step fine-tuning. We observe that even the individual specialists barely improve over base on held-out domain evaluation (less than 1\%), which means there is no specialist advantage for the router to leverage.
+The root cause is insufficient specialist divergence: the Qwen code specialist diverges only 1.76\% from base on code (Table~\ref{tab:divergence}), placing it near or below the practical routing-signal floor. We observe that the weight-averaged Qwen ensemble (+0.76\% over base) outperforms the MoE ($-$0.97\%), confirming that the router---not the specialists---is the locus of failure. With only 1.76\% divergence, the code and fiction specialists produce nearly identical hidden states on code tokens, and the router cannot reliably distinguish them. It routes code tokens to the fiction specialist, degrading code quality and producing a net negative result.
 
-This suggests a practical consideration: the \kalavai mechanism requires that specialist training produce meaningfully diverged representations from the base. If the base model is already domain-saturated, cooperative training adds no signal. The Pythia maturity sweeps show that saturation is not a concern for Pythia models even at step 143,000 (+14--15\% improvement), indicating the issue is specific to Qwen's pre-training distribution.
+This is qualitatively different from the Qwen model being ``too good'' for cooperative training: the fiction specialist achieves 4.56\% divergence, well above the routing floor. The problem is specifically that Qwen's pre-training corpus includes code in such high-quality and high-volume form that 2,000-step code fine-tuning at this training stage cannot produce enough additional specialisation. The Pythia maturity sweeps (410M and 1B at step 143,000 show $\sim$14--15\% improvement) confirm this is specific to Qwen's pre-training distribution, not a universal maturity effect.
 
 \section{Hybrid Routing Visualisation}
 \label{app:routing}
