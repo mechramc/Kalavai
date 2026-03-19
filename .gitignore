@@ -56,3 +56,5 @@ wandb/
 
 # Misc
 *.log
+docs/*.m4a
+docs/*.mp4
