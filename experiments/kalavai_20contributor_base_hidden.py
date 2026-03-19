@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
-sys.stdout.reconfigure(encoding="utf-8")
-sys.stderr.reconfigure(encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
+sys.stderr.reconfigure(encoding="utf-8", line_buffering=True)
 """
 KALAVAI Phase 2, Experiment 3 — BASE-HIDDEN ROUTER VARIANT
 ===========================================================
@@ -533,9 +533,9 @@ def train_specialist(model, name: str, train_chunks: list, seed: int, device: st
             optimizer.zero_grad()
             accum = 0
             step += 1
-            if step % 500 == 0 or step == MAX_STEPS:
+            if step % 500 == 0 or step == MAX_STEPS or step == 1:
                 avg = running_loss / step
-                print(f"    [{name}] step {step}/{MAX_STEPS} | loss {avg:.4f} | {time.time()-t0:.0f}s")
+                print(f"    [{name}] step {step}/{MAX_STEPS} | loss {avg:.4f} | {time.time()-t0:.0f}s", flush=True)
 
     model.eval()
     print(f"  [{name}] done in {time.time()-t0:.0f}s")
@@ -572,8 +572,8 @@ def train_router(moe: TwentyExpertMoE, train_chunks_by_specialist: dict, device:
             accum_loss += loss.item()
         clip_grad_norm_(moe.router.parameters(), 1.0)
         optimizer.step()
-        if step % 100 == 0 or step == ROUTER_STEPS:
-            print(f"    Router step {step}/{ROUTER_STEPS}: loss={accum_loss / ROUTER_GRAD_ACCUM:.4f} | {time.time()-t0:.0f}s")
+        if step <= 5 or step % 50 == 0 or step == ROUTER_STEPS:
+            print(f"    Router step {step}/{ROUTER_STEPS}: loss={accum_loss / ROUTER_GRAD_ACCUM:.4f} | {time.time()-t0:.0f}s", flush=True)
     moe.eval()
 
 
@@ -583,7 +583,10 @@ def eval_router_distribution(moe: TwentyExpertMoE, held_out_by_specialist: dict,
     """Compute per-specialist gate probabilities for each held-out domain."""
     moe.eval()
     results = {}
-    for name in SPECIALISTS:
+    t_dist = time.time()
+    for i_dom, name in enumerate(SPECIALISTS):
+        t0 = time.time()
+        print(f"  [{i_dom+1:02d}/{len(SPECIALISTS)}] {name} — routing {n_batches} batches...", flush=True)
         ds     = held_out_by_specialist[name]   # already a PackedChunkDataset
         loader = DataLoader(ds, batch_size=ROUTER_BATCH, shuffle=False,
                             drop_last=True, collate_fn=_collate)
@@ -598,7 +601,13 @@ def eval_router_distribution(moe: TwentyExpertMoE, held_out_by_specialist: dict,
             for i in range(moe.n_experts):
                 gate_sums[i] += gates[:, i].mean().item()
             count += 1
-        results[name] = [round(g / max(count, 1), 4) for g in gate_sums]
+            print(f"    batch {count}/{n_batches} done ({time.time()-t0:.0f}s elapsed)", flush=True)
+        gates_norm = [round(g / max(count, 1), 4) for g in gate_sums]
+        results[name] = gates_norm
+        top3 = sorted(zip(SPECIALISTS, gates_norm), key=lambda x: -x[1])[:3]
+        top3_str = "  ".join(f"{s}={v:.3f}" for s, v in top3)
+        print(f"  → {name:14s}: top3 → {top3_str}  ({time.time()-t0:.0f}s)", flush=True)
+    print(f"  Distribution eval done in {time.time()-t_dist:.0f}s total", flush=True)
     return results
 
 
@@ -681,11 +690,11 @@ def run_seed(seed: int, tokenizer, device: str,
     train_router(moe, train_chunks, device)
     moe.eval()
 
-    print("\n[moe eval]")
+    print("\n[moe eval]", flush=True)
     eval_matrix["moe"] = eval_all_domains(moe, held_out_sets, device,
                                           EVAL_BATCH_SIZE, EVAL_BATCHES, is_fused=True)
 
-    print("\n[moe router distribution]  (top-3 gates per specialist, 10 batches)")
+    print("\n[moe router distribution]  (top-3 gates per specialist, 10 batches)", flush=True)
     router_dist = eval_router_distribution(moe, held_out_sets, device, n_batches=10)
     for name, gates in router_dist.items():
         top3_idx = sorted(range(moe.n_experts), key=lambda i: gates[i], reverse=True)[:3]
@@ -857,11 +866,11 @@ def run_router_only(seed: int, tokenizer, device: str,
     train_router(moe, train_chunks, device)
     moe.eval()
 
-    print("\n[moe eval]")
+    print("\n[moe eval]", flush=True)
     eval_matrix["moe"] = eval_all_domains(moe, held_out_sets, device,
                                           EVAL_BATCH_SIZE, EVAL_BATCHES, is_fused=True)
 
-    print("\n[moe router distribution]  (top-3 gates per specialist, 10 batches)")
+    print("\n[moe router distribution]  (top-3 gates per specialist, 10 batches)", flush=True)
     router_dist = eval_router_distribution(moe, held_out_sets, device, n_batches=10)
     for name, gates in router_dist.items():
         top3_idx = sorted(range(moe.n_experts), key=lambda i: gates[i], reverse=True)[:3]
