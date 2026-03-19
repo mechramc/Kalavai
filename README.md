@@ -248,8 +248,8 @@ These experiments are planned for the camera-ready version if the paper is accep
 
 | Experiment | Purpose | Status |
 |---|---|---|
-| LoRA ablation (r=8, r=64) at 410M | Preempt reviewer objection: does LoRA produce sufficient divergence? | Planned |
-| Base-PPL as conversion rate predictor | Explain why cross-lingual exceeds the linear prediction | Planned |
+| LoRA ablation (r=8, r=64) at 410M | Preempt reviewer objection: does LoRA produce sufficient divergence? | In progress |
+| Base-PPL as conversion rate predictor | Explain why cross-lingual exceeds the linear prediction | Done — r=+0.613 (n=6, suggestive); integrated into §4.10 |
 | Low-divergence ablation (50-100 training steps) | Find the divergence floor where gains go to zero | Planned |
 | 20-contributor with robust data (replace thin domains) | Clean Exp3 without data-insufficient specialists | Planned |
 | Multi-round contributors (thicker specialists) | Realistic cooperative: 3 rounds per contributor, fewer but deeper specialists | Planned |
