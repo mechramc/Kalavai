@@ -1,0 +1,62 @@
+[
+  {
+    "model": "Pythia-410M (corrected eval)",
+    "base_ew": 2.65103,
+    "best_spec_ew": 2.403864,
+    "moe_ew": 2.218316,
+    "oracle_ew": 2.2183193333333335,
+    "oracle_gap": -3.3333333333551707e-06,
+    "headroom_pct": -0.00015026413429624862,
+    "verdict": "SATURATED \u2014 MoE ~= domain-level oracle (routing is optimal at domain level)",
+    "per_domain_oracle": {
+      "code": 1.879066,
+      "science": 2.556521,
+      "fiction": 2.219371
+    },
+    "oracle_winners": {
+      "code": "code_spec",
+      "science": "science_spec",
+      "fiction": "fiction_spec"
+    }
+  },
+  {
+    "model": "Pythia-1B (original eval schema)",
+    "base_ew": 2.4744536666666668,
+    "best_spec_ew": 2.259147,
+    "moe_ew": 2.148498333333333,
+    "oracle_ew": 2.089867,
+    "oracle_gap": 0.058631333333333036,
+    "headroom_pct": 2.7289447901208383,
+    "verdict": "HEADROOM \u2014 oracle is 2.73% better; routing improvement is possible",
+    "per_domain_oracle": {
+      "code": 1.786265,
+      "science": 2.512278,
+      "fiction": 1.971058
+    },
+    "oracle_winners": {
+      "code": "code_spec",
+      "science": "science_spec",
+      "fiction": "fiction_spec"
+    }
+  },
+  {
+    "model": "Pythia-6.9B (original eval schema)",
+    "base_ew": 2.320049,
+    "best_spec_ew": 2.2663173333333333,
+    "moe_ew": 2.1183126666666667,
+    "oracle_ew": 2.118199666666667,
+    "oracle_gap": 0.0001129999999998077,
+    "headroom_pct": 0.0053344344193353745,
+    "verdict": "SATURATED \u2014 MoE ~= domain-level oracle (routing is optimal at domain level)",
+    "per_domain_oracle": {
+      "code": 1.713297,
+      "science": 2.31469,
+      "fiction": 2.326612
+    },
+    "oracle_winners": {
+      "code": "code_spec",
+      "science": "science_spec",
+      "fiction": "fiction_spec"
+    }
+  }
+]

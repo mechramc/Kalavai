@@ -1,0 +1,54 @@
+{
+  "per_domain": {
+    "Base model": {
+      "code": 2.087168,
+      "science": 2.89201,
+      "fiction": 2.973911,
+      "equal_weight_avg": 2.65103
+    },
+    "Code specialist": {
+      "code": 1.879066,
+      "science": 2.908456,
+      "fiction": 2.976753,
+      "equal_weight_avg": 2.588092
+    },
+    "Science specialist": {
+      "code": 2.173822,
+      "science": 2.556521,
+      "fiction": 3.061315,
+      "equal_weight_avg": 2.597219
+    },
+    "Fiction specialist": {
+      "code": 2.101796,
+      "science": 2.890426,
+      "fiction": 2.219371,
+      "equal_weight_avg": 2.403864
+    },
+    "Monolithic (6k)": {
+      "code": 1.964438,
+      "science": 2.638889,
+      "fiction": 2.083184,
+      "equal_weight_avg": 2.228837
+    },
+    "Weight averaging": {
+      "code": 2.014185,
+      "science": 2.732346,
+      "fiction": 2.710613,
+      "equal_weight_avg": 2.485715
+    },
+    "KALAVAI MoE": {
+      "code": 1.87909,
+      "science": 2.556481,
+      "fiction": 2.219376,
+      "equal_weight_avg": 2.218316
+    }
+  },
+  "oracle": {
+    "code": 1.879066,
+    "science": 2.556521,
+    "fiction": 2.219371,
+    "equal_weight_avg": 2.2183193333333335,
+    "gap_vs_moe": 3.3333333333551707e-06,
+    "routing_saturated": true
+  }
+}

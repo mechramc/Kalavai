@@ -1,0 +1,110 @@
+{
+  "conditions": [
+    {
+      "label": "Qwen-1.5B",
+      "color": "#888888",
+      "marker": "s",
+      "div": 3.16,
+      "gain": 1.06,
+      "conv": 0.34,
+      "domains": [
+        "code",
+        "fiction"
+      ],
+      "mean_base_ppl": 7.095327721276382,
+      "max_base_ppl": 13.180546598133809,
+      "mean_base_loss": 1.9594365
+    },
+    {
+      "label": "Pythia-6.9B",
+      "color": "#2196F3",
+      "marker": "D",
+      "div": 8.29,
+      "gain": 5.81,
+      "conv": 0.7,
+      "domains": [
+        "code",
+        "science",
+        "fiction"
+      ],
+      "mean_base_ppl": 10.176172926330429,
+      "max_base_ppl": 13.149371989093964,
+      "mean_base_loss": 2.320049
+    },
+    {
+      "label": "Pythia-1B",
+      "color": "#4CAF50",
+      "marker": "^",
+      "div": 15.28,
+      "gain": 7.49,
+      "conv": 0.49,
+      "domains": [
+        "code",
+        "science",
+        "fiction"
+      ],
+      "mean_base_ppl": 11.875217513350359,
+      "max_base_ppl": 16.002468634586315,
+      "mean_base_loss": 2.4744536666666668
+    },
+    {
+      "label": "Pythia-410M",
+      "color": "#FF9800",
+      "marker": "o",
+      "div": 15.65,
+      "gain": 7.72,
+      "conv": 0.49,
+      "domains": [
+        "code",
+        "science",
+        "fiction"
+      ],
+      "mean_base_ppl": 14.168620092894601,
+      "max_base_ppl": 19.568301761534567,
+      "mean_base_loss": 2.6510296666666666
+    },
+    {
+      "label": "Exp2: Private",
+      "color": "#9C27B0",
+      "marker": "P",
+      "div": 18.52,
+      "gain": 10.17,
+      "conv": 0.55,
+      "domains": [
+        "medical",
+        "legal",
+        "patent"
+      ],
+      "mean_base_ppl": 19.18196791546376,
+      "max_base_ppl": 30.318224489315284,
+      "mean_base_loss": 2.9539706666666667
+    },
+    {
+      "label": "Exp1: Cross-lingual",
+      "color": "#F44336",
+      "marker": "*",
+      "div": 25.65,
+      "gain": 21.76,
+      "conv": 0.85,
+      "domains": [
+        "tamil",
+        "yoruba",
+        "welsh",
+        "code"
+      ],
+      "mean_base_ppl": 19.575734235280144,
+      "max_base_ppl": 102.66753992168613,
+      "mean_base_loss": 2.97429075
+    }
+  ],
+  "correlations": {
+    "r_baseppl_conv": 0.6042643014999582,
+    "r_log_baseppl_conv": 0.612551104233273,
+    "r_div_conv": 0.6632647058916251
+  },
+  "anomaly_analysis": {
+    "410m_vs_69b_ppl_ratio": 0.7182190544747304,
+    "410m_vs_69b_conv_ratio": 1.4285714285714286,
+    "base_ppl_explains_anomaly": true
+  }
+}
