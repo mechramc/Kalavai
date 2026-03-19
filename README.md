@@ -2,16 +2,18 @@
 
 20 people. 20 GPUs. 1 model none of them could build alone.
 
+**Fusion gain ≈ 0.82 × divergence − 2.84** (R² = 0.865). Before you train a single specialist, you can predict whether the cooperative is worth it.
+
 ```
 pip install transformers datasets torch
-python kalavai_pythia_experiment.py
+python experiments/kalavai_pythia_experiment.py
 ```
 
-That's it. 30 minutes on one GPU. You now have a fused model that beats any individual specialist by 14.2% and beats equal-compute monolithic training by 14.5%.
+30 minutes on one GPU. The fused model beats any individual specialist by +7.72% and achieves oracle-optimal routing — matching the best specialist on every domain simultaneously.
 
 ## What this is
 
-KALAVAI is a cooperative LLM training protocol. Everyone starts from the same checkpoint. Each person trains their copy on a different domain. Nobody talks to each other during training. When everyone's done, a lightweight router learns who's good at what. The fused model outperforms every individual.
+KALAVAI is a zero-communication cooperative LLM training protocol. Everyone starts from the same checkpoint. Each person trains their copy on a different domain — their language, their field, their data. Nobody talks to each other during training. When everyone's done, a lightweight router learns who's good at what. The fused model outperforms every individual.
 
 The whole algorithm:
 
@@ -30,33 +32,71 @@ fused = MoE(specialist_code, specialist_science, specialist_fiction, router)
 train_router(fused, mixed_data, steps=500)
 
 # 4. The fused model is better than any individual
-# +14.2% over best specialist, +14.5% over monolithic training
+# +7.72% over best specialist (corrected per-domain equal-weight eval)
 ```
 
 No custom CUDA kernels. No distributed training framework. No LoRA. No adapters. Standard PyTorch, standard HuggingFace Transformers, standard training loop. The mechanism is the protocol, not the infrastructure.
 
 ## Results
 
-Ran every experiment on one RTX 5090. The 6.9B scale validation on a rented A100 for $25.
+All Phase 1 experiments ran on one RTX 5090. Phase 2 cross-lingual and 20-contributor experiments on rented H100s. All results use the corrected per-domain equal-weight evaluation protocol.
+
+### Phase 1: English Domains (code / science / fiction)
+
+| Scale | vs. Best Specialist | vs. Base | Seeds |
+|---|---|---|---|
+| Pythia-410M | **+7.72% ± 0.02%** | +16.3% | 3 |
+| Pythia-1B | **+7.49%** | +15.5% | 1 |
+| Pythia-6.9B | **+5.81%** | +8.1% | 1 |
+| Qwen-1.5B | **+1.06% ± 0.01%** | — | 3 |
+
+### Phase 2: High-Divergence Domains
+
+| Experiment | Domains | vs. Best Specialist | Mean Divergence |
+|---|---|---|---|
+| Private-domain (410M) | Medical / Legal / Patent | **+10.17% ± 0.15pp** | 18.52% |
+| Cross-lingual (410M) | Tamil / Yoruba / Welsh / Code | **+21.76% ± 0.005pp** | 25.65% |
+| 20-contributor (1B) | 10 languages + 10 domains | **+16.79%** | 15.71% |
+
+Cross-lingual highlights: Yoruba perplexity 41.9 → 7.7 (5.4×). Welsh 102.7 → 22.1 (4.6×). Contributors speaking different languages collectively built a model none could train alone.
+
+### The Predictive Model
+
+Across all experimental conditions, fusion gain scales linearly with specialist divergence:
+
+```
+gain ≈ 0.82 × divergence − 2.84    (R² = 0.865, n = 6)
+```
+
+Before committing to a cooperative, measure how much your specialists diverge from the base model. If divergence is 15%, expect ~+10% gain. If divergence is 25% (cross-lingual), expect ~+18% — and likely more, since high-divergence settings exceed the linear prediction.
+
+| Condition | Mean Div. | Gain | Predicted | Residual |
+|---|---|---|---|---|
+| Qwen-1.5B | 3.16% | +1.06% | < 0 | — |
+| Pythia-6.9B | 8.29% | +5.81% | +3.96% | +1.85pp |
+| Pythia-1B | 15.28% | +7.49% | +9.70% | −2.21pp |
+| Pythia-410M | 15.65% | +7.72% | +10.01% | −2.29pp |
+| Private-domain | 18.52% | +10.17% | +12.36% | −2.19pp |
+| Cross-lingual | 25.65% | +21.76% | +18.22% | +3.54pp |
+| 20-contributor | 15.71% | +16.79% | +10.04% | +6.75pp |
+
+### Key Controls
 
 | Experiment | Result |
 |---|---|
-| **MoE vs best specialist** (410M, 3 seeds) | **+14.2% ± 0.016%** |
-| **MoE vs best specialist** (1B, 3 seeds) | **+14.8% ± 0.00%** |
-| **MoE vs equal-compute monolithic** | **+14.5%** |
-| MoE vs best specialist (6.9B, 3 seeds) | +2.43% ± 0.00% |
-| Single-specialist hard dispatch | **-21.1%** (worse than base) |
-| Wider model, 3.5× parameters | +5.9% (MoE still 2.4× better) |
-| Weight averaging | +4.0% (MoE 3.5× better) |
-| Qwen-1.5B fully trained | -1.0% (boundary condition) |
+| Single-specialist dispatch (99.3% accurate classifier) | **−21.1%** (catastrophic) |
+| Wider model, 3.5× parameters | +5.9% (MoE still better) |
+| Weight averaging | −3.4% vs best specialist |
+| Equal-compute monolithic (410M) | MoE beats by +0.47% on aggregate; MoE wins per-domain |
+| Oracle routing gap (410M) | 3 × 10⁻⁶ nats — routing is saturated |
 
-322 automated audit checks passed. Zero fabricated numbers. Every result reproducible from committed scripts with fixed seeds.
+322 automated audit checks passed. Every result reproducible from committed scripts with fixed seeds.
 
-## The three findings that matter
+## The Three Findings That Matter
 
 **1. Frozen layers are optional insurance that becomes essential.**
 
-We swept freeze depth from 0 (no frozen layers) to 12 (half the model). At short training horizons (< 5,000 steps), freezing costs you ~1 percentage point. At long horizons (> 10,000 steps), NOT freezing costs you — specialists drift apart and fusion degrades. The crossover is at exactly 10,000 steps.
+At short training horizons (< 5,000 steps), freezing costs ~1pp. At long horizons (> 10,000 steps), NOT freezing degrades fusion. The crossover is at ~10,000 steps.
 
 ```
 Steps    freeze=0   freeze=4   Winner
@@ -68,25 +108,15 @@ Steps    freeze=0   freeze=4   Winner
 20000    +13.6%     +14.8%     freeze=4
 ```
 
-Practical guideline: if your cooperative trains specialists for under 5,000 steps, skip freezing. Over 10,000 steps, freeze.
-
 **2. You must run all specialists. Single-expert dispatch fails catastrophically.**
 
-A perfect domain classifier (99.3% accuracy) that routes to one specialist gets -21.1%. The MoE that runs all three specialists and selects the best gets +14.1%. Same routing accuracy, opposite results. Specialists forget out-of-domain knowledge. Running all of them and selecting per-token is what works.
-
-```
-Method                     Specialists run   Improvement
-MoE (run all, select best) 3 of 3            +14.1%
-Classifier (pick one)      1 of 3            -21.1%
-```
-
-The 35 percentage point gap is the difference between a system that works and one that's worse than the base model.
+A near-perfect domain classifier (99.3%) routing to one specialist: −21.1%. The MoE running all specialists with learned routing: +7.72% vs best specialist. Specialists forget out-of-domain knowledge. Running all of them and combining per-token is what works.
 
 **3. The improvement isn't from extra parameters.**
 
-A single model with 3.5× the parameters (+5.9%) gets less than half the improvement of the MoE (+14.2%). A multi-head baseline with identical parameter count but hard routing gets -21.1%. The mechanism is cooperative specialization plus selection, not raw capacity.
+A single model with 3.5× the parameters gets +5.9%. A multi-head baseline with identical parameter count gets −21.1%. The MoE gets +7.72%. The mechanism is cooperative specialisation plus joint inference, not raw capacity.
 
-## Reproduce it
+## Reproduce It
 
 ### The 30-minute version (410M, one GPU)
 
@@ -97,17 +127,14 @@ pip install transformers datasets torch accelerate
 python experiments/kalavai_pythia_experiment.py
 ```
 
-Requires: any GPU with 24GB+ VRAM (RTX 3090, 4090, 5090, A100, etc.)  
-Produces: trained specialists, fused MoE, all evaluation numbers, figures.  
-Expected output: `+14.2% ± 0.016%` on held-out mixed evaluation.
+Requires: any GPU with 24GB+ VRAM (RTX 3090, 4090, 5090, A100, etc.)
+Expected output: `+7.72% ± 0.02%` on corrected per-domain equal-weight evaluation.
 
-### The 1B version (same GPU, ~2 hours)
+### The 1B version (~2 hours)
 
 ```bash
 python experiments/kalavai_pythia_1b_experiment.py
 ```
-
-Expected output: `+14.8% ± 0.00%`
 
 ### The 6.9B version (A100 80GB, ~8 hours)
 
@@ -115,31 +142,33 @@ Expected output: `+14.8% ± 0.00%`
 python experiments/kalavai_pythia_6b_experiment.py
 ```
 
-Expected output: `+2.43% ± 0.00%`
+### Phase 2 experiments
+
+```bash
+# Private-domain fusion (medical / legal / patent)
+python experiments/kalavai_private_domain_experiment.py
+
+# Cross-lingual fusion (Tamil / Yoruba / Welsh / Code)
+python experiments/kalavai_crosslingual_experiment.py
+
+# 20-contributor federation (10 languages + 10 domains, needs H100)
+python experiments/kalavai_20contributor_experiment.py
+```
 
 ### All ablations
 
 ```bash
-# Freeze depth sweep (0-12 frozen layers)
-python experiments/kalavai_freeze_sweep.py
-
-# Router ablation (uniform vs linear vs 2-layer MLP)
-python experiments/kalavai_router_ablation.py
-
-# Training duration crossover (500-20,000 steps, freeze=0 vs freeze=4)
-python experiments/kalavai_training_duration_crossover.py
-
-# Monolithic baseline (equal-compute comparison)
-python experiments/kalavai_monolithic_baseline.py
-
-# Domain classifier baseline (the -21.1% result)
-python experiments/kalavai_domain_classifier_baseline.py
-
-# 5-domain scaling (2→5 specialists)
-python experiments/kalavai_5domain_experiment.py
+python experiments/kalavai_freeze_sweep.py                    # Freeze depth (0-12 layers)
+python experiments/kalavai_router_ablation.py                 # Router architecture comparison
+python experiments/kalavai_training_duration_crossover.py     # When frozen layers matter
+python experiments/kalavai_monolithic_baseline.py             # Equal-compute comparison
+python experiments/kalavai_domain_classifier_baseline.py      # Why single-expert fails
+python experiments/kalavai_5domain_experiment.py              # 2→5 specialist scaling
+python experiments/kalavai_shared_init_ablation.py            # Checkpoint mismatch effects
+python experiments/kalavai_heterogeneous_cooperative.py       # Robustness to contributor variation
 ```
 
-## How it works
+## How It Works
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -149,10 +178,8 @@ python experiments/kalavai_5domain_experiment.py
           │              │              │
      ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
      │  Code   │    │ Science │    │ Fiction │
-     │Specialist│    │Specialist│    │Specialist│
-     │(2000 steps)│ │(2000 steps)│ │(2000 steps)│
-     │ on code │    │on science│    │on fiction│
-     │  data   │    │  data   │    │  data   │
+     │Specialist│   │Specialist│   │Specialist│
+     │(2k steps)│   │(2k steps)│   │(2k steps)│
      └────┬────┘    └────┬────┘    └────┬────┘
           │              │              │
           │   NO COMMUNICATION DURING   │
@@ -160,93 +187,101 @@ python experiments/kalavai_5domain_experiment.py
           │              │              │
      ┌────▼──────────────▼──────────────▼────┐
      │          LEARNED ROUTER               │
-     │     nn.Linear(hidden_size, 3)         │
-     │     trained 500 steps on mixed data   │
-     │     learns: code→expert0              │
-     │             science→expert1           │
-     │             fiction→expert2            │
+     │     nn.Linear(hidden_size, N)         │
+     │     500 steps on mixed data           │
+     │     Routing: near-deterministic       │
+     │     (>99.7% weight on best expert)    │
      └───────────────────┬───────────────────┘
                          │
                     FUSED MODEL
-              +14.2% over best specialist
-              +14.5% over monolithic training
+              Oracle-optimal routing
+              Per-domain specialist quality
+              on every domain simultaneously
 ```
 
-The frozen layers (if used) stay identical across all specialists. They produce a shared representation that the router reads. The unfrozen layers diverge — each specialist learns its domain. The router learns to dispatch.
+At inference, all specialists run in parallel. The router produces per-token weights. In practice, routing is near-deterministic (>99.7% weight on one expert), and at 410M the learned router matches the domain-level oracle with gap < 10⁻⁵ nats. A linear router is sufficient — a 2-layer MLP router produces identical results.
 
-At inference, all specialists run. The router produces weights. The output is a weighted sum. In practice, the router hard-switches (>99.7% weight on one expert), but the small residual from other experts is present. Hard routing (argmax) and soft routing (softmax) produce identical results — the mechanism is running all experts and selecting, not the weighting scheme.
-
-## Repository structure
+## Repository Structure
 
 ```
 Kalavai/
 ├── experiments/
-│   ├── kalavai_pythia_experiment.py       # 410M main experiment (start here)
-│   ├── kalavai_pythia_1b_experiment.py    # 1B scale validation
-│   ├── kalavai_pythia_6b_experiment.py    # 6.9B scale validation (needs A100)
-│   ├── kalavai_freeze_sweep.py            # Freeze depth ablation
-│   ├── kalavai_router_ablation.py         # Router architecture comparison
-│   ├── kalavai_monolithic_baseline.py     # Equal-compute monolithic comparison
-│   ├── kalavai_training_duration_crossover.py  # When frozen layers matter
-│   ├── kalavai_domain_classifier_baseline.py   # Why single-expert fails
-│   ├── kalavai_5domain_experiment.py      # 2→5 specialist scaling
-│   └── kalavai_1b_benchmarks.py           # Downstream task evaluation
+│   ├── kalavai_pythia_experiment.py          # 410M main (start here)
+│   ├── kalavai_pythia_1b_experiment.py       # 1B scale
+│   ├── kalavai_pythia_6b_experiment.py       # 6.9B scale (needs A100)
+│   ├── kalavai_private_domain_experiment.py  # Phase 2: medical/legal/patent
+│   ├── kalavai_crosslingual_experiment.py    # Phase 2: Tamil/Yoruba/Welsh/Code
+│   ├── kalavai_20contributor_experiment.py   # Phase 2: 20 specialists (needs H100)
+│   ├── kalavai_eval_utils.py                 # Corrected evaluation protocol
+│   ├── kalavai_freeze_sweep.py               # Freeze depth ablation
+│   ├── kalavai_router_ablation.py            # Router architecture comparison
+│   ├── kalavai_monolithic_baseline.py        # Equal-compute comparison
+│   ├── kalavai_training_duration_crossover.py
+│   ├── kalavai_domain_classifier_baseline.py
+│   ├── kalavai_5domain_experiment.py
+│   ├── kalavai_shared_init_ablation.py
+│   ├── kalavai_heterogeneous_cooperative.py
+│   ├── kalavai_1b_benchmarks.py
+│   └── kalavai_inference_benchmark.py
 ├── results/
-│   ├── pythia/                            # 410M + 1B results (JSON)
-│   └── pythia_6b/                         # 6.9B results (JSON)
+│   ├── pythia/                               # Phase 1 results (JSON)
+│   ├── pythia_6b/                            # 6.9B results
+│   └── phase2/                               # Phase 2 results
+│       ├── private_domain/
+│       ├── crosslingual/
+│       └── twenty_contributor/
 ├── figures/
-│   ├── pythia/                            # 410M + 1B figures
-│   └── pythia_6b/                         # 6.9B figures
 ├── paper/
-│   └── kalavai_neurips2026.pdf            # The paper
-└── README.md                              # You are here
+│   └── kalavai_neurips2026.pdf
+└── README.md
 ```
 
-Every experiment is a self-contained Python file. No config files. No YAML. No framework. Read the script, understand the experiment, run it. Each one produces its own results JSON and figures.
+Every experiment is a self-contained Python file. No config files. No YAML. No framework. Read the script, understand the experiment, run it.
 
-## What KALAVAI means
+## Evaluation Note
 
-கலவை (kalavai) is Tamil for mixing, fusion, blending. The protocol mixes independently trained specialists into something greater than the parts. The name reflects the method.
+Initial experiments produced +14.2% at 410M. Code review identified two evaluation inconsistencies — asymmetric batch sizes between the MoE and baselines, and a concatenated mixed evaluation that systematically underrepresented the fiction domain. The corrected per-domain equal-weight protocol (`kalavai_eval_utils.py`) yields +7.72%. All results in this repository and the paper use the corrected protocol. The inconsistencies and fix are documented in Appendix R of the paper.
 
-## Why this matters
+## Camera-Ready Roadmap
 
-Right now, training a competitive LLM requires millions of dollars of centralized compute. A university in Lagos, a research lab in Chennai, a hobbyist in São Paulo — none of them can build a model that covers their needs.
+These experiments are planned for the camera-ready version if the paper is accepted at NeurIPS 2026.
 
-With KALAVAI, each of them trains one specialist on one GPU on the data they care about. The fused model handles all their domains. Cost per contributor: ~$5-10 in electricity. Cost of the equivalent model trained centrally: $5,000-10,000+.
+| Experiment | Purpose | Status |
+|---|---|---|
+| LoRA ablation (r=8, r=64) at 410M | Preempt reviewer objection: does LoRA produce sufficient divergence? | Planned |
+| Base-PPL as conversion rate predictor | Explain why cross-lingual exceeds the linear prediction | Planned |
+| Low-divergence ablation (50-100 training steps) | Find the divergence floor where gains go to zero | Planned |
+| 20-contributor with robust data (replace thin domains) | Clean Exp3 without data-insufficient specialists | Planned |
+| Multi-round contributors (thicker specialists) | Realistic cooperative: 3 rounds per contributor, fewer but deeper specialists | Planned |
+| Continual cooperative (add specialist post-hoc) | Can a 4th specialist join without retraining the first 3? | Planned |
 
-The code is here. The results are reproducible. The mechanism is validated. What's missing is the community — people willing to contribute a GPU and a domain.
+## Prior Art
 
-## Pending experiments
-
-The following experiments are written and queued. Results will update the paper before NeurIPS submission.
-
-| Experiment | Script | What it answers | Status |
-|---|---|---|---|
-| **A1: 1B equal-compute monolithic** | `kalavai_1b_monolithic_baseline.py` | Does KALAVAI beat monolithic at 1B? (NeurIPS gate) | Queued |
-| **A2: Inference cost benchmark** | `kalavai_inference_benchmark.py` | Dense vs sparse top-1 MoE latency; routing agreement % at 410M and 1B | Queued |
-| **A3: Shared init necessity** | `kalavai_shared_init_ablation.py` | Does fusion break if specialists start from different checkpoints? (NeurIPS gate) | Queued |
-| B1: 6.9B step-budget sweep | `kalavai_6b_step_sweep.py` | Does more training fix the weak 6.9B result? (+2.4% → ?) | Pending A1+A3 |
-| C1: Heterogeneous cooperative | `kalavai_heterogeneous_cooperative.py` | Robust to different batch sizes, LRs, training durations per contributor? | Pending Phase A |
-
-**NeurIPS gate:** If A1 shows KALAVAI beats 1B monolithic by >5% AND A3 shows clear degradation with mismatched checkpoints, proceed to B1. Otherwise evaluate COLM/TMLR.
-
-## Prior art
-
-KALAVAI builds on ideas from several lines of work:
-
-- **BTX** (Meta, COLM 2024): Branch-train-mix for expert training. KALAVAI adds the freeze analysis and cooperative framing.
-- **PHATGOOSE** (ICLR 2024): Decentralized routing. KALAVAI adds monolithic baselines and training duration analysis.
-- **Pari** (MIT 2025): CKA analysis of why weight averaging fails. KALAVAI shows when MoE routing succeeds.
+- **BTX** (Meta, COLM 2024): Branch-train-mix for expert training. KALAVAI adds the predictive divergence-gain model, freeze crossover analysis, and cooperative framing.
+- **PHATGOOSE** (ICLR 2024): Decentralised routing among fine-tuned models. KALAVAI adds monolithic baselines, oracle routing analysis, and training duration analysis.
+- **Pari** (MIT 2025): CKA analysis of why weight averaging fails. KALAVAI shows when MoE routing succeeds and provides the empirical complement.
 - **STAR** (2025): Freeze-then-stack for multimodal. Same underlying principle, different application.
+
+## Why This Matters
+
+Training a competitive LLM requires millions of dollars of centralised compute. A university in Lagos, a research lab in Chennai, a hobbyist in São Paulo — none of them can build a model that covers their needs.
+
+With KALAVAI, each trains one specialist on one GPU on the data they care about. The Yoruba contributor's specialist cuts perplexity from 41.9 to 7.7. The legal contributor's specialist diverges 34% from base. The fused model handles all their domains. Cost per contributor: ~$5-10 in electricity.
+
+The code is here. The results are reproducible. The predictive model tells you whether a cooperative is worth it before you start.
+
+## What KALAVAI Means
+
+கலவை (kalavai) is Tamil for mixing, fusion, blending. The protocol mixes independently trained specialists into something greater than the parts.
 
 ## Citation
 
 ```bibtex
-@inproceedings{kumaresan2026kalavai,
-  title     = {{KALAVAI}: When Does Independent Specialist Fusion Work?
-               Conditions for Post-Hoc Cooperative {LLM} Training},
+@article{kumaresan2026kalavai,
+  title     = {{KALAVAI}: Predicting When Independent Specialist Fusion Works
+               --- A Quantitative Model for Post-Hoc Cooperative {LLM} Training},
   author    = {Kumaresan, Ramchand},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  journal   = {arXiv preprint},
   year      = {2026},
   url       = {https://github.com/mechramc/Kalavai}
 }
