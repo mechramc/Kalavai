@@ -68,9 +68,10 @@ GRAD_ACCUM      = 4
 GRADIENT_CLIP   = 1.0
 WARMUP_FRACTION = 0.1
 
-ROUTER_STEPS    = 1000
-ROUTER_LR       = 2e-4
-ROUTER_BATCH    = 20
+ROUTER_STEPS      = 1000   # optimizer steps
+ROUTER_LR         = 2e-4
+ROUTER_BATCH      = 4      # physical batch size
+ROUTER_GRAD_ACCUM = 5      # logical batch = 4 × 5 = 20 (one sample per domain on average)
 EVAL_BATCH_SIZE = 4
 EVAL_BATCHES    = 50
 
@@ -518,8 +519,14 @@ def train_specialist(model, name: str, train_chunks: list, seed: int, device: st
 
 
 def train_router(moe: TwentyExpertMoE, train_chunks_by_specialist: dict, device: str):
-    """Train only the linear router on mixed data from all specialists."""
+    """Train only the linear router on mixed data from all specialists.
+
+    Uses gradient accumulation: ROUTER_GRAD_ACCUM physical forward passes per
+    optimizer step, so logical batch = ROUTER_BATCH * ROUTER_GRAD_ACCUM = 20.
+    Reported 'step' counts optimizer steps.
+    """
     print(f"\n  Training router ({ROUTER_STEPS} steps, {len(SPECIALISTS)} experts)...")
+    print(f"  lr={ROUTER_LR}, physical_bs={ROUTER_BATCH}, grad_accum={ROUTER_GRAD_ACCUM}, logical_bs={ROUTER_BATCH * ROUTER_GRAD_ACCUM}")
     all_chunks = []
     for name in SPECIALISTS:
         all_chunks.extend(train_chunks_by_specialist[name])
@@ -531,15 +538,19 @@ def train_router(moe: TwentyExpertMoE, train_chunks_by_specialist: dict, device:
     moe.train()
     t0 = time.time()
     for step in range(1, ROUTER_STEPS + 1):
-        batch     = next(it)
-        input_ids = batch["input_ids"].to(device)
-        labels    = batch["labels"].to(device)
-        loss, _, _ = moe(input_ids, labels=labels)
         optimizer.zero_grad()
-        loss.backward()
+        accum_loss = 0.0
+        for _ in range(ROUTER_GRAD_ACCUM):
+            batch     = next(it)
+            input_ids = batch["input_ids"].to(device)
+            labels    = batch["labels"].to(device)
+            loss, _, _ = moe(input_ids, labels=labels)
+            (loss / ROUTER_GRAD_ACCUM).backward()
+            accum_loss += loss.item()
+        clip_grad_norm_(moe.router.parameters(), 1.0)
         optimizer.step()
         if step % 100 == 0 or step == ROUTER_STEPS:
-            print(f"    Router step {step}/{ROUTER_STEPS}: loss={loss.item():.4f} | {time.time()-t0:.0f}s")
+            print(f"    Router step {step}/{ROUTER_STEPS}: loss={accum_loss / ROUTER_GRAD_ACCUM:.4f} | {time.time()-t0:.0f}s")
     moe.eval()
 
 
