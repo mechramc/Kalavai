@@ -546,7 +546,7 @@ def eval_router_distribution(moe: TwentyExpertMoE, held_out_by_specialist: dict,
     moe.eval()
     results = {}
     for name in SPECIALISTS:
-        ds     = chunks_to_dataset(held_out_by_specialist[name])
+        ds     = held_out_by_specialist[name]   # already a PackedChunkDataset
         loader = DataLoader(ds, batch_size=ROUTER_BATCH, shuffle=False,
                             drop_last=True, collate_fn=_collate)
         gate_sums = [0.0] * moe.n_experts
