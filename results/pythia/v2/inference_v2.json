@@ -1,0 +1,46 @@
+{
+  "experiment": "inference_v2",
+  "hardware": "NVIDIA GeForce RTX 5090",
+  "seq_len": 512,
+  "measure_runs": 10,
+  "configs": {
+    "base": {
+      "latency_ms_mean": 14.38,
+      "latency_ms_std": 2.68,
+      "vram_gb_peak": 3.325,
+      "params_m": 405.3
+    },
+    "code_spec": {
+      "latency_ms_mean": 14.74,
+      "latency_ms_std": 1.61,
+      "vram_gb_peak": 3.325,
+      "params_m": 405.3
+    },
+    "moe_full": {
+      "latency_ms_mean": 40.72,
+      "latency_ms_std": 3.49,
+      "vram_gb_peak": 3.37,
+      "params_m": 1216.3
+    },
+    "moe_top1": {
+      "latency_ms_mean": 41.36,
+      "latency_ms_std": 2.77,
+      "vram_gb_peak": 3.37,
+      "note": "all 3 specialists run; only top-1 logits used"
+    }
+  },
+  "eval_losses": {
+    "base": {
+      "code": 2.087168,
+      "science": 2.89201,
+      "fiction": 2.973911,
+      "equal_weight_avg": 2.65103
+    },
+    "moe": {
+      "code": 1.879066,
+      "science": 2.556506,
+      "fiction": 2.219382,
+      "equal_weight_avg": 2.218318
+    }
+  }
+}

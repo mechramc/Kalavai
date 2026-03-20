@@ -1,0 +1,23 @@
+{
+  "experiment": "hard_routing_v2",
+  "eval_method": "per-domain-separate-equal-weight",
+  "eval_batch_size": 4,
+  "best_spec_equal_weight": 2.403864,
+  "soft_routing": {
+    "code": 1.879074,
+    "science": 2.556508,
+    "fiction": 2.219405,
+    "equal_weight_avg": 2.218329
+  },
+  "hard_routing": {
+    "code": 1.879066,
+    "science": 2.556521,
+    "fiction": 2.219371,
+    "equal_weight_avg": 2.218319
+  },
+  "metrics": {
+    "soft_vs_spec": 7.7182,
+    "hard_vs_spec": 7.7186,
+    "soft_vs_hard": -0.0005
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "experiment": "maturity_sweep_1b_v2",
+  "results": [
+    {
+      "step": "step5000",
+      "seed": 42,
+      "base_equal_weight": 2.702744,
+      "best_spec_equal_weight": 2.404016,
+      "moe_equal_weight": 2.193743,
+      "improvement_vs_spec": 8.7467,
+      "improvement_vs_base": 18.8327,
+      "per_domain_moe": {
+        "code": 1.851537,
+        "science": 2.652127,
+        "fiction": 2.077564,
+        "equal_weight_avg": 2.193743
+      },
+      "per_domain_base": {
+        "code": 2.137527,
+        "science": 2.964278,
+        "fiction": 3.006427,
+        "equal_weight_avg": 2.702744
+      },
+      "eval_method": "per-domain-separate-equal-weight",
+      "eval_batch_size": 4
+    },
+    {
+      "step": "step20000",
+      "seed": 42,
+      "base_equal_weight": 2.278819,
+      "best_spec_equal_weight": 2.150663,
+      "moe_equal_weight": 2.007061,
+      "improvement_vs_spec": 6.6771,
+      "improvement_vs_base": 11.9254,
+      "per_domain_moe": {
+        "code": 1.735781,
+        "science": 2.4221,
+        "fiction": 1.863302,
+        "equal_weight_avg": 2.007061
+      },
+      "per_domain_base": {
+        "code": 1.918,
+        "science": 2.656394,
+        "fiction": 2.262064,
+        "equal_weight_avg": 2.278819
+      },
+      "eval_method": "per-domain-separate-equal-weight",
+      "eval_batch_size": 4
+    },
+    {
+      "step": "step50000",
+      "seed": 42,
+      "base_equal_weight": 2.108614,
+      "best_spec_equal_weight": 2.059822,
+      "moe_equal_weight": 1.928019,
+      "improvement_vs_spec": 6.3988,
+      "improvement_vs_base": 8.5646,
+      "per_domain_moe": {
+        "code": 1.681026,
+        "science": 2.326996,
+        "fiction": 1.776035,
+        "equal_weight_avg": 1.928019
+      },
+      "per_domain_base": {
+        "code": 1.846846,
+        "science": 2.538468,
+        "fiction": 1.940529,
+        "equal_weight_avg": 2.108614
+      },
+      "eval_method": "per-domain-separate-equal-weight",
+      "eval_batch_size": 4
+    },
+    {
+      "step": "step143000",
+      "seed": 42,
+      "base_equal_weight": 1.992237,
+      "best_spec_equal_weight": 1.967916,
+      "moe_equal_weight": 1.960061,
+      "improvement_vs_spec": 0.3992,
+      "improvement_vs_base": 1.6151,
+      "per_domain_moe": {
+        "code": 1.641614,
+        "science": 2.562685,
+        "fiction": 1.675885,
+        "equal_weight_avg": 1.960061
+      },
+      "per_domain_base": {
+        "code": 1.755793,
+        "science": 2.434759,
+        "fiction": 1.786159,
+        "equal_weight_avg": 1.992237
+      },
+      "eval_method": "per-domain-separate-equal-weight",
+      "eval_batch_size": 4
+    }
+  ]
+}
