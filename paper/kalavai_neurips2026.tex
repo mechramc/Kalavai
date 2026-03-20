@@ -174,7 +174,7 @@ where $\mathcal{L}$ is average cross-entropy loss on the held-out mixed-domain e
 
 \paragraph{Seeds.} All main results are reported across 3 random seeds (42, 137, 2026).
 
-\paragraph{Evaluation consistency.} Base model loss varies slightly across experimental setups (e.g., 2.248 in Table~\ref{tab:main} vs.\ 2.420 in the dispatch experiments) due to different evaluation batch compositions. All improvement percentages are computed within the same evaluation setup; cross-table loss values should not be compared directly.
+\paragraph{Evaluation consistency.} Base model loss varies across experimental setups due to different evaluation protocols and batch compositions. Table~\ref{tab:main} uses the corrected per-domain equal-weight protocol (base EW 2.651 at 410M); appendix tables for dispatch experiments, router ablations, and capacity controls use the original mixed-domain evaluation (base 2.248--2.420 depending on batch composition). All improvement percentages are computed within the same evaluation setup; cross-protocol loss values should not be compared directly.
 
 \subsection{Core Results}
 \label{sec:core}
@@ -669,18 +669,18 @@ Maturity sweep 410M (6 ckpts) & Pythia-410M & +7.03\% to +8.81\% & mixed & Done 
 Maturity sweep 1B (4 ckpts) & Pythia-1B & +0.40\% (step143k) to +8.75\% (step5k) & 1 & Done (corrected eval) \\
 Maturity sweep 6.9B (2 ckpts) & Pythia-6.9B & +2.43\% (step10k), +2.26\% (step143k) & 1 & Done (orig.\ eval) \\
 5-domain scaling (2--5 spec.) & Pythia-410M & +17.7\% (2) to +14.1\% (5) & 3 & Done \\
-Monolithic baseline & Pythia-410M & Mono=+6.7\%, MoE beats mono by +14.5\% & 3 & Done \\
+Monolithic baseline & Pythia-410M & Mono $+$16.0\%, MoE $+$0.47\% over mono (corrected); Mono $+$6.7\%, MoE $+$14.5\% over mono (orig.) & 3 & Done \\
 Training duration crossover & Pythia-410M & Crossover at $\approx$5,000 steps & 1 & Done (corrected eval) \\
-Domain classifier baseline & Pythia-410M & Classifier $-$21.1\% vs MoE +14.1\% & 3 & Done \\
-Multi-head baseline & Pythia-410M & Multi-head $-$21.1\% & 1 & Done \\
-Wider model capacity control & Pythia-1.4B & +5.9\% vs MoE +14.2\% & 1 & Done \\
+Domain classifier baseline & Pythia-410M & Classifier $-$21.1\% vs MoE +14.1\% (orig.\ eval) & 3 & Done \\
+Multi-head baseline & Pythia-410M & Multi-head $-$21.1\% (orig.\ eval) & 1 & Done \\
+Wider model capacity control & Pythia-1.4B & +5.9\% vs MoE +14.2\% (orig.\ eval) & 1 & Done \\
 Hard routing verification & Pythia-410M & Hard +20.27\% vs Soft +20.24\% (vs base) & 1 & Done \\
 Hybrid routing analysis & Pythia-410M & 11 switches across 5 prompts & 1 & Done \\
 Downstream benchmarks 1B & Pythia-1B & MoE leads HellaSwag; near-parity avg & 1 & Done \\
 Downstream benchmarks 6.9B & Pythia-6.9B & MoE 52.2\% vs base 51.6\% avg & 1 & Done \\
 Shared init ablation (3 cond.) & Pythia-410M & Ctrl +10.4\%, large-gap +9.4\% (abs); router confusion 11\% & 3/3/1 & Done \\
 Inference routing agreement & Pythia-410M/1B & 410M 100\%, 1B 10\% sparse agreement & 1 & Done \\
-1B monolithic baseline & Pythia-1B & Mono +8.1\%, MoE beats mono by +14.6\% & 3 & Done \\
+1B monolithic baseline & Pythia-1B & Mono $+$15.3\%, MoE $+$0.34\% over mono (corrected); Mono $+$8.1\%, MoE $+$14.6\% (orig.) & 3 & Done \\
 Results integrity audit & All & 322/322 checks passed, 0 issues & --- & Done \\
 \midrule
 \multicolumn{5}{l}{\textit{Phase 2 experiments (high-divergence domains)}} \\
@@ -767,7 +767,7 @@ The total spread across all tested freeze depths is 1.89 percentage points (7.92
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.72\textwidth]{fig_monolithic_comparison}
-  \caption{Mixed-domain held-out loss for Base model, Monolithic baseline, and \kalavai MoE at Pythia-410M scale. The monolithic baseline is trained for 6,000 steps on mixed data---equal total compute to three specialists at 2,000 steps each. \kalavai MoE (1.793) improves over both the base model (2.248) and the monolithic baseline (2.098). Full comparison including best specialist and weight averaging is in Table~\ref{tab:monolithic}.}
+  \caption{Mixed-domain held-out loss for Base model, Monolithic baseline, and \kalavai MoE at Pythia-410M scale (\textbf{original mixed-domain evaluation protocol}). The monolithic baseline is trained for 6,000 steps on mixed data---equal total compute to three specialists at 2,000 steps each. \kalavai MoE (1.793) improves over both the base model (2.248) and the monolithic baseline (2.098) under original eval. Under corrected per-domain equal-weight eval, these values are MoE 2.218, base 2.651, monolithic 2.229 (Table~\ref{tab:monolithic}).}
   \label{fig:monolithic}
 \end{figure}
 
@@ -835,11 +835,11 @@ Multi-head hard routing       & 1 of 3 & Classifier (100\% acc.)  & 2.931 & $-$2
 
 \begin{table}[h]
 \centering
-\caption{Capacity control comparison. All methods share the same base checkpoint (Pythia-410M, step10000). Wider model = Pythia-1.4B trained 6,000 steps on mixed data.}
+\caption{Capacity control comparison (\textbf{original mixed-domain evaluation protocol}). All methods share the same base checkpoint (Pythia-410M, step10000). Wider model = Pythia-1.4B trained 6,000 steps on mixed data. Under corrected per-domain equal-weight evaluation, \kalavai MoE achieves +7.72\% vs.\ best specialist and +16.3\% vs.\ base (Table~\ref{tab:main}).}
 \label{tab:capacity}
 \begin{tabular}{lcc}
 \toprule
-\textbf{Method} & \textbf{Parameters (unfrozen)} & \textbf{vs.\ Base} \\
+\textbf{Method} & \textbf{Parameters (unfrozen)} & \textbf{vs.\ Base (original eval)} \\
 \midrule
 Monolithic Pythia-410M (6,000 steps) & 1$\times$ & +6.7\% \\
 Wider single model (Pythia-1.4B, 6,000 steps) & 3.5$\times$ total & +5.9\% \\
@@ -1101,7 +1101,7 @@ A systematic integrity audit was run across all committed result files using \te
 
 \textbf{Outcome: 322/322 checks passed, 0 issues detected.} Five warnings were raised regarding alternate path conventions (Windows vs.\ Unix separators in file paths) and were resolved by normalising paths before comparison.
 
-The 6.9B \texttt{summary.json} file was not regenerated after the seeded evaluation fix and reflects stale pre-fix values (mean +2.72\%, std $\pm$8.17\%). All results in this paper use the corrected per-seed files (\texttt{step6\_fusion\_seed42.json}, \texttt{step6\_fusion\_seed137.json}, \texttt{step6\_fusion\_seed2026.json}), each of which reports +2.43\%--+2.44\%.
+The 6.9B \texttt{summary.json} file was not regenerated after the seeded evaluation fix and reflects stale pre-fix values (mean +2.72\%, std $\pm$8.17\%). All results in this paper use the corrected per-seed files (\texttt{step6\_fusion\_seed42.json}, \texttt{step6\_fusion\_seed137.json}, \texttt{step6\_fusion\_seed2026.json}). Each file's \texttt{improvement\_pct} field stores +2.43\%--+2.44\%, which is the improvement computed under the \emph{original mixed-domain} evaluation. The corrected per-domain equal-weight evaluation applied to the per-domain losses in those same files yields \textbf{+6.53\%} $\pm$0.024\% (3 seeds), as reported in Table~\ref{tab:main} and Section~\ref{sec:core}.
 
 % ============================================================
 \section{Phase 2 Detailed Results}
