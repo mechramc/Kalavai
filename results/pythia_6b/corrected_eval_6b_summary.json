@@ -1,0 +1,51 @@
+{
+  "model": "EleutherAI/pythia-6.9b",
+  "eval_protocol": "corrected_per_domain_equal_weight",
+  "results": [
+    {
+      "seed": 42,
+      "per_model_ew": {
+        "base": 2.320049,
+        "code_spec": 2.266757,
+        "science_spec": 2.278742,
+        "fiction_spec": 2.2663173333333333,
+        "weight_avg": 2.2298649999999998,
+        "moe": 2.1183126666666667
+      },
+      "best_spec_ew": 2.2663173333333333,
+      "moe_ew": 2.1183126666666667,
+      "gain_vs_spec": 6.53062413148379
+    },
+    {
+      "seed": 137,
+      "per_model_ew": {
+        "base": 2.320049,
+        "code_spec": 2.266592333333333,
+        "science_spec": 2.278735,
+        "fiction_spec": 2.265699,
+        "weight_avg": 2.229104,
+        "moe": 2.117257
+      },
+      "best_spec_ew": 2.265699,
+      "moe_ew": 2.117257,
+      "gain_vs_spec": 6.551708766257132
+    },
+    {
+      "seed": 2026,
+      "per_model_ew": {
+        "base": 2.320049,
+        "code_spec": 2.2662636666666667,
+        "science_spec": 2.2787053333333334,
+        "fiction_spec": 2.2675986666666663,
+        "weight_avg": 2.2306103333333334,
+        "moe": 2.1188743333333333
+      },
+      "best_spec_ew": 2.2662636666666667,
+      "moe_ew": 2.1188743333333333,
+      "gain_vs_spec": 6.503626894840569
+    }
+  ],
+  "mean_gain": 6.528653264193831,
+  "std_gain": 0.024101448672967596,
+  "note": "Computed from stored per-domain losses in step6_fusion_seed*.json. No re-run needed."
+}
