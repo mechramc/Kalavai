@@ -45,7 +45,7 @@ All Phase 1 experiments ran on one RTX 5090. Phase 2 cross-lingual and 20-contri
 
 | Scale | vs. Best Specialist | vs. Base | Seeds |
 |---|---|---|---|
-| Pythia-410M | **+7.72% ± 0.02%** | +16.3% | 3 |
+| Pythia-410M | **+7.70% ± 0.02%** | +16.3% | 3 |
 | Pythia-1B | **+7.49% ± 0.01%** | +15.5% | 3 |
 | Pythia-6.9B | **+6.53% ± 0.024%** | +8.6% | 3 |
 | Qwen-1.5B | **+1.06% ± 0.01%** | — | 3 |

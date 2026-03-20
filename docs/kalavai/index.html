@@ -360,7 +360,7 @@
   <p class="hero__sub">KALAVAI is a cooperative LLM training protocol. Everyone starts from the same checkpoint, trains independently on their own data, and a lightweight router fuses the result. No communication during training. Before you train a single specialist, a formula predicts whether the cooperative is worth it.</p>
 
   <div class="hero__stats">
-    <div><div class="hero__stat-value">+7.72%</div><div class="hero__stat-label">410M vs best specialist</div></div>
+    <div><div class="hero__stat-value">+7.70%</div><div class="hero__stat-label">410M vs best specialist (3-seed mean)</div></div>
     <div><div class="hero__stat-value">+21.76%</div><div class="hero__stat-label">cross-lingual (Tamil/Yoruba/Welsh)</div></div>
     <div><div class="hero__stat-value">gain ≈ 0.81×div</div><div class="hero__stat-label">predictive formula, R²=0.850</div></div>
     <div><div class="hero__stat-value">322/322</div><div class="hero__stat-label">audit checks passed</div></div>
@@ -482,8 +482,8 @@ train_router(fused, mixed_data, steps=500)
   <div class="result-row">
     <div class="result-card">
       <div class="result-card__label">Pythia-410M</div>
-      <div class="result-card__value val--teal">+7.72%</div>
-      <div class="result-card__note">3 seeds, ±0.02%</div>
+      <div class="result-card__value val--teal">+7.70%</div>
+      <div class="result-card__note">3-seed mean, ±0.02%</div>
     </div>
     <div class="result-card">
       <div class="result-card__label">Pythia-1B</div>
