@@ -119,6 +119,8 @@ for c in CONDITIONS:
     c["mean_base_ppl"]  = math.exp(sum(losses) / len(losses))
     c["max_base_ppl"]   = math.exp(max(losses))
     c["mean_base_loss"] = sum(losses) / len(losses)
+    # Exact conversion rate — used for both scatter Y values and Pearson r
+    c["exact_conv"] = c["gain"] / c["div"]
 
 # ── Print table ────────────────────────────────────────────────────────────────
 print("=" * 90)
@@ -130,7 +132,7 @@ for c in CONDITIONS:
 
 # ── Correlation: conv rate vs mean base PPL ───────────────────────────────────
 # Use exact conv = gain/div (not rounded table values) for correct Pearson r
-convs = np.array([c["gain"] / c["div"] for c in CONDITIONS])
+convs = np.array([c["exact_conv"] for c in CONDITIONS])
 ppls  = np.array([c["mean_base_ppl"] for c in CONDITIONS])
 log_ppls = np.log(ppls)
 
@@ -170,9 +172,9 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 # Panel A: Conv rate vs Mean Base PPL
 ax = axes[0]
 for c in CONDITIONS:
-    ax.scatter(c["mean_base_ppl"], c["conv"], color=c["color"], marker=c["marker"],
+    ax.scatter(c["mean_base_ppl"], c["exact_conv"], color=c["color"], marker=c["marker"],
                s=150, zorder=5, edgecolors="black", linewidths=0.7)
-    ax.annotate(c["label"], (c["mean_base_ppl"], c["conv"]),
+    ax.annotate(c["label"], (c["mean_base_ppl"], c["exact_conv"]),
                 textcoords="offset points", xytext=(5, 3), fontsize=8)
 ax.set_xlabel("Mean Base Model PPL", fontsize=11)
 ax.set_ylabel("Conversion Rate (gain/div)", fontsize=11)
@@ -183,9 +185,9 @@ ax.set_ylim(0, 1.1)
 # Panel B: Conv rate vs log(base PPL)
 ax = axes[1]
 for c in CONDITIONS:
-    ax.scatter(math.log(c["mean_base_ppl"]), c["conv"], color=c["color"], marker=c["marker"],
+    ax.scatter(math.log(c["mean_base_ppl"]), c["exact_conv"], color=c["color"], marker=c["marker"],
                s=150, zorder=5, edgecolors="black", linewidths=0.7)
-    ax.annotate(c["label"], (math.log(c["mean_base_ppl"]), c["conv"]),
+    ax.annotate(c["label"], (math.log(c["mean_base_ppl"]), c["exact_conv"]),
                 textcoords="offset points", xytext=(5, 3), fontsize=8)
 if abs(r_logppl_conv) > 0.3:
     b = np.polyfit(log_ppls, convs, 1)
@@ -201,9 +203,9 @@ ax.set_ylim(0, 1.1)
 ax = axes[2]
 divs_arr = np.array([c["div"] for c in CONDITIONS])
 for c in CONDITIONS:
-    ax.scatter(c["div"], c["conv"], color=c["color"], marker=c["marker"],
+    ax.scatter(c["div"], c["exact_conv"], color=c["color"], marker=c["marker"],
                s=150, zorder=5, edgecolors="black", linewidths=0.7)
-    ax.annotate(c["label"], (c["div"], c["conv"]),
+    ax.annotate(c["label"], (c["div"], c["exact_conv"]),
                 textcoords="offset points", xytext=(5, 3), fontsize=8)
 ax.set_xlabel("Mean Specialist Divergence (%)", fontsize=11)
 ax.set_ylabel("Conversion Rate (gain/div)", fontsize=11)
@@ -260,7 +262,7 @@ print(f"""The conversion rate (fusion gain per unit divergence) varies from
 We investigate whether base model uncertainty---measured as the mean per-domain
 perplexity of the base checkpoint---explains this variation.
 Log base PPL is {explanation}.
-The 6.9B anomaly (0.70$\times$ conversion at only 8.29\% mean divergence) is notable:
+The 6.9B anomaly (0.75$\times$ conversion at only 8.73\% mean divergence) is notable:
 Pythia-6.9B achieves lower base PPL ({c69b['mean_base_ppl']:.1f}) than Pythia-410M ({c410['mean_base_ppl']:.1f})
 on the same domains, yet converts divergence more efficiently. One interpretation is
 that larger models maintain stronger representational alignment between specialists

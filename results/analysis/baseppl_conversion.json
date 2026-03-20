@@ -13,7 +13,8 @@
       ],
       "mean_base_ppl": 7.095327721276382,
       "max_base_ppl": 13.180546598133809,
-      "mean_base_loss": 1.9594365
+      "mean_base_loss": 1.9594365,
+      "exact_conv": 0.33544303797468356
     },
     {
       "label": "Pythia-6.9B",
@@ -29,7 +30,8 @@
       ],
       "mean_base_ppl": 10.176172926330429,
       "max_base_ppl": 13.149371989093964,
-      "mean_base_loss": 2.320049
+      "mean_base_loss": 2.320049,
+      "exact_conv": 0.7479954180985109
     },
     {
       "label": "Pythia-1B",
@@ -45,7 +47,8 @@
       ],
       "mean_base_ppl": 11.875217513350359,
       "max_base_ppl": 16.002468634586315,
-      "mean_base_loss": 2.4744536666666668
+      "mean_base_loss": 2.4744536666666668,
+      "exact_conv": 0.49018324607329844
     },
     {
       "label": "Pythia-410M",
@@ -61,7 +64,8 @@
       ],
       "mean_base_ppl": 14.168620092894601,
       "max_base_ppl": 19.568301761534567,
-      "mean_base_loss": 2.6510296666666666
+      "mean_base_loss": 2.6510296666666666,
+      "exact_conv": 0.4932907348242811
     },
     {
       "label": "Exp2: Private",
@@ -77,7 +81,8 @@
       ],
       "mean_base_ppl": 19.18196791546376,
       "max_base_ppl": 30.318224489315284,
-      "mean_base_loss": 2.9539706666666667
+      "mean_base_loss": 2.9539706666666667,
+      "exact_conv": 0.5491360691144709
     },
     {
       "label": "Exp1: Cross-lingual",
@@ -94,7 +99,8 @@
       ],
       "mean_base_ppl": 19.575734235280144,
       "max_base_ppl": 102.66753992168613,
-      "mean_base_loss": 2.97429075
+      "mean_base_loss": 2.97429075,
+      "exact_conv": 0.8483430799220274
     }
   ],
   "correlations": {
