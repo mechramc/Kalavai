@@ -45,7 +45,7 @@ All Phase 1 experiments ran on one RTX 5090. Phase 2 cross-lingual and 20-contri
 
 | Scale | vs. Best Specialist | vs. Base | Seeds |
 |---|---|---|---|
-| Pythia-410M | **+7.70% ± 0.02%** | +16.3% | 3 |
+| Pythia-410M | **+7.72% ± 0.02%** | +16.3% | 3 |
 | Pythia-1B | **+7.49% ± 0.01%** | +15.5% | 3 |
 | Pythia-6.9B | **+6.53% ± 0.024%** | +8.6% | 3 |
 | Qwen-1.5B | **+1.06% ± 0.01%** | — | 3 |
@@ -242,14 +242,12 @@ Every experiment is a self-contained Python file. No config files. No YAML. No f
 
 Initial experiments produced +14.2% at 410M. Code review identified two evaluation inconsistencies — asymmetric batch sizes between the MoE and baselines, and a concatenated mixed evaluation that systematically underrepresented the fiction domain. The corrected per-domain equal-weight protocol (`kalavai_eval_utils.py`) yields +7.72%. All results in this repository and the paper use the corrected protocol. The inconsistencies and fix are documented in Appendix R of the paper.
 
-## Camera-Ready Roadmap
-
-These experiments are planned for the camera-ready version if the paper is accepted at NeurIPS 2026.
+## Planned Extensions
 
 | Experiment | Purpose | Status |
 |---|---|---|
 | LoRA ablation (r=8, r=64) at 410M | Preempt reviewer objection: does LoRA produce sufficient divergence? | Done — LoRA r=64 produces *negative* divergence (−20% div, −13.9% gain); full FT is necessary |
-| Base-PPL as conversion rate predictor | Explain why cross-lingual exceeds the linear prediction | Done — r=+0.613 (n=6, suggestive); integrated into §4.10 |
+| Base-PPL as conversion rate predictor | Explain why cross-lingual exceeds the linear prediction | Done — r=+0.560 (n=6, suggestive); integrated into §4.10 |
 | Low-divergence ablation (50-100 training steps) | Find the divergence floor where gains go to zero | Planned |
 | 20-contributor with robust data (replace thin domains) | Clean Exp3 without data-insufficient specialists | Planned |
 | Multi-round contributors (thicker specialists) | Realistic cooperative: 3 rounds per contributor, fewer but deeper specialists | Planned |

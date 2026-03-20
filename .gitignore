@@ -58,3 +58,16 @@ wandb/
 *.log
 docs/*.m4a
 docs/*.mp4
+
+# Internal working files — not for public repo
+Discard/
+paper/arxiv_upload/
+paper/arxiv_kalavai_neurips2026.zip
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
