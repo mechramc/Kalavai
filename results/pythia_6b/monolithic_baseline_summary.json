@@ -1,0 +1,60 @@
+{
+  "experiment": "6b_monolithic_baseline",
+  "model_id": "EleutherAI/pythia-6.9b",
+  "revision": "step10000",
+  "total_steps": 6000,
+  "equivalent_compute": "3 specialists \u00d7 2000 steps",
+  "freeze_layers": 7,
+  "eval_protocol": "corrected_equal_weight",
+  "seeds": [
+    42,
+    137,
+    2026
+  ],
+  "base_ew": 2.205462,
+  "base_per_domain": {
+    "code": 1.903709,
+    "science": 2.587869,
+    "fiction": 2.124807,
+    "ew": 2.205462
+  },
+  "results": {
+    "mean": {
+      "monolithic_ew": 1.942305,
+      "moe_fused_ew": 2.118148,
+      "best_specialist_ew": 2.266093,
+      "weight_avg_ew": 2.22986,
+      "fused_vs_monolithic_pct": -9.0533,
+      "monolithic_vs_base_pct": 11.932,
+      "moe_vs_base_pct": 6.528653264193831
+    },
+    "std": {
+      "monolithic_ew": 0.001193
+    }
+  },
+  "per_seed": [
+    {
+      "seed": 42,
+      "final_ew": 1.942224,
+      "final_code": 1.696273,
+      "final_science": 2.340302,
+      "final_fiction": 1.790097
+    },
+    {
+      "seed": 137,
+      "final_ew": 1.941155,
+      "final_code": 1.694261,
+      "final_science": 2.339606,
+      "final_fiction": 1.789598
+    },
+    {
+      "seed": 2026,
+      "final_ew": 1.943537,
+      "final_code": 1.699633,
+      "final_science": 2.340834,
+      "final_fiction": 1.790145
+    }
+  ],
+  "interpretation": "6.9B monolithic matches/exceeds MoE by 9.05%",
+  "timestamp": "2026-03-20T09:37:17Z"
+}

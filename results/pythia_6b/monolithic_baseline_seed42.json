@@ -1,0 +1,145 @@
+{
+  "seed": 42,
+  "model_id": "EleutherAI/pythia-6.9b",
+  "revision": "step10000",
+  "max_steps": 6000,
+  "freeze_layers": 7,
+  "base_losses": {
+    "code": 1.903709,
+    "science": 2.587869,
+    "fiction": 2.124807,
+    "ew": 2.205462
+  },
+  "checkpoints": [
+    {
+      "step": 0,
+      "held_out": {
+        "code": 1.903709,
+        "science": 2.587869,
+        "fiction": 2.124807,
+        "ew": 2.205462
+      },
+      "train_loss": null
+    },
+    {
+      "step": 500,
+      "held_out": {
+        "code": 1.818851,
+        "science": 2.470803,
+        "fiction": 1.878082,
+        "ew": 2.055912
+      },
+      "train_loss": 20.679473
+    },
+    {
+      "step": 1000,
+      "held_out": {
+        "code": 1.745595,
+        "science": 2.356568,
+        "fiction": 1.778318,
+        "ew": 1.96016
+      },
+      "train_loss": 20.460709
+    },
+    {
+      "step": 1500,
+      "held_out": {
+        "code": 1.690573,
+        "science": 2.326782,
+        "fiction": 1.765674,
+        "ew": 1.927676
+      },
+      "train_loss": 20.097089
+    },
+    {
+      "step": 2000,
+      "held_out": {
+        "code": 1.681779,
+        "science": 2.320341,
+        "fiction": 1.761701,
+        "ew": 1.921274
+      },
+      "train_loss": 19.633908
+    },
+    {
+      "step": 2500,
+      "held_out": {
+        "code": 1.680247,
+        "science": 2.32418,
+        "fiction": 1.772111,
+        "ew": 1.925513
+      },
+      "train_loss": 19.24136
+    },
+    {
+      "step": 3000,
+      "held_out": {
+        "code": 1.682453,
+        "science": 2.326048,
+        "fiction": 1.774557,
+        "ew": 1.927686
+      },
+      "train_loss": 18.839597
+    },
+    {
+      "step": 3500,
+      "held_out": {
+        "code": 1.691153,
+        "science": 2.334917,
+        "fiction": 1.78424,
+        "ew": 1.93677
+      },
+      "train_loss": 18.527716
+    },
+    {
+      "step": 4000,
+      "held_out": {
+        "code": 1.690711,
+        "science": 2.334912,
+        "fiction": 1.784903,
+        "ew": 1.936842
+      },
+      "train_loss": 18.229854
+    },
+    {
+      "step": 4500,
+      "held_out": {
+        "code": 1.692925,
+        "science": 2.336609,
+        "fiction": 1.786833,
+        "ew": 1.938789
+      },
+      "train_loss": 18.010619
+    },
+    {
+      "step": 5000,
+      "held_out": {
+        "code": 1.697732,
+        "science": 2.341189,
+        "fiction": 1.791132,
+        "ew": 1.943351
+      },
+      "train_loss": 17.804836
+    },
+    {
+      "step": 5500,
+      "held_out": {
+        "code": 1.696226,
+        "science": 2.340039,
+        "fiction": 1.789979,
+        "ew": 1.942081
+      },
+      "train_loss": 17.656753
+    },
+    {
+      "step": 6000,
+      "held_out": {
+        "code": 1.696273,
+        "science": 2.340302,
+        "fiction": 1.790097,
+        "ew": 1.942224
+      },
+      "train_loss": 17.513086
+    }
+  ]
+}
