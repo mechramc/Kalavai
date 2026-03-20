@@ -1,0 +1,210 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+
+KALAVAI Corrected Evaluation
+  model:          EleutherAI/pythia-1b
+  seeds:          [137, 2026]
+  eval_batch_size: 4 (consistent for ALL models)
+  eval_method:    per-domain equal-weight average
+  device:         cuda
+  GPU:            NVIDIA GeForce RTX 5090
+  VRAM:           34.2GB
+
+Loading tokenizer (EleutherAI/pythia-1b)...
+
+======================================================================
+Seed 137 — EleutherAI/pythia-1b
+======================================================================
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+[base]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:   1%|          | 1/196 [00:00<00:26,  7.47it/s]Loading weights:  22%|██▏       | 44/196 [00:00<00:00, 225.13it/s]Loading weights:  36%|███▌      | 70/196 [00:00<00:00, 166.53it/s]Loading weights:  46%|████▌     | 90/196 [00:00<00:00, 141.97it/s]Loading weights:  55%|█████▍    | 107/196 [00:00<00:00, 147.24it/s]Loading weights:  63%|██████▎   | 124/196 [00:00<00:00, 120.52it/s]Loading weights:  71%|███████▏  | 140/196 [00:01<00:00, 119.68it/s]Loading weights:  78%|███████▊  | 153/196 [00:01<00:00, 118.54it/s]Loading weights:  85%|████████▍ | 166/196 [00:01<00:00, 113.33it/s]Loading weights:  91%|█████████ | 178/196 [00:01<00:00, 113.23it/s]Loading weights:  98%|█████████▊| 192/196 [00:01<00:00, 118.06it/s]Loading weights: 100%|██████████| 196/196 [00:01<00:00, 128.68it/s]
+    code    : 2.0082  (156/158 chunks, 1.7s)
+    science : 2.7727  (64/67 chunks, 0.6s)
+    fiction : 2.6424  (200/778 chunks, 1.9s)
+
+[monolithic]  not found — skipping
+
+Loading specialists (seed=137)...
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  35%|███▍      | 68/196 [00:00<00:00, 669.34it/s]Loading weights:  69%|██████▉   | 135/196 [00:00<00:00, 569.11it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 615.00it/s]
+  Loaded code
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  40%|███▉      | 78/196 [00:00<00:00, 438.43it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 763.60it/s]
+  Loaded science
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  31%|███       | 60/196 [00:00<00:00, 521.15it/s]Loading weights:  68%|██████▊   | 134/196 [00:00<00:00, 635.78it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 653.15it/s]
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+  Loaded fiction
+
+[code_spec]
+    code    : 1.7863  (156/158 chunks, 1.5s)
+    science : 2.7950  (64/67 chunks, 0.6s)
+    fiction : 2.6569  (200/778 chunks, 1.9s)
+
+[science_spec]
+    code    : 2.1304  (156/158 chunks, 1.5s)
+    science : 2.5120  (64/67 chunks, 0.6s)
+    fiction : 2.7991  (200/778 chunks, 1.9s)
+
+[fiction_spec]
+    code    : 2.0274  (156/158 chunks, 1.5s)
+    science : 2.7799  (64/67 chunks, 0.6s)
+    fiction : 1.9782  (200/778 chunks, 1.9s)
+
+[weight_avg]  computing weight average...
+    code    : 1.9311  (156/158 chunks, 1.5s)
+    science : 2.6270  (64/67 chunks, 0.6s)
+    fiction : 2.3551  (200/778 chunks, 1.9s)
+
+[moe]  building + training router (500 steps)...
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.5718
+    step 200/500: loss=2.3212
+    step 300/500: loss=2.5560
+    step 400/500: loss=2.4922
+    step 500/500: loss=2.7505
+    code    : 1.7864  (156/158 chunks, 4.4s)
+    science : 2.5116  (64/67 chunks, 1.8s)
+    fiction : 1.9786  (200/778 chunks, 5.7s)
+
+  Router gate distribution:
+    code: code=0.9985  science=0.0004  fiction=0.0011
+    science: code=0.0003  science=0.9981  fiction=0.0016
+    fiction: code=0.0005  science=0.0005  fiction=0.9990
+
+======================================================================
+CORRECTED RESULTS — seed=137
+  Equal-weight avg = (code + science + fiction) / 3
+  batch_size=4 for ALL models
+======================================================================
+Model                     code   science   fiction    Eq.Avg
+------------------------------------------------------------
+base                    2.0082    2.7727    2.6424    2.4745
+code_spec               1.7863    2.7950    2.6569    2.4127
+science_spec            2.1304    2.5120    2.7991    2.4805
+fiction_spec            2.0274    2.7799    1.9782    2.2619
+weight_avg              1.9311    2.6270    2.3551    2.3044
+moe                     1.7864    2.5116    1.9786    2.0922
+
+  MoE vs best spec (equal-weight):  +7.50%
+  MoE vs base (equal-weight):       +15.45%
+
+Saved: results\pythia\pythia_1b\corrected_eval_137.json
+
+======================================================================
+Seed 2026 — EleutherAI/pythia-1b
+======================================================================
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+[base]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  34%|███▎      | 66/196 [00:00<00:00, 648.80it/s]Loading weights:  77%|███████▋  | 150/196 [00:00<00:00, 746.49it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 780.69it/s]
+    code    : 2.0082  (156/158 chunks, 1.5s)
+    science : 2.7727  (64/67 chunks, 0.6s)
+    fiction : 2.6424  (200/778 chunks, 1.9s)
+
+[monolithic]  not found — skipping
+
+Loading specialists (seed=2026)...
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  43%|████▎     | 84/196 [00:00<00:00, 807.45it/s]Loading weights:  93%|█████████▎| 182/196 [00:00<00:00, 891.66it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 925.47it/s]
+  Loaded code
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  46%|████▌     | 90/196 [00:00<00:00, 855.18it/s]Loading weights:  92%|█████████▏| 180/196 [00:00<00:00, 875.19it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 926.79it/s]
+  Loaded science
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  32%|███▏      | 62/196 [00:00<00:00, 599.62it/s]Loading weights:  81%|████████  | 158/196 [00:00<00:00, 797.59it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 808.52it/s]
+  Loaded fiction
+
+[code_spec]
+    code    : 1.7870  (156/158 chunks, 1.5s)
+    science : 2.7949  (64/67 chunks, 0.6s)
+    fiction : 2.6567  (200/778 chunks, 1.9s)
+
+[science_spec]
+    code    : 2.1303  (156/158 chunks, 1.5s)
+    science : 2.5121  (64/67 chunks, 0.6s)
+    fiction : 2.8000  (200/778 chunks, 1.9s)
+
+[fiction_spec]
+    code    : 2.0270  (156/158 chunks, 1.5s)
+    science : 2.7798  (64/67 chunks, 0.6s)
+    fiction : 1.9756  (200/778 chunks, 1.9s)
+
+[weight_avg]  computing weight average...
+    code    : 1.9310  (156/158 chunks, 1.5s)
+    science : 2.6266  (64/67 chunks, 0.6s)
+    fiction : 2.3550  (200/778 chunks, 1.9s)
+
+[moe]  building + training router (500 steps)...
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.5850
+    step 200/500: loss=2.5649
+    step 300/500: loss=2.1691
+    step 400/500: loss=2.7642
+    step 500/500: loss=2.3964
+    code    : 1.7872  (156/158 chunks, 4.4s)
+    science : 2.5117  (64/67 chunks, 1.8s)
+    fiction : 1.9760  (200/778 chunks, 5.6s)
+
+  Router gate distribution:
+    code: code=0.9971  science=0.0005  fiction=0.0024
+    science: code=0.0004  science=0.9978  fiction=0.0018
+    fiction: code=0.0004  science=0.0003  fiction=0.9993
+
+======================================================================
+CORRECTED RESULTS — seed=2026
+  Equal-weight avg = (code + science + fiction) / 3
+  batch_size=4 for ALL models
+======================================================================
+Model                     code   science   fiction    Eq.Avg
+------------------------------------------------------------
+base                    2.0082    2.7727    2.6424    2.4745
+code_spec               1.7870    2.7949    2.6567    2.4129
+science_spec            2.1303    2.5121    2.8000    2.4808
+fiction_spec            2.0270    2.7798    1.9756    2.2608
+weight_avg              1.9310    2.6266    2.3550    2.3042
+moe                     1.7872    2.5117    1.9760    2.0916
+
+  MoE vs best spec (equal-weight):  +7.48%
+  MoE vs base (equal-weight):       +15.47%
+
+Saved: results\pythia\pythia_1b\corrected_eval_2026.json
+
+======================================================================
+MULTI-SEED SUMMARY (1b)
+======================================================================
+Seed        vs spec    vs base
+------------------------------
+137          +7.50%     +15.45%
+2026         +7.48%     +15.47%
+------------------------------
+Mean         +7.49%
+Std           0.01%
+
+Saved summary: results\pythia\pythia_1b\corrected_eval_1b_summary.json
+
+======================================================================
+CORRECTED EVAL COMPLETE
+======================================================================

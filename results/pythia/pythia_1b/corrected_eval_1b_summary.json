@@ -1,0 +1,168 @@
+{
+  "model": "1b",
+  "model_id": "EleutherAI/pythia-1b",
+  "seeds": [
+    137,
+    2026
+  ],
+  "per_seed": [
+    {
+      "seed": 137,
+      "model_id": "EleutherAI/pythia-1b",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "code",
+        "science",
+        "fiction"
+      ],
+      "eval_matrix": {
+        "base": {
+          "code": 2.008226,
+          "science": 2.772743,
+          "fiction": 2.642392,
+          "equal_weight_avg": 2.474454
+        },
+        "code_spec": {
+          "code": 1.786307,
+          "science": 2.795008,
+          "fiction": 2.656882,
+          "equal_weight_avg": 2.412732
+        },
+        "science_spec": {
+          "code": 2.130425,
+          "science": 2.511976,
+          "fiction": 2.799134,
+          "equal_weight_avg": 2.480512
+        },
+        "fiction_spec": {
+          "code": 2.027442,
+          "science": 2.779923,
+          "fiction": 1.978238,
+          "equal_weight_avg": 2.261868
+        },
+        "weight_avg": {
+          "code": 1.93108,
+          "science": 2.627017,
+          "fiction": 2.355076,
+          "equal_weight_avg": 2.304391
+        },
+        "moe": {
+          "code": 1.786391,
+          "science": 2.51164,
+          "fiction": 1.978557,
+          "equal_weight_avg": 2.092196
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.474454,
+        "best_spec_equal_weight": 2.261868,
+        "best_spec_domain": "fiction",
+        "weight_avg_equal_weight": 2.304391,
+        "moe_equal_weight": 2.092196,
+        "improvement_vs_spec": 7.5014,
+        "improvement_vs_base": 15.4482,
+        "improvement_wa_vs_base": 6.8727
+      },
+      "router_distribution": {
+        "code": [
+          0.9985,
+          0.0004,
+          0.0011
+        ],
+        "science": [
+          0.0003,
+          0.9981,
+          0.0016
+        ],
+        "fiction": [
+          0.0005,
+          0.0005,
+          0.999
+        ]
+      }
+    },
+    {
+      "seed": 2026,
+      "model_id": "EleutherAI/pythia-1b",
+      "eval_batch_size": 4,
+      "eval_batches": 50,
+      "eval_method": "per-domain-separate-then-equal-weight-avg",
+      "domains": [
+        "code",
+        "science",
+        "fiction"
+      ],
+      "eval_matrix": {
+        "base": {
+          "code": 2.008226,
+          "science": 2.772743,
+          "fiction": 2.642392,
+          "equal_weight_avg": 2.474454
+        },
+        "code_spec": {
+          "code": 1.786978,
+          "science": 2.794947,
+          "fiction": 2.656681,
+          "equal_weight_avg": 2.412869
+        },
+        "science_spec": {
+          "code": 2.130298,
+          "science": 2.512147,
+          "fiction": 2.799963,
+          "equal_weight_avg": 2.480803
+        },
+        "fiction_spec": {
+          "code": 2.027046,
+          "science": 2.779826,
+          "fiction": 1.975638,
+          "equal_weight_avg": 2.260837
+        },
+        "weight_avg": {
+          "code": 1.931026,
+          "science": 2.626642,
+          "fiction": 2.355038,
+          "equal_weight_avg": 2.304235
+        },
+        "moe": {
+          "code": 1.787227,
+          "science": 2.511734,
+          "fiction": 1.975973,
+          "equal_weight_avg": 2.091645
+        }
+      },
+      "metrics": {
+        "base_equal_weight": 2.474454,
+        "best_spec_equal_weight": 2.260837,
+        "best_spec_domain": "fiction",
+        "weight_avg_equal_weight": 2.304235,
+        "moe_equal_weight": 2.091645,
+        "improvement_vs_spec": 7.4836,
+        "improvement_vs_base": 15.4704,
+        "improvement_wa_vs_base": 6.8791
+      },
+      "router_distribution": {
+        "code": [
+          0.9971,
+          0.0005,
+          0.0024
+        ],
+        "science": [
+          0.0004,
+          0.9978,
+          0.0018
+        ],
+        "fiction": [
+          0.0004,
+          0.0003,
+          0.9993
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "improvement_mean": 7.4925,
+    "improvement_std": 0.0126
+  }
+}
