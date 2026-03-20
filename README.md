@@ -46,8 +46,8 @@ All Phase 1 experiments ran on one RTX 5090. Phase 2 cross-lingual and 20-contri
 | Scale | vs. Best Specialist | vs. Base | Seeds |
 |---|---|---|---|
 | Pythia-410M | **+7.72% ± 0.02%** | +16.3% | 3 |
-| Pythia-1B | **+7.49%** | +15.5% | 1 |
-| Pythia-6.9B | **+5.81%** | +8.1% | 1 |
+| Pythia-1B | **+7.49% ± 0.01%** | +15.5% | 3 |
+| Pythia-6.9B | **+6.53% ± 0.024%** | +8.6% | 3 |
 | Qwen-1.5B | **+1.06% ± 0.01%** | — | 3 |
 
 ### Phase 2: High-Divergence Domains
@@ -73,7 +73,7 @@ Before committing to a cooperative, measure how much your specialists diverge fr
 | Condition | Mean Div. | Gain | Predicted | Residual |
 |---|---|---|---|---|
 | Qwen-1.5B | 3.16% | +1.06% | < 0 | — |
-| Pythia-6.9B | 8.29% | +5.81% | +3.96% | +1.85pp |
+| Pythia-6.9B | 8.29% | +6.53% | +3.96% | +2.57pp |
 | Pythia-1B | 15.28% | +7.49% | +9.70% | −2.21pp |
 | Pythia-410M | 15.65% | +7.72% | +10.01% | −2.29pp |
 | Private-domain | 18.52% | +10.17% | +12.36% | −2.19pp |
@@ -96,16 +96,16 @@ Before committing to a cooperative, measure how much your specialists diverge fr
 
 **1. Frozen layers are optional insurance that becomes essential.**
 
-At short training horizons (< 5,000 steps), freezing costs ~1pp. At long horizons (> 10,000 steps), NOT freezing degrades fusion. The crossover is at ~10,000 steps.
+At short training horizons (≤2,000 steps), freezing costs ~0.5pp. The crossover is at ~5,000 steps — beyond that, unfrozen specialists over-specialise and fusion degrades. freeze=0 peaks at 2,000 steps (+8.12%); freeze=4 overtakes it at 5,000 steps.
 
 ```
 Steps    freeze=0   freeze=4   Winner
-500      +9.9%      +8.9%      freeze=0
-1000     +12.5%     +11.3%     freeze=0
-2000     +15.1%     +13.9%     freeze=0
-5000     +16.4%     +15.8%     freeze=0
-10000    +15.4%     +15.6%     freeze=4  ← crossover
-20000    +13.6%     +14.8%     freeze=4
+500      +5.88%     +5.31%     freeze=0
+1000     +5.94%     +6.48%     freeze=4 (marginal)
+2000     +8.12%     +7.56%     freeze=0  ← freeze=0 peak
+5000     +7.79%     +8.07%     freeze=4  ← crossover
+10000    +5.83%     +7.33%     freeze=4
+20000    +3.38%     +6.30%     freeze=4
 ```
 
 **2. You must run all specialists. Single-expert dispatch fails catastrophically.**
@@ -248,7 +248,7 @@ These experiments are planned for the camera-ready version if the paper is accep
 
 | Experiment | Purpose | Status |
 |---|---|---|
-| LoRA ablation (r=8, r=64) at 410M | Preempt reviewer objection: does LoRA produce sufficient divergence? | In progress |
+| LoRA ablation (r=8, r=64) at 410M | Preempt reviewer objection: does LoRA produce sufficient divergence? | Done — LoRA r=64 produces *negative* divergence (−20% div, −13.9% gain); full FT is necessary |
 | Base-PPL as conversion rate predictor | Explain why cross-lingual exceeds the linear prediction | Done — r=+0.613 (n=6, suggestive); integrated into §4.10 |
 | Low-divergence ablation (50-100 training steps) | Find the divergence floor where gains go to zero | Planned |
 | 20-contributor with robust data (replace thin domains) | Clean Exp3 without data-insufficient specialists | Planned |

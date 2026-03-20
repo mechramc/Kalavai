@@ -502,6 +502,8 @@ Thai       & +19.13\% & Instructions & $-$16.54\%$^\dagger$ \\
 
 \paragraph{Scale validation.} The +16.79\% gain at 15.71\% mean divergence is +6.75pp above the linear regression prediction (+10.04\%) from Section~\ref{sec:divergence_gain}, consistent with the pattern that heterogeneous multi-domain cooperatives---mixing language and domain specialists with widely varying divergence levels---outperform the English-domain regression baseline. The routing saturation result holds at scale: a simple linear router on 20 specialists converges to near-optimal domain assignment, confirming that router architecture does not matter once shared initialisation is in place.
 
+\paragraph{Replication note.} Experiment 3 reports seed 42 only; the 20-specialist H100 training budget precludes multi-seed replication. Phase 1 multi-seed variance across all scales (±0.01--0.024\%, Table~\ref{tab:main}) and Experiment 2 three-seed variance (±0.15pp, Table~\ref{tab:exp2}) suggest the result is stable, and the base-model hidden-state router variant achieves +16.67\% on the same seed (§\ref{sec:phase2_twenty}, router robustness note), providing an independent robustness check on the routing outcome. Multi-seed confirmation remains future work.
+
 % ============================================================
 \subsection{Divergence--Gain Relationship}
 \label{sec:divergence_gain}
@@ -886,19 +888,19 @@ step143000 & 100.0\% & 1.992 & 1.960 & +0.40\% \\
 
 \begin{table}[h]
 \centering
-\caption{Maturity results at Pythia-6.9B (seed 42). \emph{Note: these values are from the original mixed-batch evaluation protocol}; the corrected equal-weight result for step10000 is +6.53\% (Table~\ref{tab:main}). The relative ordering (step10k $\approx$ step143k) is preserved under corrected evaluation.}
+\caption{Maturity results at Pythia-6.9B (seed 42), corrected equal-weight evaluation (per-domain average of code, science, fiction losses). Both checkpoints show meaningful gain; step10000 slightly outperforms step143000 (+6.53\% vs.\ +5.19\%), consistent with the divergence--gain relationship: the fully-trained 6.9B base diverges less, yielding slightly lower fusion gain.}
 \label{tab:maturity6b}
 \begin{tabular}{rrccc}
 \toprule
-\textbf{Checkpoint} & \textbf{\% Training} & \textbf{Base Loss} & \textbf{MoE Loss} & \textbf{Improvement (orig.\ eval)} \\
+\textbf{Checkpoint} & \textbf{\% Training} & \textbf{Base Loss (EW)} & \textbf{MoE Loss (EW)} & \textbf{Improvement} \\
 \midrule
-step10000  & 7.0\%   & 2.131 & 2.080 & +2.43\% \\
-step143000 & 100.0\% & 2.242 & 2.158 & +2.26\% \\
+step10000  & 7.0\%   & 2.320 & 2.118 & +6.53\% \\
+step143000 & 100.0\% & 1.900 & 1.758 & +5.19\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Under corrected evaluation, the 410M maturity sweep shows consistent improvement from +7.03\% to +8.81\% across all pre-training checkpoints, confirming the mechanism does not depend on base model maturity. At 1B, improvement is strong at early checkpoints (+8.75\% at step 5,000) but drops markedly to +0.40\% at the fully-trained checkpoint (step 143,000). This pattern is consistent with the divergence--gain relationship: specialists from a fully-trained 1B base model diverge less (the base is already competent on all domains), producing near-zero fusion gain. The 6.9B appendix values remain as original mixed-batch evaluation; the corrected equal-weight result is +6.53\% at step10000 (Table~\ref{tab:main}).
+Under corrected evaluation, the 410M maturity sweep shows consistent improvement from +7.03\% to +8.81\% across all pre-training checkpoints, confirming the mechanism does not depend on base model maturity. At 1B, improvement is strong at early checkpoints (+8.75\% at step 5,000) but drops markedly to +0.40\% at the fully-trained checkpoint (step 143,000). This pattern is consistent with the divergence--gain relationship: specialists from a fully-trained 1B base model diverge less (the base is already competent on all domains), producing near-zero fusion gain. The 6.9B maturity table (Table~\ref{tab:maturity6b}) now uses corrected equal-weight evaluation: +6.53\% at step10000 and +5.19\% at step143000.
 
 \begin{figure}[h]
   \centering

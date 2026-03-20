@@ -469,7 +469,7 @@ train_router(fused, mixed_data, steps=500)
 
   <figure class="figure figure--wide">
     <img src="figures/fig_hero_4panel.png" alt="KALAVAI four key findings">
-    <figcaption><strong>Figure 1.</strong> The four core findings. (A) Fusion improvement across model scales (+7.72% at 410M, corrected eval). (B) Training duration crossover: frozen layers become necessary around 10k steps. (C) Single-specialist dispatch fails catastrophically. (D) KALAVAI beats equal-compute monolithic training (wins per-domain; see §Results).</figcaption>
+    <figcaption><strong>Figure 1.</strong> The four core findings. (A) Fusion improvement across model scales (+7.72% at 410M, corrected eval). (B) Training duration crossover: frozen layers become necessary around 5k steps. (C) Single-specialist dispatch fails catastrophically. (D) KALAVAI beats equal-compute monolithic training (wins per-domain; see §Results).</figcaption>
   </figure>
 
   <!-- ═══ RESULTS ═══ -->
@@ -492,14 +492,14 @@ train_router(fused, mixed_data, steps=500)
     </div>
     <div class="result-card">
       <div class="result-card__label">Pythia-6.9B</div>
-      <div class="result-card__value val--teal">+5.81%</div>
-      <div class="result-card__note">3 seeds, ±0.007%</div>
+      <div class="result-card__value val--teal">+6.53%</div>
+      <div class="result-card__note">3 seeds, ±0.024%</div>
     </div>
   </div>
 
   <figure class="figure figure--wide">
     <img src="figures/fig_scale_ladder.png" alt="KALAVAI improvement across model scales">
-    <figcaption><strong>Figure 2.</strong> Scale ladder. KALAVAI improvement as a function of model size, corrected per-domain equal-weight evaluation. Gains are +7.72% at 410M, +7.49% at 1B, and +5.81% at 6.9B (step-budget sweep at 2,000 steps). The mechanism holds at every tested scale.</figcaption>
+    <figcaption><strong>Figure 2.</strong> Scale ladder. KALAVAI improvement as a function of model size, corrected per-domain equal-weight evaluation. Gains are +7.72% at 410M, +7.49% at 1B, and +6.53% at 6.9B (step-budget sweep at 2,000 steps). The mechanism holds at every tested scale.</figcaption>
   </figure>
 
   <h3>Beats equal-compute monolithic training</h3>
@@ -540,11 +540,11 @@ train_router(fused, mixed_data, steps=500)
 
   <h3>6.9B: step-budget sweep recovers the improvement</h3>
 
-  <p>Initial 6.9B results with 500 training steps showed reduced gains. The step-budget sweep (B1) confirmed the hypothesis: at 2,000 steps with k=4 frozen layers, the 6.9B improvement is <strong>+5.81% ± 0.007%</strong> (3 seeds). The mechanism does not degrade at 6.9B — the earlier contracted result was a training-budget artefact. Freeze depth is largely insensitive at 6.9B (&lt;0.1pp difference across k=0 to k=4).</p>
+  <p>Initial 6.9B results with 500 training steps showed reduced gains. The step-budget sweep (B1) confirmed the hypothesis: at 2,000 steps with k=4 frozen layers, the 6.9B improvement is <strong>+6.53% ± 0.024%</strong> (3 seeds, corrected equal-weight eval). The mechanism does not degrade at 6.9B — the earlier contracted result was a training-budget artefact. Freeze depth is largely insensitive at 6.9B (&lt;0.1pp difference across k=0 to k=4).</p>
 
   <figure class="figure">
     <img src="figures/fig_6b_summary.png" alt="6.9B scale results summary">
-    <figcaption><strong>Figure 6.</strong> 6.9B results at 2,000 training steps. +5.81% ± 0.007% across 3 seeds — consistent with the 410M/1B trajectory. The mechanism holds at 6.9B parameters.</figcaption>
+    <figcaption><strong>Figure 6.</strong> 6.9B results at 2,000 training steps. +6.53% ± 0.024% across 3 seeds (corrected equal-weight eval) — consistent with the 410M/1B trajectory. The mechanism holds at 6.9B parameters.</figcaption>
   </figure>
 
   <!-- ═══ PREDICTIVE MODEL ═══ -->
@@ -565,7 +565,7 @@ train_router(fused, mixed_data, steps=500)
     <thead><tr><th>Condition</th><th>Mean Divergence</th><th>Gain vs. Best Spec.</th><th>Conv. Rate</th><th>Predicted</th><th>Residual</th></tr></thead>
     <tbody>
       <tr><td>Qwen-1.5B</td><td>3.16%</td><td>+1.06%</td><td>0.34×</td><td>&lt;0</td><td>—</td></tr>
-      <tr><td>Pythia-6.9B</td><td>8.29%</td><td>+5.81%</td><td>0.70×</td><td>+3.96%</td><td>+1.85pp</td></tr>
+      <tr><td>Pythia-6.9B</td><td>8.29%</td><td>+6.53%</td><td>0.79×</td><td>+3.96%</td><td>+2.57pp</td></tr>
       <tr><td>Pythia-1B</td><td>15.28%</td><td>+7.49%</td><td>0.49×</td><td>+9.70%</td><td>−2.21pp</td></tr>
       <tr><td>Pythia-410M</td><td>15.65%</td><td>+7.72%</td><td>0.49×</td><td>+10.01%</td><td>−2.29pp</td></tr>
       <tr><td>Exp 2: Private-domain</td><td>18.52%</td><td>+10.17%</td><td>0.55×</td><td>+12.36%</td><td>−2.19pp</td></tr>
@@ -612,7 +612,7 @@ train_router(fused, mixed_data, steps=500)
     <div class="experiment-card__body">
       <div class="experiment-card__title">Exp 3 — 20-contributor federation (Pythia-1B)</div>
       <div class="experiment-card__desc">20 specialists: 10 languages (Arabic, Chinese, Hindi, Tamil, Yoruba, Welsh, Swahili, Russian, Japanese, French) + 10 domains (code, science, medical, legal, patent, fiction, news, math, chemistry, dialogue/instructions). The largest cooperative tested. Mean divergence 15.71%.</div>
-      <div class="experiment-card__result">+16.79% vs. best specialist &nbsp;·&nbsp; 18/20 domains route to own specialist &nbsp;·&nbsp; seed 42</div>
+      <div class="experiment-card__result">+16.79% vs. best specialist &nbsp;·&nbsp; 18/20 domains route to own specialist &nbsp;·&nbsp; seed 42 only (H100 budget precludes multi-seed; robustness confirmed by base-hidden router variant at +16.67%)</div>
     </div>
   </div>
 
@@ -633,24 +633,24 @@ train_router(fused, mixed_data, steps=500)
     <p><strong>Practical implication:</strong> The cooperative coordinator must distribute a single canonical checkpoint. All specialists must start from exactly the same revision — same weights, same tokenizer, same architecture. This is the one non-negotiable constraint of the protocol.</p>
   </div>
 
-  <h3>2. Frozen layers become necessary beyond ~10,000 steps</h3>
+  <h3>2. Frozen layers become necessary beyond ~5,000 steps</h3>
 
-  <p>At short training horizons (&le;5,000 steps), freezing layers is optional — more plastic representations allow specialists to diverge more effectively. But beyond approximately 10,000 steps, unfrozen specialists over-specialise and become harder to fuse. Freezing the first K layers provides a structural anchor that preserves routing compatibility.</p>
+  <p>At short training horizons (&le;2,000 steps), freezing layers is optional — more plastic representations allow specialists to diverge more freely. freeze=0 peaks at 2,000 steps (+8.12%). But beyond approximately 5,000 steps, unfrozen specialists over-specialise and become harder to fuse. Freezing the first K layers provides a structural anchor that preserves routing compatibility. The crossover from "freezing hurts" to "freezing helps" occurs at ~5,000 steps.</p>
 
   <figure class="figure">
     <img src="figures/fig_training_duration_crossover.png" alt="Training duration crossover: freeze=0 vs freeze=4">
-    <figcaption><strong>Figure 7.</strong> The training duration crossover. Without frozen layers, improvement peaks at 5k steps then degrades. With 4 frozen layers, improvement plateaus through 20k steps. Crossover at approximately 10,000 steps.</figcaption>
+    <figcaption><strong>Figure 7.</strong> The training duration crossover (corrected equal-weight eval). freeze=0 peaks at 2,000 steps (+8.12%) then degrades. freeze=4 overtakes at ~5,000 steps and plateaus through 20k steps.</figcaption>
   </figure>
 
   <table class="data-table">
     <thead><tr><th>Steps</th><th>Freeze=0</th><th>Freeze=4</th><th>Winner</th></tr></thead>
     <tbody>
-      <tr><td>500</td><td>+9.9%</td><td>+8.9%</td><td>Freeze=0</td></tr>
-      <tr><td>1,000</td><td>+12.5%</td><td>+11.3%</td><td>Freeze=0</td></tr>
-      <tr><td>2,000</td><td>+15.1%</td><td>+13.9%</td><td>Freeze=0</td></tr>
-      <tr><td>5,000</td><td>+16.4%</td><td>+15.8%</td><td>Freeze=0</td></tr>
-      <tr class="highlight"><td>10,000</td><td>+15.4%</td><td>+15.6%</td><td><strong>Freeze=4 &larr; crossover</strong></td></tr>
-      <tr class="highlight"><td>20,000</td><td>+13.6%</td><td>+14.8%</td><td><strong>Freeze=4</strong></td></tr>
+      <tr><td>500</td><td>+5.88%</td><td>+5.31%</td><td>Freeze=0</td></tr>
+      <tr><td>1,000</td><td>+5.94%</td><td>+6.48%</td><td>Freeze=4 (marginal)</td></tr>
+      <tr><td>2,000</td><td>+8.12%</td><td>+7.56%</td><td>Freeze=0 ← freeze=0 peak</td></tr>
+      <tr class="highlight"><td>5,000</td><td>+7.79%</td><td>+8.07%</td><td><strong>Freeze=4 &larr; crossover</strong></td></tr>
+      <tr class="highlight"><td>10,000</td><td>+5.83%</td><td>+7.33%</td><td><strong>Freeze=4</strong></td></tr>
+      <tr class="highlight"><td>20,000</td><td>+3.38%</td><td>+6.30%</td><td><strong>Freeze=4</strong></td></tr>
     </tbody>
   </table>
 
@@ -696,11 +696,11 @@ train_router(fused, mixed_data, steps=500)
   </figure>
 
   <h3>Freeze depth sweep</h3>
-  <p>We swept freeze depth from 0 (no frozen layers) to 12 (half the model). At 2,000 steps, freeze=0 wins. At 10,000 steps, freeze=4 and freeze=8 both outperform freeze=0. Practical guideline: training under 5,000 steps — skip freezing. Over 10,000 steps — freeze 4–8 layers.</p>
+  <p>We swept freeze depth from 0 (no frozen layers) to 12 (half the model). At 2,000 steps, freeze=0 wins. At 5,000+ steps, freeze=4 and freeze=8 both outperform freeze=0. Practical guideline: training under 5,000 steps — skip freezing. Over 5,000 steps — freeze 4–8 layers.</p>
 
   <figure class="figure figure--wide">
     <img src="figures/fig_ablation_freeze.png" alt="Freeze depth sweep from 0 to 12 layers">
-    <figcaption><strong>Figure 12.</strong> Freeze depth sweep at 410M. Each line is a training duration (500–20,000 steps). The crossover from "freezing hurts" to "freezing helps" occurs at approximately 10,000 steps, consistently across all tested freeze depths.</figcaption>
+    <figcaption><strong>Figure 12.</strong> Freeze depth sweep at 410M. Each line is a training duration (500–20,000 steps). The crossover from "freezing hurts" to "freezing helps" occurs at approximately 5,000 steps, consistently across all tested freeze depths.</figcaption>
   </figure>
 
   <h3>Specialist count scales gracefully</h3>
@@ -867,7 +867,7 @@ train_router(fused, mixed_data, steps=500)
 
   <p><strong>No real cooperative demonstrated.</strong> All experiments are simulated cooperatives on single machines. Heterogeneous hardware, asynchronous submission, and contributor reliability are open engineering problems.</p>
 
-  <p><strong>No frontier-scale evidence.</strong> Results reach 6.9B parameters (+5.81%, step-budget sweep). Evidence above 7B is absent.</p>
+  <p><strong>No frontier-scale evidence.</strong> Results reach 6.9B parameters (+6.53% ±0.024%, 3 seeds, step-budget sweep). Evidence above 7B is absent.</p>
 
   <!-- ═══ ROADMAP ═══ -->
   <hr class="sep">
@@ -877,10 +877,11 @@ train_router(fused, mixed_data, steps=500)
   <p>The paper is complete for submission. These experiments are planned for the camera-ready version to preempt likely reviewer objections and extend the predictive model.</p>
 
   <div class="experiment-card">
-    <span class="experiment-card__status status--running">In progress</span>
+    <span class="experiment-card__status status--done">Done</span>
     <div class="experiment-card__body">
       <div class="experiment-card__title">LoRA ablation (r=8, r=64) at 410M</div>
       <div class="experiment-card__desc">Does LoRA produce sufficient divergence to drive cooperative gain? LoRA's low-rank constraint may limit domain specialisation — if so, the predictive formula predicts the exact magnitude of the reduction. Tests whether full fine-tuning is necessary or a convenience.</div>
+      <div class="experiment-card__result">LoRA r=64 produces <em>negative</em> divergence (specialists worse than base on own domain: code −37%, science −29%), yielding fusion loss of −13.9% to −15.2%. Full fine-tuning is necessary. Integrated into §Design Decisions.</div>
     </div>
   </div>
 
@@ -992,10 +993,10 @@ python experiments/kalavai_pythia_experiment.py</code></pre>
     <tbody>
       <tr><td><code>kalavai_pythia_experiment.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~30 min</td><td>+7.72% &plusmn; 0.02%</td></tr>
       <tr><td><code>kalavai_pythia_1b_experiment.py</code></td><td>1B</td><td>Any 24GB GPU</td><td>~2 hours</td><td>+7.49%</td></tr>
-      <tr><td><code>kalavai_pythia_6b_experiment.py</code></td><td>6.9B</td><td>A100 80GB</td><td>~8 hours</td><td>+5.81% &plusmn; 0.007%</td></tr>
+      <tr><td><code>kalavai_pythia_6b_experiment.py</code></td><td>6.9B</td><td>A100 80GB</td><td>~8 hours</td><td>+6.53% &plusmn; 0.024%</td></tr>
       <tr><td><code>kalavai_private_domain_experiment.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~45 min</td><td>+10.17% &plusmn; 0.15pp</td></tr>
       <tr><td><code>kalavai_crosslingual_experiment.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~45 min</td><td>+21.76% &plusmn; 0.005pp</td></tr>
-      <tr><td><code>kalavai_training_duration_crossover.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~4 hours</td><td>Crossover at 10k steps</td></tr>
+      <tr><td><code>kalavai_training_duration_crossover.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~4 hours</td><td>Crossover at ~5k steps</td></tr>
       <tr><td><code>kalavai_domain_classifier_baseline.py</code></td><td>410M</td><td>Any 24GB GPU</td><td>~45 min</td><td>&minus;21.1% (classifier)</td></tr>
     </tbody>
   </table>
