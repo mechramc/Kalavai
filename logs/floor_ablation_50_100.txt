@@ -1,0 +1,244 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+`torch_dtype` is deprecated! Use `dtype` instead!
+======================================================================
+KALAVAI: Training Duration Crossover (freeze=0 vs freeze=4)
+======================================================================
+Steps: [50, 100, 500, 1000, 2000, 5000, 10000, 20000]
+Freeze: [0, 4]
+Total combos: 16
+Seed: 42
+Estimated runtime: ~12.5 hours (dominated by 20000-step runs)
+Device: cuda
+
+Loading tokenizer...
+
+Loading data...
+  Loading code (n=3000) from code_search_net python...
+    Loaded 3000 code samples
+  Loading science (n=3000) from allenai/sciq...
+    Loaded 3000 science samples
+  Loading fiction (n=3000) from emozilla/pg19...
+    Loaded 3000 fiction samples
+
+Packing and splitting chunks (80/10/10)...
+  code: train=2513, held_out=315
+  science: train=1063, held_out=133
+  fiction: train=12445, held_out=1556
+
+Loading base model for baseline eval...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3142.86it/s]
+  Base mixed loss: 2.4202
+
+Loading existing results from results\pythia\training_duration_crossover.json...
+  Found 12 completed combos
+
+============================================================
+  steps=50, freeze=0
+============================================================
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3527.26it/s]
+  Training code specialist (freeze=0, steps=50)...
+    [code] freeze=0, trainable=353.8M/405.3M
+    [code] step 50/50 | loss 8.1780 | 7s
+  code done in 7s
+  Saved: checkpoints\pythia\crossover_code_freeze0_steps50_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3109.67it/s]
+  Training science specialist (freeze=0, steps=50)...
+    [science] freeze=0, trainable=353.8M/405.3M
+    [science] step 50/50 | loss 11.5056 | 7s
+  science done in 7s
+  Saved: checkpoints\pythia\crossover_science_freeze0_steps50_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3560.59it/s]
+  Training fiction specialist (freeze=0, steps=50)...
+    [fiction] freeze=0, trainable=353.8M/405.3M
+    [fiction] step 50/50 | loss 12.8824 | 7s
+  fiction done in 7s
+  Saved: checkpoints\pythia\crossover_fiction_freeze0_steps50_seed42.pt
+  Training router (500 steps)...
+    Router step 100/500: loss=2.8834
+    Router step 200/500: loss=3.3325
+    Router step 300/500: loss=3.1425
+    Router step 400/500: loss=2.9461
+    Router step 500/500: loss=3.4661
+  Result: moe_loss=2.2982, improvement=+5.0%
+  Combo time: 45s
+
+  Intermediate results saved to results\pythia\training_duration_crossover.json
+
+============================================================
+  steps=50, freeze=4
+============================================================
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3506.10it/s]
+  Training code specialist (freeze=4, steps=50)...
+    [code] freeze=4, trainable=303.4M/405.3M
+    [code] step 50/50 | loss 8.1997 | 7s
+  code done in 7s
+  Saved: checkpoints\pythia\crossover_code_freeze4_steps50_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3610.73it/s]
+  Training science specialist (freeze=4, steps=50)...
+    [science] freeze=4, trainable=303.4M/405.3M
+    [science] step 50/50 | loss 11.5767 | 7s
+  science done in 7s
+  Saved: checkpoints\pythia\crossover_science_freeze4_steps50_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3188.41it/s]
+  Training fiction specialist (freeze=4, steps=50)...
+    [fiction] freeze=4, trainable=303.4M/405.3M
+    [fiction] step 50/50 | loss 12.9181 | 7s
+  fiction done in 7s
+  Saved: checkpoints\pythia\crossover_fiction_freeze4_steps50_seed42.pt
+  Training router (500 steps)...
+    Router step 100/500: loss=2.9014
+    Router step 200/500: loss=3.3546
+    Router step 300/500: loss=3.1633
+    Router step 400/500: loss=2.9646
+    Router step 500/500: loss=3.4753
+  Result: moe_loss=2.3080, improvement=+4.6%
+  Combo time: 42s
+
+  Intermediate results saved to results\pythia\training_duration_crossover.json
+
+============================================================
+  steps=100, freeze=0
+============================================================
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3402.67it/s]
+  Training code specialist (freeze=0, steps=100)...
+    [code] freeze=0, trainable=353.8M/405.3M
+    [code] step 50/100 | loss 8.1816 | 7s
+    [code] step 100/100 | loss 8.1698 | 15s
+  code done in 15s
+  Saved: checkpoints\pythia\crossover_code_freeze0_steps100_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3430.76it/s]
+  Training science specialist (freeze=0, steps=100)...
+    [science] freeze=0, trainable=353.8M/405.3M
+    [science] step 50/100 | loss 11.5142 | 7s
+    [science] step 100/100 | loss 11.2762 | 15s
+  science done in 15s
+  Saved: checkpoints\pythia\crossover_science_freeze0_steps100_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3514.43it/s]
+  Training fiction specialist (freeze=0, steps=100)...
+    [fiction] freeze=0, trainable=353.8M/405.3M
+    [fiction] step 50/100 | loss 12.8869 | 7s
+    [fiction] step 100/100 | loss 12.8886 | 15s
+  fiction done in 15s
+  Saved: checkpoints\pythia\crossover_fiction_freeze0_steps100_seed42.pt
+  Training router (500 steps)...
+    Router step 100/500: loss=2.8475
+    Router step 200/500: loss=3.2971
+    Router step 300/500: loss=3.1277
+    Router step 400/500: loss=2.9272
+    Router step 500/500: loss=3.4462
+  Result: moe_loss=2.2786, improvement=+5.8%
+  Combo time: 67s
+
+  Intermediate results saved to results\pythia\training_duration_crossover.json
+
+============================================================
+  steps=100, freeze=4
+============================================================
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:  70%|██████▉   | 204/292 [00:00<00:00, 2012.96it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 2031.25it/s]
+  Training code specialist (freeze=4, steps=100)...
+    [code] freeze=4, trainable=303.4M/405.3M
+    [code] step 50/100 | loss 8.2026 | 7s
+    [code] step 100/100 | loss 8.1976 | 13s
+  code done in 13s
+  Saved: checkpoints\pythia\crossover_code_freeze4_steps100_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3440.94it/s]
+  Training science specialist (freeze=4, steps=100)...
+    [science] freeze=4, trainable=303.4M/405.3M
+    [science] step 50/100 | loss 11.5791 | 7s
+    [science] step 100/100 | loss 11.3473 | 13s
+  science done in 13s
+  Saved: checkpoints\pythia\crossover_science_freeze4_steps100_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3604.57it/s]
+[main f07dd66] [kalavai] training duration crossover: crossover_steps=10000
+ 25 files changed, 8745 insertions(+), 2 deletions(-)
+ create mode 100644 docs/planning/6b_hyperparam_search_plan.md
+ create mode 100644 logs/ablations_v2_benchmarks.txt
+ create mode 100644 logs/ablations_v2_classifier.txt
+ create mode 100644 logs/ablations_v2_crossover.txt
+ create mode 100644 logs/ablations_v2_five_domain.txt
+ create mode 100644 logs/ablations_v2_freeze.txt
+ create mode 100644 logs/ablations_v2_hard_routing.txt
+ create mode 100644 logs/ablations_v2_inference.txt
+ create mode 100644 logs/ablations_v2_maturity.txt
+ create mode 100644 logs/ablations_v2_monolithic.txt
+ create mode 100644 logs/ablations_v2_router.txt
+ create mode 100644 logs/corrected_eval_1b_seed42.txt
+ create mode 100644 logs/corrected_eval_410m_137_2026.txt
+ create mode 100644 logs/corrected_eval_410m_seed42_v2.txt
+ create mode 100644 logs/corrected_eval_qwen.txt
+ create mode 100644 logs/floor_ablation_50_100.txt
+ create mode 100644 logs/lora_r64_lr5e4_seed42.txt
+ create mode 100644 logs/lora_r64_seed42.txt
+ create mode 100644 logs/lora_r8_seed42.txt
+ create mode 100644 paper/interactive/KALAVAI_Predictive_Model_Fusion.pptx
+ create mode 100644 paper/interactive/KALAVAI__The_Architecture_of_a_Cooperative_AI_Future.mp4
+ create mode 100644 paper/interactive/KALAVAI_shatters_the_AI_compute_monopoly.m4a
+To https://github.com/mechramc/Kalavai.git
+   a129dac..f07dd66  main -> main
+  Training fiction specialist (freeze=4, steps=100)...
+    [fiction] freeze=4, trainable=303.4M/405.3M
+    [fiction] step 50/100 | loss 12.9207 | 7s
+    [fiction] step 100/100 | loss 12.9297 | 13s
+  fiction done in 13s
+  Saved: checkpoints\pythia\crossover_fiction_freeze4_steps100_seed42.pt
+  Training router (500 steps)...
+    Router step 100/500: loss=2.8715
+    Router step 200/500: loss=3.3214
+    Router step 300/500: loss=3.1496
+    Router step 400/500: loss=2.9497
+    Router step 500/500: loss=3.4588
+  Result: moe_loss=2.2908, improvement=+5.3%
+  Combo time: 62s
+
+  Intermediate results saved to results\pythia\training_duration_crossover.json
+
+  Skipping steps=500, freeze=0 (already done: improvement=9.9%)
+
+  Skipping steps=500, freeze=4 (already done: improvement=8.9%)
+
+  Skipping steps=1000, freeze=0 (already done: improvement=12.5%)
+
+  Skipping steps=1000, freeze=4 (already done: improvement=11.3%)
+
+  Skipping steps=2000, freeze=0 (already done: improvement=15.1%)
+
+  Skipping steps=2000, freeze=4 (already done: improvement=13.9%)
+
+  Skipping steps=5000, freeze=0 (already done: improvement=16.4%)
+
+  Skipping steps=5000, freeze=4 (already done: improvement=15.8%)
+
+  Skipping steps=10000, freeze=0 (already done: improvement=15.4%)
+
+  Skipping steps=10000, freeze=4 (already done: improvement=15.6%)
+
+  Skipping steps=20000, freeze=0 (already done: improvement=13.6%)
+
+  Skipping steps=20000, freeze=4 (already done: improvement=14.8%)
+
+======================================================================
+FINAL RESULTS
+======================================================================
+   Steps   freeze=0   freeze=4    delta
+----------------------------------------
+      50      +5.0%      +4.6%   -0.4pp
+     100      +5.8%      +5.3%   -0.5pp
+     500      +9.9%      +8.9%   -1.0pp
+    1000     +12.5%     +11.3%   -1.2pp
+    2000     +15.1%     +13.9%   -1.3pp
+    5000     +16.4%     +15.8%   -0.6pp
+   10000     +15.4%     +15.6%   +0.2pp
+   20000     +13.6%     +14.8%   +1.2pp
+
+Crossover detected at steps=10000
+
+Saving figure...
+  Saved: figures\pythia\fig_training_duration_crossover.png
+Saved: results\pythia\training_duration_crossover.json
+
+[git] Committing: [kalavai] training duration crossover: crossover_steps=10000
+[git] Pushed successfully.
+
+Done.

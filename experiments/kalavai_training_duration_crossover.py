@@ -3,19 +3,24 @@ import sys
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 """
-KALAVAI: Training Duration Crossover
-======================================
+KALAVAI: Training Duration Crossover — Corrected Evaluation
+============================================================
 Tests whether freeze=4 advantage over freeze=0 emerges at longer training horizons.
 
 For each combination of (steps, freeze) where:
-  - steps in [500, 1000, 2000, 5000, 10000, 20000]
+  - steps in [50, 100, 500, 1000, 2000, 5000, 10000, 20000]
   - freeze in [0, 4]
 Trains 3 specialists (code/science/fiction), fuses via MoE, evals held-out loss.
 
-Saves intermediate results after each (steps, freeze) pair to enable resumption.
+CORRECTED EVAL PROTOCOL (matches paper):
+  - Per-domain separate evaluation at batch_size=4, seq_len=512
+  - Equal-weight average across domains (via kalavai_eval_utils)
+  - Base model evaluated with same protocol for fair comparison
+
+Saves intermediate results to training_duration_crossover_corrected.json.
 Identifies crossover_steps: where freeze=0 improvement falls below freeze=4.
 
-Total estimated time: ~12.5 hours (dominated by 20000-step runs).
+Total estimated time: ~12.5 hours first run; fast re-eval if checkpoints exist.
 """
 
 import copy
@@ -36,6 +41,10 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 
+# Import corrected eval utilities
+sys.path.insert(0, str(Path(__file__).parent))
+from kalavai_eval_utils import eval_all_domains, chunks_to_dataset
+
 # ============================================================================
 # Config
 # ============================================================================
@@ -47,7 +56,9 @@ WEIGHT_DECAY = 0.1
 BATCH_SIZE = 2
 GRAD_ACCUM = 4
 GRADIENT_CLIP = 1.0
-SEQ_LEN = 256
+SEQ_LEN = 256          # training sequence length (specialists trained on 256-token chunks)
+EVAL_SEQ_LEN = 512     # corrected eval sequence length (matches rest of paper)
+EVAL_BS = 4            # corrected eval batch size (matches rest of paper)
 WARMUP_FRACTION = 0.1
 N_SAMPLES_PER_DOMAIN = 3000
 ROUTER_STEPS = 500
@@ -386,9 +397,9 @@ def weight_average_three(spec_a, spec_b, spec_c):
 # ============================================================================
 
 def run_one_combo(steps: int, freeze: int, all_domain_chunks: dict,
-                  tokenizer, held_out_mixed, base_loss: float,
+                  tokenizer, held_out_by_domain_eval: dict, base_loss: float,
                   device: str) -> dict:
-    """Train 3 specialists for `steps` steps with `freeze` frozen layers, fuse, eval."""
+    """Train 3 specialists for `steps` steps with `freeze` frozen layers, fuse, corrected eval."""
     print(f"\n{'='*60}")
     print(f"  steps={steps}, freeze={freeze}")
     print(f"{'='*60}")
@@ -429,10 +440,12 @@ def run_one_combo(steps: int, freeze: int, all_domain_chunks: dict,
     train_router(moe, combined_train, device)
     moe.eval()
 
-    moe_loss = eval_loss(moe, held_out_mixed, device, batch_size=2, is_fused=True)
+    domain_results = eval_all_domains(moe, held_out_by_domain_eval, device,
+                                      bs=EVAL_BS, eval_batches=EVAL_BATCHES, is_fused=True)
+    moe_loss = domain_results["equal_weight_avg"]
     improvement_pct = (base_loss - moe_loss) / base_loss * 100
 
-    print(f"  Result: moe_loss={moe_loss:.4f}, improvement={improvement_pct:+.1f}%")
+    print(f"  Result: moe_ew_loss={moe_loss:.4f}, improvement={improvement_pct:+.1f}%")
     print(f"  Combo time: {time.time()-t_start:.0f}s")
 
     # Cleanup
@@ -617,24 +630,31 @@ def main():
         all_domain_chunks[domain] = {"train": train_c, "held_out": held_c}
         print(f"  {domain}: train={len(train_c)}, held_out={len(held_c)}")
 
-    mixed_held = []
-    for d in DOMAINS:
-        mixed_held.extend(all_domain_chunks[d]["held_out"])
-    held_out_mixed = make_dataset_from_chunks(mixed_held)
+    # Build per-domain held-out eval datasets at EVAL_SEQ_LEN=512 (corrected protocol)
+    print(f"\nBuilding per-domain held-out eval sets (seq_len={EVAL_SEQ_LEN})...")
+    held_out_by_domain_eval = {}
+    for domain, texts in [("code", code_texts), ("science", science_texts),
+                           ("fiction", fiction_texts)]:
+        ds_eval = PackedChunkDataset(texts, tokenizer, seq_len=EVAL_SEQ_LEN, max_chars=5000)
+        _, _, held_eval_c = split_chunks(ds_eval.chunks)
+        held_out_by_domain_eval[domain] = make_dataset_from_chunks(held_eval_c)
+        print(f"  {domain}: eval held_out={len(held_eval_c)} chunks (512-tok)")
 
-    # Eval base model
-    print(f"\nLoading base model for baseline eval...")
+    # Eval base model with corrected protocol (per-domain equal-weight)
+    print(f"\nLoading base model for corrected baseline eval...")
     base_model = AutoModelForCausalLM.from_pretrained(
         MODEL_ID, revision=REVISION, torch_dtype=torch.bfloat16,
     ).to(device)
     base_model.eval()
-    base_loss = eval_loss(base_model, held_out_mixed, device)
-    print(f"  Base mixed loss: {base_loss:.4f}")
+    base_domain_results = eval_all_domains(base_model, held_out_by_domain_eval, device,
+                                           bs=EVAL_BS, eval_batches=EVAL_BATCHES)
+    base_loss = base_domain_results["equal_weight_avg"]
+    print(f"  Base EW loss (corrected): {base_loss:.4f}")
     del base_model
     torch.cuda.empty_cache()
 
-    # Load existing intermediate results if available
-    inter_path = RESULTS_DIR / "training_duration_crossover.json"
+    # Load existing intermediate results if available (corrected eval file)
+    inter_path = RESULTS_DIR / "training_duration_crossover_corrected.json"
     if inter_path.exists():
         print(f"\nLoading existing results from {inter_path}...")
         with open(inter_path) as f:
@@ -674,7 +694,7 @@ def main():
                 freeze=freeze,
                 all_domain_chunks=all_domain_chunks,
                 tokenizer=tokenizer,
-                held_out_mixed=held_out_mixed,
+                held_out_by_domain_eval=held_out_by_domain_eval,
                 base_loss=base_loss,
                 device=device,
             )
@@ -760,6 +780,7 @@ def main():
         "freeze4_loss": freeze4_loss,
         "crossover_steps": crossover_steps,
         "base_loss": round(base_loss, 6),
+        "eval_protocol": "corrected: per-domain bs=4 seq_len=512 equal-weight-avg",
         "seed": SEED,
         "model": f"{MODEL_ID}@{REVISION}",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -770,7 +791,7 @@ def main():
 
     # Git commit + push
     cs_str = str(crossover_steps) if crossover_steps is not None else "null"
-    msg = f"[kalavai] training duration crossover: crossover_steps={cs_str}"
+    msg = f"[kalavai] crossover corrected eval: crossover_steps={cs_str}"
     git_commit_push(msg)
 
     print("\nDone.")
