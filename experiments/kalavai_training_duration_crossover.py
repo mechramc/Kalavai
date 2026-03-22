@@ -57,7 +57,7 @@ EVAL_BATCHES = 50
 SEED = 42
 DOMAINS = ["code", "science", "fiction"]
 
-STEPS_SWEEP = [500, 1000, 2000, 5000, 10000, 20000]
+STEPS_SWEEP = [50, 100, 500, 1000, 2000, 5000, 10000, 20000]
 FREEZE_SWEEP = [0, 4]
 
 RESULTS_DIR = Path("results/pythia")

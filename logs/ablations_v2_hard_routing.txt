@@ -1,0 +1,79 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+
+KALAVAI Ablations v2
+  experiment:      hard_routing
+  eval_method:     per-domain equal-weight average (corrected protocol)
+  eval_batch_size: 4 (consistent for ALL models)
+  output dir:      results\pythia\v2
+  device:          cuda
+  GPU:             NVIDIA GeForce RTX 5090
+  VRAM:            34.2GB
+
+Loading tokenizer (EleutherAI/pythia-410m)...
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+######################################################################
+# Starting: hard_routing
+######################################################################
+
+======================================================================
+EXPERIMENT: hard_routing (soft vs argmax routing)
+======================================================================
+
+Loading seed=42 specialists...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3618.40it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3360.57it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3072.81it/s]
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.4365
+    step 200/500: loss=1.8532
+    step 300/500: loss=3.1437
+    step 400/500: loss=2.9800
+    step 500/500: loss=3.1792
+
+[soft routing]
+    soft code    : 1.8791  (5.7s)
+    soft science : 2.5565  (2.4s)
+    soft fiction : 2.2194  (7.2s)
+
+[hard routing (argmax)]
+    hard code    : 1.8791
+    hard science : 2.5565
+    hard fiction : 2.2194
+    code    : 1.8791  (2.0s)
+    science : 2.9085  (0.8s)
+    fiction : 2.9768  (2.6s)
+    code    : 2.1738  (2.0s)
+    science : 2.5565  (0.9s)
+    fiction : 3.0613  (2.6s)
+    code    : 2.1018  (2.0s)
+    science : 2.8904  (0.8s)
+    fiction : 2.2194  (2.6s)
+
+Saved: results\pythia\v2\hard_routing_v2.json
+
+  Best spec:     2.4039
+  Soft routing:  2.2183  (vs spec: +7.72%)
+  Hard routing:  2.2183  (vs spec: +7.72%)
+  Soft vs hard:  -0.00%
+
+  hard_routing done in 1.9 min
+
+======================================================================
+ALL DONE — total 1.9 min
+Results in: C:\Github\Kalavai\results\pythia\v2
+======================================================================

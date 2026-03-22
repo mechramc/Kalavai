@@ -1,0 +1,70 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+
+KALAVAI Ablations v2
+  experiment:      inference
+  eval_method:     per-domain equal-weight average (corrected protocol)
+  eval_batch_size: 4 (consistent for ALL models)
+  output dir:      results\pythia\v2
+  device:          cuda
+  GPU:             NVIDIA GeForce RTX 5090
+  VRAM:            34.2GB
+
+Loading tokenizer (EleutherAI/pythia-410m)...
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+######################################################################
+# Starting: inference
+######################################################################
+
+======================================================================
+EXPERIMENT: inference (throughput / VRAM / latency)
+======================================================================
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3020.74it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3018.95it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 2969.02it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3064.37it/s]
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=3.2779
+    step 200/500: loss=3.1271
+    step 300/500: loss=2.7535
+    step 400/500: loss=2.3081
+    step 500/500: loss=2.0857
+
+Measuring configurations...
+  base                :    14.4ms  VRAM=3.32GB  params=405M
+  code_spec           :    14.7ms  VRAM=3.32GB  params=405M
+  moe_full            :    40.7ms  VRAM=3.37GB  params=1216M
+  moe_top1            :    41.4ms  VRAM=3.37GB
+
+Eval loss (corrected protocol):
+    code    : 2.0872  (0.8s)
+    science : 2.8920  (0.3s)
+    fiction : 2.9739  (1.0s)
+    code    : 1.8791  (2.2s)
+    science : 2.5565  (0.9s)
+    fiction : 2.2194  (2.9s)
+  base EW: 2.6510
+  moe  EW: 2.2183
+
+Saved: results\pythia\v2\inference_v2.json
+
+  inference done in 0.8 min
+
+======================================================================
+ALL DONE — total 0.8 min
+Results in: C:\Github\Kalavai\results\pythia\v2
+======================================================================

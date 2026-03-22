@@ -1,0 +1,202 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+
+KALAVAI Ablations v2
+  experiment:      maturity
+  eval_method:     per-domain equal-weight average (corrected protocol)
+  eval_batch_size: 4 (consistent for ALL models)
+  output dir:      results\pythia\v2
+  device:          cuda
+  GPU:             NVIDIA GeForce RTX 5090
+  VRAM:            34.2GB
+
+Loading tokenizer (EleutherAI/pythia-410m)...
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+######################################################################
+# Starting: maturity
+######################################################################
+
+======================================================================
+EXPERIMENT: maturity (base model maturity sweep)
+======================================================================
+
+--- 410M maturity sweep ---
+
+[410M step5000 seed=42] — already done, skipping
+
+[410M step5000 seed=137] — already done, skipping
+
+[410M step5000 seed=2026] — already done, skipping
+
+[410M step10000 seed=42] — already done, skipping
+
+[410M step10000 seed=137] MISSING: ['code_seed137.pt', 'science_seed137.pt', 'fiction_seed137.pt']
+
+[410M step10000 seed=2026] MISSING: ['code_seed2026.pt', 'science_seed2026.pt', 'fiction_seed2026.pt']
+
+[410M step20000 seed=42] — already done, skipping
+
+[410M step20000 seed=137] — already done, skipping
+
+[410M step20000 seed=2026] — already done, skipping
+
+[410M step50000 seed=42] — already done, skipping
+
+[410M step100000 seed=42] — already done, skipping
+
+[410M step143000 seed=42] — already done, skipping
+  Saved: results\pythia\v2\maturity_sweep_410m_v2.json
+
+--- 1B maturity sweep ---
+
+[1B step5000]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  44%|████▍     | 86/196 [00:00<00:00, 838.81it/s]Loading weights:  92%|█████████▏| 180/196 [00:00<00:00, 859.71it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 885.50it/s]
+    base_1b code    : 2.1375  (1.3s)
+    base_1b science : 2.9643  (0.5s)
+    base_1b fiction : 3.0064  (1.5s)
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  32%|███▏      | 62/196 [00:00<00:00, 575.11it/s]Loading weights:  81%|████████  | 158/196 [00:00<00:00, 781.81it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 808.69it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  49%|████▉     | 96/196 [00:00<00:00, 858.13it/s]Loading weights:  93%|█████████▎| 182/196 [00:00<00:00, 835.00it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 868.71it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  49%|████▉     | 96/196 [00:00<00:00, 910.75it/s]Loading weights:  96%|█████████▌| 188/196 [00:00<00:00, 901.80it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 932.78it/s]
+    code    : 1.8506  (1.1s)
+    science : 2.9917  (0.5s)
+    fiction : 3.0243  (1.5s)
+    code    : 2.2481  (1.1s)
+    science : 2.6525  (0.5s)
+    fiction : 3.1458  (1.4s)
+    code    : 2.1643  (1.1s)
+    science : 2.9706  (0.5s)
+    fiction : 2.0772  (1.5s)
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.7550
+    step 200/500: loss=2.1152
+    step 300/500: loss=2.7516
+    step 400/500: loss=3.0832
+    step 500/500: loss=2.8174
+    code    : 1.8515  (3.4s)
+    science : 2.6521  (1.4s)
+    fiction : 2.0776  (4.4s)
+  => improvement_vs_spec: +8.75%
+
+[1B step20000]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:   1%|          | 1/196 [00:00<00:21,  9.19it/s]Loading weights:  44%|████▍     | 86/196 [00:00<00:00, 478.02it/s]Loading weights:  78%|███████▊  | 152/196 [00:00<00:00, 557.88it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 470.95it/s]
+    base_1b code    : 1.9180  (1.1s)
+    base_1b science : 2.6564  (0.5s)
+    base_1b fiction : 2.2621  (1.5s)
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  12%|█▏        | 24/196 [00:00<00:00, 233.51it/s]Loading weights:  24%|██▍       | 48/196 [00:00<00:00, 189.98it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 649.32it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  44%|████▍     | 86/196 [00:00<00:00, 802.96it/s]Loading weights:  85%|████████▌ | 167/196 [00:00<00:00, 765.87it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 834.26it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  41%|████      | 80/196 [00:00<00:00, 783.44it/s]Loading weights:  90%|████████▉ | 176/196 [00:00<00:00, 870.34it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 883.34it/s]
+    code    : 1.7357  (1.1s)
+    science : 2.6793  (0.5s)
+    fiction : 2.3020  (1.5s)
+    code    : 2.0294  (1.1s)
+    science : 2.4224  (0.5s)
+    fiction : 2.4500  (1.5s)
+    code    : 1.9292  (1.1s)
+    science : 2.6596  (0.5s)
+    fiction : 1.8632  (1.5s)
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.3878
+    step 200/500: loss=2.1672
+    step 300/500: loss=2.9317
+    step 400/500: loss=2.9264
+    step 500/500: loss=2.6399
+    code    : 1.7358  (3.4s)
+    science : 2.4221  (1.5s)
+    fiction : 1.8633  (4.8s)
+  => improvement_vs_spec: +6.68%
+
+[1B step50000]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:   1%|          | 1/196 [00:00<01:58,  1.64it/s]Loading weights:  32%|███▏      | 62/196 [00:00<00:01, 116.79it/s]Loading weights:  50%|█████     | 98/196 [00:00<00:00, 135.74it/s]Loading weights:  64%|██████▍   | 125/196 [00:01<00:00, 152.10it/s]Loading weights:  77%|███████▋  | 150/196 [00:01<00:00, 156.12it/s]Loading weights:  88%|████████▊ | 172/196 [00:01<00:00, 163.79it/s]Loading weights:  98%|█████████▊| 193/196 [00:01<00:00, 159.86it/s]Loading weights: 100%|██████████| 196/196 [00:01<00:00, 133.54it/s]
+    base_1b code    : 1.8468  (1.9s)
+    base_1b science : 2.5385  (0.8s)
+    base_1b fiction : 1.9405  (2.4s)
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  44%|████▍     | 86/196 [00:00<00:00, 803.53it/s]Loading weights:  86%|████████▌ | 168/196 [00:00<00:00, 798.74it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 833.53it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  46%|████▌     | 90/196 [00:00<00:00, 883.15it/s]Loading weights:  93%|█████████▎| 182/196 [00:00<00:00, 885.38it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 912.63it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  47%|████▋     | 92/196 [00:00<00:00, 903.34it/s]Loading weights:  99%|█████████▉| 194/196 [00:00<00:00, 967.02it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 966.35it/s]
+    code    : 1.6810  (1.9s)
+    science : 2.5589  (0.7s)
+    fiction : 1.9980  (2.4s)
+    code    : 1.9754  (1.8s)
+    science : 2.3272  (0.8s)
+    fiction : 2.1669  (2.4s)
+    code    : 1.8575  (1.8s)
+    science : 2.5460  (0.7s)
+    fiction : 1.7759  (2.3s)
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.6190
+    step 200/500: loss=2.5984
+    step 300/500: loss=2.7332
+    step 400/500: loss=2.3759
+    step 500/500: loss=2.2623
+    code    : 1.6810  (4.4s)
+    science : 2.3270  (1.4s)
+    fiction : 1.7760  (4.4s)
+  => improvement_vs_spec: +6.40%
+
+[1B step143000]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:   1%|          | 1/196 [00:00<00:23,  8.14it/s]Loading weights:  49%|████▉     | 96/196 [00:00<00:00, 491.49it/s]Loading weights:  76%|███████▌  | 148/196 [00:00<00:00, 356.70it/s]Loading weights:  96%|█████████▋| 189/196 [00:00<00:00, 282.88it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 302.17it/s]
+    base_1b code    : 1.7558  (1.1s)
+    base_1b science : 2.4348  (0.5s)
+    base_1b fiction : 1.7862  (1.5s)
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  47%|████▋     | 92/196 [00:00<00:00, 869.94it/s]Loading weights:  98%|█████████▊| 192/196 [00:00<00:00, 934.51it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 932.74it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  47%|████▋     | 92/196 [00:00<00:00, 887.61it/s]Loading weights:  96%|█████████▌| 188/196 [00:00<00:00, 920.68it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 945.51it/s]
+Loading weights:   0%|          | 0/196 [00:00<?, ?it/s]Loading weights:  50%|█████     | 98/196 [00:00<00:00, 965.32it/s]Loading weights: 100%|██████████| 196/196 [00:00<00:00, 998.05it/s]
+    code    : 1.6418  (1.1s)
+    science : 2.5237  (0.5s)
+    fiction : 1.9679  (1.5s)
+    code    : 2.1011  (1.1s)
+    science : 2.5632  (0.5s)
+    fiction : 2.4597  (1.5s)
+    code    : 1.7787  (1.1s)
+    science : 2.4495  (0.5s)
+    fiction : 1.6756  (1.5s)
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.3314
+    step 200/500: loss=2.1334
+    step 300/500: loss=2.6865
+    step 400/500: loss=2.2009
+    step 500/500: loss=1.7661
+    code    : 1.6416  (3.4s)
+    science : 2.5627  (1.4s)
+    fiction : 1.6759  (4.4s)
+  => improvement_vs_spec: +0.40%
+  Saved: results\pythia\v2\maturity_sweep_1b_v2.json
+
+======================================================================
+MATURITY SUMMARY (v2, corrected eval)
+======================================================================
+410M:
+          step         seeds    vs spec (mean)    vs base (mean)
+  ------------------------------------------------------------
+      step5000   42,137,2026            +8.81%           +18.62%
+     step10000            42            +7.72%           +16.32%
+     step20000   42,137,2026            +7.03%           +15.01%
+     step50000            42            +7.25%           +11.23%
+    step100000            42            +7.06%            +9.45%
+    step143000            42            +7.51%            +9.13%
+1B:
+    step143000            42            +0.40%            +1.62%
+     step20000            42            +6.68%           +11.93%
+      step5000            42            +8.75%           +18.83%
+     step50000            42            +6.40%            +8.56%
+
+  maturity done in 5.8 min
+
+======================================================================
+ALL DONE — total 5.8 min
+Results in: C:\Github\Kalavai\results\pythia\v2
+======================================================================

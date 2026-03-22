@@ -1,0 +1,269 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+Token indices sequence length is longer than the specified maximum sequence length for this model (1030106 > 131072). Running this sequence through the model will result in indexing errors
+
+KALAVAI Corrected Evaluation
+  model:          Qwen/Qwen2.5-1.5B
+  seeds:          [42, 137, 2026]
+  eval_batch_size: 4 (consistent for ALL models)
+  eval_method:    per-domain equal-weight average
+  device:         cuda
+  GPU:            NVIDIA GeForce RTX 5090
+  VRAM:           34.2GB
+
+Loading tokenizer (Qwen/Qwen2.5-1.5B)...
+
+Loading training data...
+  Loading code (train, n=5000)...
+    5000 samples
+  Loading fiction (train, n=5000)...
+    5000 samples
+
+Loading held-out evaluation data...
+  Loading code (test, n=500)...
+    500 samples
+  Loading fiction (test, n=500)...
+    100 samples
+
+Eval dataset sizes: code=197, fiction=150
+
+======================================================================
+Seed 42 — Qwen/Qwen2.5-1.5B
+======================================================================
+
+[base]
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 5663.59it/s]
+    code    : 1.3401  (196/197 chunks, 3.1s)
+    fiction : 2.5787  (148/150 chunks, 2.2s)
+
+[code_spec]  training from scratch (seed=42)...
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 17995.82it/s]
+  Trainable: 1216.7M / 1543.7M (78.8%)
+  Training code specialist (1000 steps, seed=42)...
+    step 200/1000: loss=1.1598
+    step 400/1000: loss=1.3808
+    step 600/1000: loss=1.5985
+    step 800/1000: loss=0.9219
+    step 1000/1000: loss=0.8569
+  Saved: checkpoints\qwen\code_specialist_seed42.pt
+
+[fiction_spec]  training from scratch (seed=42)...
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 11570.40it/s]
+  Trainable: 1216.7M / 1543.7M (78.8%)
+  Training fiction specialist (1000 steps, seed=42)...
+    step 200/1000: loss=2.6267
+    step 400/1000: loss=2.6231
+    step 600/1000: loss=2.3383
+    step 800/1000: loss=2.9864
+    step 1000/1000: loss=2.8509
+  Saved: checkpoints\qwen\fiction_specialist_seed42.pt
+
+[code_spec]
+    code    : 1.3158  (196/197 chunks, 3.1s)
+    fiction : 2.5851  (148/150 chunks, 2.3s)
+
+[fiction_spec]
+    code    : 1.3562  (196/197 chunks, 3.1s)
+    fiction : 2.4611  (148/150 chunks, 2.4s)
+
+[weight_avg]
+    code    : 1.3173  (196/197 chunks, 3.1s)
+    fiction : 2.4889  (148/150 chunks, 2.3s)
+
+[moe]  building + training router...
+  Training router (300 steps, 9442 chunks)...
+    step 100/300: loss=1.5390
+    step 200/300: loss=2.2883
+    step 300/300: loss=2.6898
+    code    : 1.3158  (196/197 chunks, 6.1s)
+    fiction : 2.4611  (148/150 chunks, 4.6s)
+
+  Router gate distribution:
+    code: code=1.0000  fiction=0.0000
+    fiction: code=0.0000  fiction=1.0000
+
+======================================================================
+CORRECTED RESULTS — seed=42
+  Equal-weight avg = (code + fiction) / 2
+  batch_size=4 for ALL models
+======================================================================
+Model                     code   fiction    Eq.Avg
+--------------------------------------------------
+base                    1.3401    2.5787    1.9594
+code_spec               1.3158    2.5851    1.9504
+fiction_spec            1.3562    2.4611    1.9087
+weight_avg              1.3173    2.4889    1.9031
+moe                     1.3158    2.4611    1.8885
+
+  MoE vs best spec (equal-weight):  +1.06%
+  MoE vs base (equal-weight):       +3.62%
+
+Saved: results\real\corrected_eval_qwen_42.json
+
+======================================================================
+Seed 137 — Qwen/Qwen2.5-1.5B
+======================================================================
+
+[base]
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 11207.71it/s]
+    code    : 1.3401  (196/197 chunks, 3.1s)
+    fiction : 2.5787  (148/150 chunks, 2.3s)
+
+[code_spec]  training from scratch (seed=137)...
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 12067.99it/s]
+  Trainable: 1216.7M / 1543.7M (78.8%)
+  Training code specialist (1000 steps, seed=137)...
+    step 200/1000: loss=1.7476
+    step 400/1000: loss=1.4838
+    step 600/1000: loss=1.2292
+    step 800/1000: loss=1.0585
+    step 1000/1000: loss=1.3686
+  Saved: checkpoints\qwen\code_specialist_seed137.pt
+
+[fiction_spec]  training from scratch (seed=137)...
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 16497.63it/s]
+  Trainable: 1216.7M / 1543.7M (78.8%)
+  Training fiction specialist (1000 steps, seed=137)...
+    step 200/1000: loss=2.3120
+    step 400/1000: loss=3.0777
+    step 600/1000: loss=2.3762
+    step 800/1000: loss=2.2197
+    step 1000/1000: loss=2.5092
+  Saved: checkpoints\qwen\fiction_specialist_seed137.pt
+
+[code_spec]
+    code    : 1.3165  (196/197 chunks, 3.1s)
+    fiction : 2.5846  (148/150 chunks, 2.3s)
+
+[fiction_spec]
+    code    : 1.3570  (196/197 chunks, 3.1s)
+    fiction : 2.4625  (148/150 chunks, 2.3s)
+
+[weight_avg]
+    code    : 1.3177  (196/197 chunks, 3.1s)
+    fiction : 2.4908  (148/150 chunks, 2.3s)
+
+[moe]  building + training router...
+  Training router (300 steps, 9442 chunks)...
+    step 100/300: loss=1.9790
+    step 200/300: loss=2.1517
+    step 300/300: loss=1.6285
+    code    : 1.3165  (196/197 chunks, 6.1s)
+    fiction : 2.4625  (148/150 chunks, 4.6s)
+
+  Router gate distribution:
+    code: code=1.0000  fiction=0.0000
+    fiction: code=0.0000  fiction=1.0000
+
+======================================================================
+CORRECTED RESULTS — seed=137
+  Equal-weight avg = (code + fiction) / 2
+  batch_size=4 for ALL models
+======================================================================
+Model                     code   fiction    Eq.Avg
+--------------------------------------------------
+base                    1.3401    2.5787    1.9594
+code_spec               1.3165    2.5846    1.9506
+fiction_spec            1.3570    2.4625    1.9098
+weight_avg              1.3177    2.4908    1.9042
+moe                     1.3165    2.4625    1.8895
+
+  MoE vs best spec (equal-weight):  +1.06%
+  MoE vs base (equal-weight):       +3.57%
+
+Saved: results\real\corrected_eval_qwen_137.json
+
+======================================================================
+Seed 2026 — Qwen/Qwen2.5-1.5B
+======================================================================
+
+[base]
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 21091.01it/s]
+    code    : 1.3401  (196/197 chunks, 3.0s)
+    fiction : 2.5787  (148/150 chunks, 2.3s)
+
+[code_spec]  training from scratch (seed=2026)...
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 16668.92it/s]
+  Trainable: 1216.7M / 1543.7M (78.8%)
+  Training code specialist (1000 steps, seed=2026)...
+    step 200/1000: loss=1.2838
+    step 400/1000: loss=1.2703
+    step 600/1000: loss=0.7299
+    step 800/1000: loss=1.3284
+    step 1000/1000: loss=1.7435
+  Saved: checkpoints\qwen\code_specialist_seed2026.pt
+
+[fiction_spec]  training from scratch (seed=2026)...
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 17678.73it/s]
+  Trainable: 1216.7M / 1543.7M (78.8%)
+  Training fiction specialist (1000 steps, seed=2026)...
+    step 200/1000: loss=2.5269
+    step 400/1000: loss=2.5046
+    step 600/1000: loss=2.8488
+    step 800/1000: loss=2.3340
+    step 1000/1000: loss=2.5052
+  Saved: checkpoints\qwen\fiction_specialist_seed2026.pt
+
+[code_spec]
+    code    : 1.3166  (196/197 chunks, 3.0s)
+    fiction : 2.5855  (148/150 chunks, 2.3s)
+
+[fiction_spec]
+    code    : 1.3576  (196/197 chunks, 3.0s)
+    fiction : 2.4591  (148/150 chunks, 2.3s)
+
+[weight_avg]
+    code    : 1.3181  (196/197 chunks, 3.0s)
+    fiction : 2.4889  (148/150 chunks, 2.3s)
+
+[moe]  building + training router...
+  Training router (300 steps, 9442 chunks)...
+    step 100/300: loss=1.6667
+    step 200/300: loss=2.4151
+    step 300/300: loss=2.1788
+    code    : 1.3166  (196/197 chunks, 6.1s)
+    fiction : 2.4591  (148/150 chunks, 4.6s)
+
+  Router gate distribution:
+    code: code=1.0000  fiction=0.0000
+    fiction: code=0.0000  fiction=1.0000
+
+======================================================================
+CORRECTED RESULTS — seed=2026
+  Equal-weight avg = (code + fiction) / 2
+  batch_size=4 for ALL models
+======================================================================
+Model                     code   fiction    Eq.Avg
+--------------------------------------------------
+base                    1.3401    2.5787    1.9594
+code_spec               1.3166    2.5855    1.9510
+fiction_spec            1.3576    2.4591    1.9084
+weight_avg              1.3181    2.4889    1.9035
+moe                     1.3166    2.4591    1.8879
+
+  MoE vs best spec (equal-weight):  +1.08%
+  MoE vs base (equal-weight):       +3.65%
+
+Saved: results\real\corrected_eval_qwen_2026.json
+
+======================================================================
+MULTI-SEED SUMMARY (qwen)
+======================================================================
+Seed        vs spec    vs base
+------------------------------
+42           +1.06%      +3.62%
+137          +1.06%      +3.57%
+2026         +1.08%      +3.65%
+------------------------------
+Mean         +1.06%
+Std           0.01%
+
+Saved summary: results\real\corrected_eval_qwen_summary.json
+
+======================================================================
+CORRECTED EVAL COMPLETE
+======================================================================

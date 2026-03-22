@@ -1,0 +1,128 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+
+KALAVAI Ablations v2
+  experiment:      benchmarks
+  eval_method:     per-domain equal-weight average (corrected protocol)
+  eval_batch_size: 4 (consistent for ALL models)
+  output dir:      results\pythia\v2
+  device:          cuda
+  GPU:             NVIDIA GeForce RTX 5090
+  VRAM:            34.2GB
+
+Loading tokenizer (EleutherAI/pythia-410m)...
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+######################################################################
+# Starting: benchmarks
+######################################################################
+
+======================================================================
+EXPERIMENT: benchmarks (downstream NLP accuracy)
+======================================================================
+
+Loading tokenizer + seed=42 specialists...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3212.29it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3274.43it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3314.49it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3275.48it/s]
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.9502
+    step 200/500: loss=2.9457
+    step 300/500: loss=2.6577
+    step 400/500: loss=2.3268
+    step 500/500: loss=2.8929
+
+[base]
+  hellaswag... acc=0.336 (n=1000)
+  arc_easy... acc=0.405 (n=570)
+  piqa...   WARNING: piqa failed: Dataset scripts are no longer supported, but found piqa.py
+acc=0.000 (n=0)
+  winogrande... acc=0.505 (n=1000)
+  lambada_openai... acc=0.166 (n=1000)
+  sciq... acc=0.388 (n=1000)
+  => average accuracy: 0.300
+
+[code_spec]
+  hellaswag... acc=0.336 (n=1000)
+  arc_easy... acc=0.398 (n=570)
+  piqa...   WARNING: piqa failed: Dataset scripts are no longer supported, but found piqa.py
+acc=0.000 (n=0)
+  winogrande... acc=0.504 (n=1000)
+  lambada_openai... acc=0.158 (n=1000)
+  sciq... acc=0.378 (n=1000)
+  => average accuracy: 0.296
+
+[science_spec]
+  hellaswag... acc=0.346 (n=1000)
+  arc_easy... acc=0.412 (n=570)
+  piqa...   WARNING: piqa failed: Dataset scripts are no longer supported, but found piqa.py
+acc=0.000 (n=0)
+  winogrande... acc=0.491 (n=1000)
+  lambada_openai... acc=0.183 (n=1000)
+  sciq... acc=0.394 (n=1000)
+  => average accuracy: 0.304
+
+[fiction_spec]
+  hellaswag... acc=0.334 (n=1000)
+  arc_easy... acc=0.407 (n=570)
+  piqa...   WARNING: piqa failed: Dataset scripts are no longer supported, but found piqa.py
+acc=0.000 (n=0)
+  winogrande... acc=0.495 (n=1000)
+  lambada_openai... acc=0.167 (n=1000)
+  sciq... acc=0.366 (n=1000)
+  => average accuracy: 0.295
+
+[weight_avg]
+  hellaswag... acc=0.340 (n=1000)
+  arc_easy... acc=0.404 (n=570)
+  piqa...   WARNING: piqa failed: Dataset scripts are no longer supported, but found piqa.py
+acc=0.000 (n=0)
+  winogrande... acc=0.496 (n=1000)
+  lambada_openai... acc=0.172 (n=1000)
+  sciq... acc=0.409 (n=1000)
+  => average accuracy: 0.303
+
+[moe]
+  hellaswag... acc=0.343 (n=1000)
+  arc_easy... acc=0.404 (n=570)
+  piqa...   WARNING: piqa failed: Dataset scripts are no longer supported, but found piqa.py
+acc=0.000 (n=0)
+  winogrande... acc=0.501 (n=1000)
+  lambada_openai... acc=0.168 (n=1000)
+  sciq... acc=0.386 (n=1000)
+  => average accuracy: 0.300
+
+Saved: results\pythia\v2\benchmarks_v2.json
+
+======================================================================
+BENCHMARKS SUMMARY (v2)
+======================================================================
+Model             hellaswa  arc_easy      piqa  winogran  lambada_      sciq       Avg
+--------------------------------------------------------------------------------------
+base                 0.336     0.405     0.000     0.505     0.166     0.388     0.300
+code_spec            0.336     0.398     0.000     0.504     0.158     0.378     0.296
+science_spec         0.346     0.412     0.000     0.491     0.183     0.394     0.304
+fiction_spec         0.334     0.407     0.000     0.495     0.167     0.366     0.295
+weight_avg           0.340     0.404     0.000     0.496     0.172     0.409     0.303
+moe                  0.343     0.404     0.000     0.501     0.168     0.386     0.300
+
+  benchmarks done in 20.0 min
+
+======================================================================
+ALL DONE — total 20.0 min
+Results in: C:\Github\Kalavai\results\pythia\v2
+======================================================================

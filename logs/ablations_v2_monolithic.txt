@@ -1,0 +1,100 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+
+KALAVAI Ablations v2
+  experiment:      monolithic
+  eval_method:     per-domain equal-weight average (corrected protocol)
+  eval_batch_size: 4 (consistent for ALL models)
+  output dir:      results\pythia\v2
+  device:          cuda
+  GPU:             NVIDIA GeForce RTX 5090
+  VRAM:            34.2GB
+
+Loading tokenizer (EleutherAI/pythia-410m)...
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+######################################################################
+# Starting: monolithic
+######################################################################
+
+======================================================================
+EXPERIMENT: monolithic (equal-compute + wider model baselines)
+======================================================================
+
+[base]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3218.56it/s]
+    code    : 2.0872  (0.8s)
+    science : 2.8920  (0.3s)
+    fiction : 2.9739  (0.8s)
+
+[monolithic seed=42]  monolithic_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3009.37it/s]
+    code    : 1.9644  (0.7s)
+    science : 2.6389  (0.3s)
+    fiction : 2.0832  (0.8s)
+
+[wider model pythia-1.4b]  wider_1b4_seed42.pt
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:   0%|          | 1/292 [00:00<00:33,  8.81it/s]Loading weights:  33%|███▎      | 96/292 [00:00<00:00, 493.36it/s]Loading weights:  54%|█████▍    | 158/292 [00:00<00:00, 527.87it/s]Loading weights:  77%|███████▋  | 224/292 [00:00<00:00, 566.27it/s]Loading weights:  99%|█████████▊| 288/292 [00:00<00:00, 582.27it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 531.96it/s]
+    code    : 1.8748  (1.7s)
+    science : 2.5429  (0.7s)
+    fiction : 2.0102  (2.2s)
+
+[moe seed=42]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:  97%|█████████▋| 284/292 [00:00<00:00, 2817.70it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 2876.45it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3344.99it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3232.17it/s]
+    code code    : 1.8791  (0.7s)
+    code science : 2.9085  (0.3s)
+    code fiction : 2.9768  (0.9s)
+    science code    : 2.1738  (0.7s)
+    science science : 2.5565  (0.3s)
+    science fiction : 3.0613  (0.8s)
+    fiction code    : 2.1018  (0.7s)
+    fiction science : 2.8904  (0.3s)
+    fiction fiction : 2.2194  (0.8s)
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=2.5550
+    step 200/500: loss=2.2213
+    step 300/500: loss=2.6216
+    step 400/500: loss=1.9462
+    step 500/500: loss=2.6538
+    code    : 1.8791  (2.0s)
+    science : 2.5565  (0.8s)
+    fiction : 2.2194  (2.5s)
+
+Saved: results\pythia\v2\monolithic_v2.json
+
+======================================================================
+MONOLITHIC SUMMARY (v2, corrected eval)
+======================================================================
+Model                           eq_avg      vs_moe
+----------------------------------------------------
+base                            2.6510     -19.51%
+monolithic_seed42               2.2288      -0.47%
+wider_1b4_seed42                2.1426      +3.41%
+code_spec_seed42                2.5881     -16.67%
+science_spec_seed42             2.5972     -17.08%
+fiction_spec_seed42             2.4039      -8.36%
+moe_seed42                      2.2183      +0.00%
+
+  MoE vs best spec: +7.72%
+
+  monolithic done in 1.0 min
+
+======================================================================
+ALL DONE — total 1.0 min
+Results in: C:\Github\Kalavai\results\pythia\v2
+======================================================================

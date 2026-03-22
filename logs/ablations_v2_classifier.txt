@@ -1,0 +1,98 @@
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+
+KALAVAI Ablations v2
+  experiment:      classifier
+  eval_method:     per-domain equal-weight average (corrected protocol)
+  eval_batch_size: 4 (consistent for ALL models)
+  output dir:      results\pythia\v2
+  device:          cuda
+  GPU:             NVIDIA GeForce RTX 5090
+  VRAM:            34.2GB
+
+Loading tokenizer (EleutherAI/pythia-410m)...
+
+Loading data...
+  Loading code (n=3000)...
+    3000 samples
+  Loading science (n=3000)...
+    3000 samples
+  Loading fiction (n=3000)...
+    3000 samples
+
+Packing and splitting (80/10/10)...
+  code: train=1256, held_out=158
+  science: train=531, held_out=67
+  fiction: train=6222, held_out=778
+
+######################################################################
+# Starting: classifier
+######################################################################
+
+======================================================================
+EXPERIMENT: classifier (single-expert dispatch analysis)
+======================================================================
+
+Loading specialists (seeds 42, 137, 2026)...
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3017.61it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3361.93it/s]
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 3077.84it/s]
+
+[code_spec seed=42] — all domains
+    code_s42 code    : 1.8791  (0.8s)
+    code_s42 science : 2.9085  (0.3s)
+    code_s42 fiction : 2.9768  (0.8s)
+
+[science_spec seed=42] — all domains
+    science_s42 code    : 2.1738  (0.7s)
+    science_s42 science : 2.5565  (0.3s)
+    science_s42 fiction : 3.0613  (0.8s)
+
+[fiction_spec seed=42] — all domains
+    fiction_s42 code    : 2.1018  (0.6s)
+    fiction_s42 science : 2.8904  (0.3s)
+    fiction_s42 fiction : 2.2194  (0.8s)
+
+  Oracle dispatch eq_avg: 2.2183
+  (diagonal of cross-domain matrix: code→code_spec=1.8791, science→science_spec=2.5565, fiction→fiction_spec=2.2194)
+
+  Fixed-dispatch (always route to one specialist):
+    always_code_spec: eq_avg=2.5881
+    always_science_spec: eq_avg=2.5972
+    always_fiction_spec: eq_avg=2.4039
+
+[moe seed=42]
+  Training router (500 steps, 8009 chunks)...
+    step 100/500: loss=3.1276
+    step 200/500: loss=2.7858
+    step 300/500: loss=3.3427
+    step 400/500: loss=2.8942
+    step 500/500: loss=2.6771
+    moe code    : 1.8791  (2.0s)
+    moe science : 2.5565  (0.8s)
+    moe fiction : 2.2194  (2.5s)
+
+Saved: results\pythia\v2\classifier_v2.json
+
+======================================================================
+CLASSIFIER / DISPATCH SUMMARY (v2, corrected eval)
+======================================================================
+  MoE (soft routing):           2.2183
+  Best specialist:              2.4039  (MoE: +7.72%)
+  Oracle dispatch (per-domain): 2.2183  (MoE: -0.00%)
+  Best fixed dispatch:          2.4039  (MoE: +7.72%)
+
+  Cross-domain matrix (each specialist on each held-out domain):
+                               code    science    fiction   eq_avg
+  ----------------------------------------------------------------
+  code_spec_seed42           1.8791     2.9085     2.9768   2.5881
+  science_spec_seed42        2.1738     2.5565     3.0613   2.5972
+  fiction_spec_seed42        2.1018     2.8904     2.2194   2.4039
+
+  classifier done in 0.7 min
+
+======================================================================
+ALL DONE — total 0.7 min
+Results in: C:\Github\Kalavai\results\pythia\v2
+======================================================================
