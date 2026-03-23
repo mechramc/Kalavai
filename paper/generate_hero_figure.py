@@ -45,15 +45,12 @@ with open(RESULTS / "pythia_1b" / "corrected_eval_137.json") as f:
 with open(RESULTS / "pythia_1b" / "corrected_eval_2026.json") as f:
     corr_1b_2026 = json.load(f)
 
-# Training duration crossover (v2 corrected equal-weight eval)
-with open(RESULTS_V2 / "crossover_v2.json") as f:
+# Training duration crossover (corrected equal-weight eval vs. base)
+with open(RESULTS / "training_duration_crossover_corrected.json") as f:
     crossover_raw = json.load(f)
 
-with open(RESULTS / "domain_classifier_baseline.json") as f:
-    classifier_data = json.load(f)
-
-with open(RESULTS / "multihead_baseline.json") as f:
-    multihead_data = json.load(f)
+with open(RESULTS / "v2" / "router_ablation_v2.json") as f:
+    router_v2 = json.load(f)
 
 # ── compute derived values ────────────────────────────────────────────────────
 
@@ -79,16 +76,12 @@ imp_1b_std  = float(np.std(imps_1b, ddof=1))
 imp_6b_mean = 6.53
 imp_6b_std  = 0.024
 
-# Panel B crossover: extract from v2 results list (improvement_vs_spec)
-_results = crossover_raw["results"]
-_f0 = [(r["steps"], r["improvement_vs_spec"]) for r in _results if r["freeze"] == 0]
-_f4 = [(r["steps"], r["improvement_vs_spec"]) for r in _results if r["freeze"] == 4]
-_f0.sort(); _f4.sort()
+# Panel B crossover: flat structure from corrected eval (improvement vs. base)
 crossover_data = {
-    "steps":               [s for s, _ in _f0],
-    "freeze0_improvement": [v for _, v in _f0],
-    "freeze4_improvement": [v for _, v in _f4],
-    "crossover_steps":     5000,
+    "steps":               crossover_raw["steps"],
+    "freeze0_improvement": crossover_raw["freeze0_improvement"],
+    "freeze4_improvement": crossover_raw["freeze4_improvement"],
+    "crossover_steps":     crossover_raw["crossover_steps"],
 }
 
 # Panel D: monolithic comparison (corrected equal-weight, seed 42)
@@ -159,25 +152,25 @@ ax_b.text(crossover * 1.12, y_annot,
 
 ax_b.set_xscale("log")
 ax_b.set_xlabel("Training steps (log scale)")
-ax_b.set_ylabel("MoE improvement over best specialist (%)")
+ax_b.set_ylabel("MoE improvement over base (%)")
 ax_b.set_title("(B)  Training Duration Crossover: Freeze=0 vs Freeze=4")
 ax_b.legend(loc="upper left")
 clean_axes(ax_b)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Panel C: Routing Failure Comparison
+# Panel C: Router Architecture (routing must be learned)
 # ─────────────────────────────────────────────────────────────────────────────
 routing_labels = [
-    "MoE (ours)",
-    "Classifier dispatch\n(99.3% acc.)",
-    "Multi-head\n(same params)",
+    "Uniform\n(no training)",
+    "Linear\n(trained)",
+    "MLP\n(trained)",
 ]
 routing_values = [
-    classifier_data["moe_improvement_pct"],
-    classifier_data["classifier_improvement_pct"],
-    multihead_data["multihead_improvement_pct"],
+    router_v2["router_variants"]["uniform"]["improvement_vs_spec"],
+    router_v2["router_variants"]["linear"]["improvement_vs_spec"],
+    router_v2["router_variants"]["mlp"]["improvement_vs_spec"],
 ]
-routing_colors = [COLORS["moe"], COLORS["classifier"], COLORS["multihead"]]
+routing_colors = [COLORS["classifier"], COLORS["moe"], COLORS["moe"]]
 
 x_c = np.arange(len(routing_labels))
 bars_c = ax_c.bar(
@@ -188,8 +181,8 @@ bars_c = ax_c.bar(
 ax_c.axhline(0, color="#374151", lw=1.0, linestyle="-")
 ax_c.set_xticks(x_c)
 ax_c.set_xticklabels(routing_labels)
-ax_c.set_ylabel("Improvement vs. base (%)")
-ax_c.set_title("(C)  Routing Failure: Why Architecture Matters")
+ax_c.set_ylabel("Improvement vs. best specialist (%)")
+ax_c.set_title("(C)  Routing Must Be Learned: Architecture Irrelevant")
 
 # accommodate negative bars
 y_min = min(routing_values) * 1.2
