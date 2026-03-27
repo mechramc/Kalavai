@@ -388,7 +388,7 @@ All experiments, results, and file locations. Single source of truth for what wa
 
 ---
 
-### PLAN-02: 20-Contributor with Robust Data
+### PLAN-01: 20-Contributor with Robust Data
 **Purpose:** Rerun EXP-19 replacing the two negative-divergence specialists (dialogue, instructions) with specialists that have clear domain data
 **Replacement domains:** Suggested alternatives — legal (more data), biomedical (more data), or a second code language (Rust, JavaScript)
 **Expected result:** Higher mean divergence → higher gain; eliminates the negative-divergence footnote in the paper
@@ -397,7 +397,7 @@ All experiments, results, and file locations. Single source of truth for what wa
 
 ---
 
-### PLAN-03: Multi-Round Contributors (Thicker Specialists)
+### PLAN-02: Multi-Round Contributors (Thicker Specialists)
 **Purpose:** Simulate a realistic cooperative where each contributor does multiple training rounds (3 rounds × shorter sessions) rather than one long run
 **Setup:** 3 contributors each train for 3 × 700 steps with data refresh between rounds. Compare to single 2,000-step specialist.
 **Hypothesis:** Multi-round training produces richer divergence while avoiding catastrophic forgetting
@@ -406,7 +406,7 @@ All experiments, results, and file locations. Single source of truth for what wa
 
 ---
 
-### PLAN-04: Continual Cooperative (Post-Hoc Specialist Addition)
+### PLAN-03: Continual Cooperative (Post-Hoc Specialist Addition)
 **Purpose:** Test whether a 4th specialist can join an existing 3-specialist cooperative without retraining the original three
 **Setup:** Start with EXP-01 (code/science/fiction MoE). Train a new medical specialist from the same base. Train a new router on all 4 specialists. Compare to full 4-specialist retraining.
 **Hypothesis:** Router retraining alone (~500 steps) is sufficient to integrate a new specialist
@@ -450,7 +450,7 @@ All experiments, results, and file locations. Single source of truth for what wa
 | EXP-29 | Benchmarks — 6.9B | 6.9B | MoE +0.56pp avg | 1 | Done |
 | EXP-30 | GSM8K — math specialist | 410M | 1.2% (near-chance) | 1 | Done |
 | EXP-31 | Inference benchmark | 410M/1B | 2.86×/3.35× latency | 1 | Done |
-| PLAN-01 | Low-divergence floor write-up | — | — | — | Planned |
-| PLAN-02 | 20-contributor robust data | 1B | — | 3 | Planned |
-| PLAN-03 | Multi-round contributors | 410M | — | 3 | Planned |
-| PLAN-04 | Continual cooperative | 410M | — | 3 | Planned |
+| EXP-32 | Low-divergence floor write-up | — | floor=3.3%, regime-scoped | — | Done |
+| PLAN-01 | 20-contributor robust data | 1B | — | 3 | Planned |
+| PLAN-02 | Multi-round contributors | 410M | — | 3 | Planned |
+| PLAN-03 | Continual cooperative | 410M | — | 3 | Planned |
