@@ -1,0 +1,27 @@
+{
+  "model_id": "EleutherAI/pythia-410m",
+  "revision": "step10000",
+  "seed": 42,
+  "n_eval": 500,
+  "n_shot": 4,
+  "max_new_tokens": 128,
+  "note": "Pythia-410M is a 410M general LM; GSM8K requires multi-step arithmetic reasoning. Near-chance accuracy is expected.",
+  "models": {
+    "base": {
+      "accuracy_pct": 1.6,
+      "correct": 8,
+      "total": 500,
+      "no_answer": 28,
+      "elapsed_s": 660.5
+    },
+    "math_specialist": {
+      "accuracy_pct": 1.2,
+      "correct": 6,
+      "total": 500,
+      "no_answer": 6,
+      "elapsed_s": 690.8
+    }
+  },
+  "math_vs_base_delta_pp": -0.4,
+  "conclusion": "near_chance_expected_at_410M_scale"
+}
