@@ -1,5 +1,7 @@
 # KALAVAI — கலவை
 
+[![arXiv](https://img.shields.io/badge/arXiv-2603.22755-b31b1b.svg)](https://arxiv.org/abs/2603.22755) [![Hugging Face](https://img.shields.io/badge/🤗%20HF-Paper-yellow)](https://huggingface.co/papers/2603.22755) [![Website](https://img.shields.io/badge/Website-murailabs.com-blue)](https://murailabs.com)
+
 20 people. 20 GPUs. 1 model none of them could build alone.
 
 **Fusion gain ≈ 0.82 × divergence − 2.72** (R² = 0.857). Before you train a single specialist, you can predict whether the cooperative is worth it.
@@ -281,7 +283,7 @@ The code is here. The results are reproducible. The predictive model tells you w
   author    = {Kumaresan, Ramchand},
   journal   = {arXiv preprint},
   year      = {2026},
-  url       = {https://github.com/mechramc/Kalavai}
+  url       = {https://arxiv.org/abs/2603.22755}
 }
 ```
 
