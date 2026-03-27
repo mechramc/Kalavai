@@ -75,3 +75,4 @@ results/pythia_6b/held_out_chunks.pkl
 **/*.pkl
 results/pythia_6b/held_out_chunks.pkl
 **/*.pkl
+.gstack/
