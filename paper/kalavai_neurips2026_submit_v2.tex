@@ -196,7 +196,7 @@ Design decisions---LoRA vs.\ full fine-tuning, softmax vs.\ argmax, linear vs.\ 
 
 \paragraph{Domains.} Three domain specialists are trained per experiment: (1) \emph{code} (CodeSearchNet Python subset), (2) \emph{science} (SciQ with supporting context), and (3) \emph{fiction} (PG-19 books). For each domain, 90\% of samples are used for specialist training, 10\% are held out and never seen during training or router training.
 
-\paragraph{Training configuration.} All 410M and 1B experiments: 2,000 specialist training steps (effective batch size 8, sequence length 512), 500 router training steps. 6.9B experiments: 1,000 specialist training steps, 500 router steps. Freeze depth $K=4$ for 410M (4/24 = 17\%), $K=4$ for 1B (4/16 = 25\%), $K=6$ for 6.9B (6/32 = 19\%). Optimiser: AdamW, $\text{lr}=2\times10^{-5}$, weight decay 0.1, linear warmup over 10\% of steps.
+\paragraph{Training configuration.} All 410M and 1B experiments: 2,000 specialist training steps (effective batch size 8, sequence length 512), 500 router training steps (except Experiment 3, which uses 1,000 router steps to accommodate 20 specialists; see Section~\ref{sec:phase2_twenty}). 6.9B experiments: 1,000 specialist training steps, 500 router steps. Freeze depth $K=4$ for 410M (4/24 = 17\%), $K=4$ for 1B (4/16 = 25\%), $K=6$ for 6.9B (6/32 = 19\%). Optimiser: AdamW, $\text{lr}=2\times10^{-5}$, weight decay 0.1, linear warmup over 10\% of steps.
 
 \paragraph{Evaluation metric.} All improvement percentages are computed as:
 \[
@@ -226,7 +226,7 @@ where $\mathcal{L}$ is average cross-entropy loss on the held-out mixed-domain e
  & Monolithic baseline & 2.229 & ---     & +16.0\% & 3    & $\pm$0.00\% \\
  & \kalavai (MoE)      & \textbf{2.218} & \textbf{+7.70\%} & +16.3\% & 3 & $\pm$0.02\% \\
 \midrule
-\multirow{3}{*}{Pythia-1B}
+\multirow{4}{*}{Pythia-1B}
  & Base model          & 2.474 & ---     & ---     & ---  & ---        \\
  & Best specialist     & 2.259 & ---     & +8.7\%  & 1    & ---        \\
  & Monolithic baseline & 2.097 & ---     & +15.3\% & 1    & ---        \\
