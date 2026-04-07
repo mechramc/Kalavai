@@ -378,17 +378,23 @@ class TwentyExpertMoE(nn.Module):
         self._gpu_models  = None  # list[nn.Module] on GPU
         self._cpu_models  = None  # list[nn.Module] on CPU (pre-built, swap to GPU)
 
-        vram_free_gb = 0.0
+        # Always attempt GPU mode first — let the OOM handler decide.
+        # mem_get_info() can undercount free VRAM after eval loops due to PyTorch
+        # allocator caching, causing false negatives. The try/except is sufficient.
+        import gc
+        gc.collect()
         if torch.cuda.is_available():
-            free, _ = torch.cuda.mem_get_info()
-            vram_free_gb = free / 1e9
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
+            free, total = torch.cuda.mem_get_info()
+            vram_free_gb  = free  / 1e9
+            vram_total_gb = total / 1e9
+        else:
+            vram_free_gb = vram_total_gb = 0.0
 
-        # Pythia-1B bfloat16 ≈ 2.4 GB weights; allow 2.6 GB per expert for overhead.
-        # Peak VRAM during loading = (n_experts × 2.6) GB.
-        vram_needed_gb = self.n_experts * 2.6
-        if vram_free_gb >= vram_needed_gb:
-            print(f"  [MoE] GPU mode: loading all {self.n_experts} specialists on GPU "
-                  f"({vram_free_gb:.0f} GB free, need ~{vram_needed_gb:.0f} GB)")
+        if torch.cuda.is_available():
+            print(f"  [MoE] Attempting GPU mode: {self.n_experts} specialists × ~2.4 GB "
+                  f"= ~{self.n_experts * 2.4:.0f} GB needed | {vram_free_gb:.0f}/{vram_total_gb:.0f} GB free")
             try:
                 models = []
                 for i, sd in enumerate(specialist_state_dicts):

@@ -150,18 +150,16 @@ def run_test(name, fn):
 # ---------------------------------------------------------------------------
 
 def test_cpu_swap_mode_init():
-    """CPU-swap mode pre-builds models at init, not per forward pass."""
+    """CPU-swap mode pre-builds all specialist models on CPU exactly once."""
     MoE, exp, orig = _make_tiny_moe_class()
     try:
         sds = [_make_fake_state_dict(i) for i in range(N_EXPERTS)]
-        # Force CPU-swap by making VRAM look insufficient
-        with patch("torch.cuda.is_available", return_value=True), \
-             patch("torch.cuda.mem_get_info", return_value=(1 * 1024**3, 80 * 1024**3)):
+        # No CUDA → skip GPU mode entirely, go straight to CPU-swap
+        with patch("torch.cuda.is_available", return_value=False):
             moe = MoE(sds, "dummy/model", "main", HIDDEN_SIZE, "cpu")
-        assert moe._gpu_models is None, "Should not use GPU mode with 1 GB free"
+        assert moe._gpu_models is None, "Should not use GPU mode without CUDA"
         assert moe._cpu_models is not None, "CPU-swap models should be pre-built"
         assert len(moe._cpu_models) == N_EXPERTS, f"Expected {N_EXPERTS} CPU models"
-        # Verify models are on CPU
         for m in moe._cpu_models:
             for p in m.parameters():
                 assert p.device.type == "cpu", "Pre-built CPU model has GPU tensor"
@@ -170,17 +168,16 @@ def test_cpu_swap_mode_init():
 
 
 def test_gpu_mode_init():
-    """GPU mode loads all specialists when enough VRAM is available."""
+    """GPU mode loads all specialists when no OOM occurs."""
     MoE, exp, orig = _make_tiny_moe_class()
     try:
         sds = [_make_fake_state_dict(i) for i in range(N_EXPERTS)]
-        # Simulate 79 GB free
-        vram_free = 79 * 1024**3
         with patch("torch.cuda.is_available", return_value=True), \
-             patch("torch.cuda.mem_get_info", return_value=(vram_free, 80 * 1024**3)), \
+             patch("torch.cuda.mem_get_info", return_value=(79 * 1024**3, 80 * 1024**3)), \
+             patch("torch.cuda.synchronize"), \
              patch("torch.cuda.empty_cache"):
             moe = MoE(sds, "dummy/model", "main", HIDDEN_SIZE, "cpu")
-        assert moe._gpu_models is not None, "GPU mode should activate with 79 GB free"
+        assert moe._gpu_models is not None, "GPU mode should activate when no OOM"
         assert len(moe._gpu_models) == N_EXPERTS
         assert moe._cpu_models is None, "CPU-swap should not be initialized in GPU mode"
     finally:
@@ -321,15 +318,14 @@ def test_cpu_swap_model_returns_to_cpu():
     MoE, exp, orig = _make_tiny_moe_class()
     try:
         sds = [_make_fake_state_dict(i) for i in range(N_EXPERTS)]
-        with patch("torch.cuda.is_available", return_value=True), \
-             patch("torch.cuda.mem_get_info", return_value=(1 * 1024**3, 80 * 1024**3)), \
-             patch("torch.cuda.empty_cache"):
+        with patch("torch.cuda.is_available", return_value=False):
             moe = MoE(sds, "dummy/model", "main", HIDDEN_SIZE, "cpu")
 
         assert moe._cpu_models is not None
 
         input_ids = torch.randint(0, VOCAB_SIZE, (BATCH_SIZE, SEQ_LEN))
-        moe._run_one_swap(0, input_ids)
+        with patch("torch.cuda.empty_cache"):
+            moe._run_one_swap(0, input_ids)
 
         # After swap, model should be on CPU
         m = moe._cpu_models[0]
@@ -455,32 +451,16 @@ def test_cpu_swap_timing():
         exp.AutoModelForCausalLM = orig
 
 
-def test_mode_selection_thresholds():
-    """Mode selection: GPU mode needs n_experts × 2.6 GB free.
-    Note: code uses mem_get_info() / 1e9 (decimal GB), so mock must use 1e9 bytes.
-    """
+def test_mode_selection_no_cuda():
+    """When CUDA is unavailable, skips GPU mode entirely and uses CPU-swap."""
     MoE, exp, orig = _make_tiny_moe_class()
     try:
         sds = [_make_fake_state_dict(i) for i in range(N_EXPERTS)]
-        # Threshold is n_experts * 2.6 GB (decimal: 1 GB = 1e9 bytes)
-        threshold_bytes = int(N_EXPERTS * 2.6 * 1e9)
-
-        # Exactly at threshold + 1 byte: GPU mode should activate
-        vram_free = threshold_bytes + 1
-        with patch("torch.cuda.is_available", return_value=True), \
-             patch("torch.cuda.mem_get_info", return_value=(vram_free, 80 * 1024**3)), \
-             patch("torch.cuda.empty_cache"):
+        with patch("torch.cuda.is_available", return_value=False):
             moe = MoE(sds, "dummy/model", "main", HIDDEN_SIZE, "cpu")
-        assert moe._gpu_models is not None, "Should use GPU mode at threshold"
-
-        # 1 byte below threshold: CPU-swap mode
-        vram_free = threshold_bytes - 1
-        with patch("torch.cuda.is_available", return_value=True), \
-             patch("torch.cuda.mem_get_info", return_value=(vram_free, 80 * 1024**3)), \
-             patch("torch.cuda.empty_cache"):
-            moe2 = MoE(sds, "dummy/model", "main", HIDDEN_SIZE, "cpu")
-        assert moe2._gpu_models is None, "Should use CPU-swap below threshold"
-        assert moe2._cpu_models is not None
+        assert moe._gpu_models is None, "No GPU mode without CUDA"
+        assert moe._cpu_models is not None
+        assert len(moe._cpu_models) == N_EXPERTS
     finally:
         exp.AutoModelForCausalLM = orig
 
@@ -507,7 +487,7 @@ if __name__ == "__main__":
         ("10. Router training step",         test_router_training_step),
         ("11. Forward without labels",       test_forward_without_labels),
         ("12. CPU-swap timing",              test_cpu_swap_timing),
-        ("13. Mode selection thresholds",    test_mode_selection_thresholds),
+        ("13. Mode selection (no CUDA)",      test_mode_selection_no_cuda),
     ]
 
     print()
