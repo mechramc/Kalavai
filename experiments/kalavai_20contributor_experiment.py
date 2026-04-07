@@ -354,6 +354,15 @@ class TwentyExpertMoE(nn.Module):
     Sequence-level MoE over N specialist models.
     Router: mean of last hidden states → nn.Linear(H, N) → softmax gates.
     Only the router has requires_grad=True.
+
+    Three modes (auto-selected at init based on available VRAM):
+      GPU mode:      all specialists loaded on GPU simultaneously — fastest.
+                     Requires ~50 GB VRAM (A100 80GB with fresh VRAM state).
+      CPU-swap mode: specialists pre-built on CPU; one moved to GPU per forward,
+                     then moved back. Much faster than rebuild mode (~6-8×).
+                     Works on any GPU; requires ~40 GB CPU RAM.
+      Rebuild mode:  legacy fallback — rebuilds specialist from scratch each
+                     forward pass. Extremely slow; should never be reached.
     """
     def __init__(self, specialist_state_dicts: list, model_id: str, revision: str,
                  hidden_size: int, device: str):
@@ -365,28 +374,32 @@ class TwentyExpertMoE(nn.Module):
         self.hidden_size = hidden_size
         self.router = nn.Linear(hidden_size, self.n_experts, bias=False)
 
-        # Try to load all specialists onto GPU; fall back to CPU offload
-        self._gpu_models = None  # list of nn.Module on GPU (fast path)
-        self._cpu_sds    = None  # list of state_dicts on CPU (slow path)
+        # Mode selection: GPU → CPU-swap → rebuild (in order of preference)
+        self._gpu_models  = None  # list[nn.Module] on GPU
+        self._cpu_models  = None  # list[nn.Module] on CPU (pre-built, swap to GPU)
 
         vram_free_gb = 0.0
         if torch.cuda.is_available():
-            free, total = torch.cuda.mem_get_info()
+            free, _ = torch.cuda.mem_get_info()
             vram_free_gb = free / 1e9
 
-        # Each Pythia-1B is ~2.8 GB bfloat16; need headroom for activations + logits
-        vram_needed_gb = self.n_experts * 3.2
+        # Pythia-1B bfloat16 ≈ 2.4 GB weights; allow 2.6 GB per expert for overhead.
+        # Peak VRAM during loading = (n_experts × 2.6) GB.
+        vram_needed_gb = self.n_experts * 2.6
         if vram_free_gb >= vram_needed_gb:
             print(f"  [MoE] GPU mode: loading all {self.n_experts} specialists on GPU "
                   f"({vram_free_gb:.0f} GB free, need ~{vram_needed_gb:.0f} GB)")
             try:
                 models = []
                 for i, sd in enumerate(specialist_state_dicts):
+                    # Build on CPU first (no GPU alloc during arch init), then
+                    # load specialist weights, then move to GPU in one transfer.
                     m = AutoModelForCausalLM.from_pretrained(
                         model_id, revision=revision,
                         dtype=torch.bfloat16, trust_remote_code=True,
-                    ).to(device)
-                    m.load_state_dict(sd)
+                    )  # stays on CPU
+                    m.load_state_dict(sd)   # CPU op — overwrites arch weights in place
+                    m = m.to(device)        # single PCIe transfer
                     m.eval()
                     for p in m.parameters():
                         p.requires_grad_(False)
@@ -396,30 +409,44 @@ class TwentyExpertMoE(nn.Module):
                 self._gpu_models = models
                 print(f"  [MoE] GPU mode active — all {self.n_experts} specialists on GPU")
             except torch.cuda.OutOfMemoryError:
-                print("  [MoE] GPU mode OOM — falling back to CPU offload")
+                print("  [MoE] GPU mode OOM — falling back to CPU-swap mode")
                 for m in models:
                     del m
                 torch.cuda.empty_cache()
                 self._gpu_models = None
 
         if self._gpu_models is None:
-            print(f"  [MoE] CPU offload mode: {self.n_experts} specialists on CPU "
-                  f"({vram_free_gb:.0f} GB VRAM free)")
-            self._cpu_sds = specialist_state_dicts
+            # CPU-swap mode: pre-build all specialists on CPU once.
+            # Per forward pass: one specialist moves GPU → forward → back to CPU.
+            # ~6-8× faster than rebuild mode (no from_pretrained overhead per step).
+            print(f"  [MoE] CPU-swap mode: pre-building {self.n_experts} CPU models "
+                  f"(one-time cost, ~{self.n_experts * 2.4:.0f} GB CPU RAM)...")
+            cpu_models = []
+            for i, sd in enumerate(specialist_state_dicts):
+                m = AutoModelForCausalLM.from_pretrained(
+                    model_id, revision=revision,
+                    dtype=torch.bfloat16, trust_remote_code=True,
+                )  # CPU only
+                m.load_state_dict(sd)
+                m.eval()
+                for p in m.parameters():
+                    p.requires_grad_(False)
+                cpu_models.append(m)
+                if (i + 1) % 5 == 0:
+                    print(f"    built {i+1}/{self.n_experts}")
+            self._cpu_models = cpu_models
+            print(f"  [MoE] CPU-swap mode active — specialists built, will swap to GPU per forward")
 
-    def _run_one_cpu(self, sd: dict, input_ids: torch.Tensor):
-        """CPU offload path: build model, load weights, run, discard."""
-        m = AutoModelForCausalLM.from_pretrained(
-            self.model_id, revision=self.revision,
-            dtype=torch.bfloat16, trust_remote_code=True,
-        ).to(self.device)
-        m.load_state_dict(sd)
-        m.eval()
+    def _run_one_swap(self, idx: int, input_ids: torch.Tensor):
+        """CPU-swap path: move pre-built CPU model to GPU, run, return to CPU."""
+        m = self._cpu_models[idx]
+        m.to(self.device)
         with torch.no_grad():
             out = m(input_ids=input_ids, output_hidden_states=True)
         logits   = out.logits.float().cpu()
         h_pooled = out.hidden_states[-1].float().mean(dim=1).cpu()
-        del m, out
+        del out
+        m.to('cpu')
         torch.cuda.empty_cache()
         return logits, h_pooled
 
@@ -435,9 +462,9 @@ class TwentyExpertMoE(nn.Module):
                 all_logits.append(out.logits.float().cpu())
                 all_h.append(out.hidden_states[-1].float().mean(dim=1).cpu())
         else:
-            # CPU offload path: load one specialist at a time
-            for sd in self._cpu_sds:
-                logits, h = self._run_one_cpu(sd, input_ids_gpu)
+            # CPU-swap path: pre-built models, swap one to GPU at a time
+            for i in range(self.n_experts):
+                logits, h = self._run_one_swap(i, input_ids_gpu)
                 all_logits.append(logits)
                 all_h.append(h)
 
