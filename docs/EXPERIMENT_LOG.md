@@ -239,12 +239,25 @@ All experiments, results, and file locations. Single source of truth for what wa
 **Scripts:** `experiments/kalavai_20contributor_experiment.py`
 **Results (prior):** `results/phase2/twenty_contributor/result_seed42.json`, `result_seed137.json`, `result_seed2026.json`
 
-**Status as of 2026-04-07:** Router-only retry running overnight on RunPod A100 80GB.
-- All 20 specialist checkpoints saved, GPU mode active (all 20 on GPU simultaneously)
-- Running: `--router-only --seeds 42,137,2026`, 1,000 steps, lr=2e-4
-- Expected completion: morning 2026-04-08
-- Results will land at: `results/phase2/twenty_contributor/result_seed{42,137,2026}_router_retry.json`
-- Code fix: replaced per-step `from_pretrained` rebuild (35s/step) with GPU mode + CPU-swap fallback (~10-15s/step)
+**Status:** COMPLETE (2026-04-08)
+- Final 3-seed mean: +16.71% ±0.07pp (seed42: +16.79%, seed137: +16.65%, seed2026: +16.68%)
+- Results: `results/phase2/twenty_contributor/result_seed{42,137,2026}_router_retry.json`
+- Note: Two toxic specialists (dialogue, instructions) confirmed — see FE-03 below
+
+---
+
+### FE-03: 18-Contributor Ablation (Specialist Quality Filtering)
+**Model:** Pythia-1B @ step10000
+**Domains:** Same as EXP-19 minus dialogue and instructions (18 of 20 specialists)
+**Protocol:** Router retrained 1,000 steps on 18-domain mixed data. Specialist checkpoints reused from EXP-19 (seed 42 checkpoints for all 3 router seeds via --specialist-seed flag).
+**Key result:** **+21.13% ±0.01pp** vs best specialist (3-seed mean)
+**vs base:** +21.56%
+**Mean divergence:** 19.75% (rises from 15.68% once negative-divergence specialists removed)
+**Per-seed:** seed42 +21.14%, seed137 +21.12%, seed2026 +21.13%
+**Gain over EXP-19:** +4.42pp (+16.71% → +21.13%)
+**Scripts:** `experiments/kalavai_18contributor_experiment.py`
+**Results:** `results/phase2/eighteen_contributor/result_seed42_router_retry.json`, `result_seed137_router_retry.json`, `result_seed2026_router_retry.json`
+**Paper status:** Paper updated 2026-04-08 — abstract, negative-divergence paragraph, new Table FE-03, OOS row in divergence-gain table updated to FE-03 numbers, summary table row added.
 
 ---
 

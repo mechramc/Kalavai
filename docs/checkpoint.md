@@ -2,39 +2,46 @@
 
 ---
 
-## Checkpoint 4: NeurIPS Sprint — EXP-19 Complete + Paper Updated (2026-04-08)
+## Checkpoint 5: NeurIPS Sprint — FE-03 Complete + Paper Updated (2026-04-08)
 
-**Status**: No experiments running. Next GPU run: FE-03 (18-expert ablation)
+**Status**: No experiments running. Next GPU run: FE-04/05 (replacement domain selection + training) or P3 (6.9B freeze sweep)
 
 ### Completed this session
 
-**EXP-19 router-only retry (seed 42):** COMPLETE
-- Result: +16.69% gain vs spec, mean div 15.70% — matches prior 3-seed mean +16.71% ±0.07pp
+**FE-03: 18-Contributor Ablation:** COMPLETE
+- Dropped dialogue + instructions specialists (negative divergence confirmed in EXP-19)
+- Result: **+21.13% ±0.01pp** (seed42: +21.14%, seed137: +21.12%, seed2026: +21.13%)
+- vs 20-expert baseline: +4.42pp improvement; mean divergence 15.68% → 19.75%
+- Gate PASSED (≥ +1pp over +16.71%)
+- Results: `results/phase2/eighteen_contributor/result_seed{42,137,2026}_router_retry.json`
+
+**Paper FE-03 update:** COMPLETE
+- Abstract (line 72): added 18-expert result +21.13% ±0.01pp
+- Negative-divergence paragraph: extended with FE-03 direct validation + new Table FE-03 (per-seed 18-expert)
+- OOS row in divergence-gain table: updated to FE-03 (19.75% div, +21.13%, +7.68pp residual)
+- Residual discussion: +6.57pp → +7.68pp
+- Summary table: FE-03 row added
+- Files: `paper/kalavai_neurips2026_submit.tex`
+
+**EXP-19 router-only retry (3 seeds):** COMPLETE
+- Final: +16.71% ±0.07pp (seed42: +16.79%, seed137: +16.65%, seed2026: +16.68%)
 - Confirmed toxic specialists: dialogue (-25.08%, 16 eval chunks), instructions (-16.50%, 28 chunks)
-- Chemistry routing collapse: 75% routes to medical specialist
-- Results: `results/pythia/ablation_router_summary.json`
 
 **Paper cross-lingual update:** COMPLETE
 - All occurrences of +21.76% (2-seed) updated to +21.87% ±0.12pp (3-seed curriculum)
-- Rewritten router collapse paragraph → curriculum warm-start explanation
-- Appendix per-seed table: seed 42 updated from +6.14% PIVOT to +22.04% GO
-- Files: `paper/kalavai_neurips2026_submit.tex`
 
 **LOO analysis (EXP-32) updated:** COMPLETE
-- Primary dataset now uses 21.87% (was 21.76%)
-- New numbers: LOO-MAE=2.89pp (5-point), cross-lingual residual=+8.43pp
+- LOO-MAE=2.89pp (5-point), cross-lingual residual=+8.43pp
 - Results: `results/analysis/loo_analysis.json`
 
 ### Decision: skip FE-01/FE-02
 
-Router budget sweep (2k/4k steps) deprioritised. Removing toxic specialists (FE-03) is higher ROI.
-The 1000-step baseline at +16.71% is stable; dialogue and instructions have confirmed negative divergence.
+Router budget sweep (2k/4k steps) deprioritised. FE-03 removal of toxic specialists was higher ROI.
 
 ### Next GPU run
 
-**FE-03:** 18-expert MoE (drop dialogue + instructions), 1000 steps, 3 seeds (42/137/2026)
-Expected: +18–20% gain (negative-divergence specialists removed)
-Gate: ≥ +1pp over +16.71% → proceed to FE-04 (replacement domain selection)
+**Option A — FE-04/05/06:** Select 2 replacement domains (no GPU), train specialists (2000 steps, seed 42), re-run 20-expert router
+**Option B — P3 (LG-01/02/03):** 6.9B freeze sweep (3 seeds, seed 42 confirmatory)
 
 ---
 
