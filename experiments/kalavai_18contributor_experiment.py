@@ -811,12 +811,18 @@ def print_results_summary(result: dict):
 
 
 def run_router_only(seed: int, tokenizer, device: str,
-                    train_chunks: dict, held_out_chunks: dict) -> dict:
+                    train_chunks: dict, held_out_chunks: dict,
+                    specialist_seed: int = None) -> dict:
     """
     Re-train only the router for an existing seed result.
     Loads specialist checkpoints and eval_matrix from the prior result JSON.
     Use after a router training failure (e.g. lr oscillation) without retraining specialists.
+
+    specialist_seed: if set, load specialist checkpoints from this seed instead of `seed`.
+                     Useful when only one set of specialist checkpoints exists on pod.
     """
+    ckpt_seed = specialist_seed if specialist_seed is not None else seed
+
     prior_path = RESULTS_DIR / f"result_seed{seed}.json"
     if prior_path.exists():
         print(f"\n[router-only seed={seed}]  loading prior eval_matrix from {prior_path}")
@@ -825,12 +831,14 @@ def run_router_only(seed: int, tokenizer, device: str,
         eval_matrix = {k: v for k, v in prior["eval_matrix"].items() if k != "moe"}
     else:
         print(f"\n[router-only seed={seed}]  no prior result — will eval specialists from checkpoints")
+        if specialist_seed is not None:
+            print(f"  (using specialist checkpoints from seed={ckpt_seed})")
         eval_matrix = None  # built below after loading specialists
 
     # Load specialist state dicts from checkpoints
     spec_state_dicts = []
     for name in SPECIALISTS:
-        ckpt_path = CHECKPOINT_DIR / f"{name}_specialist_seed{seed}.pt"
+        ckpt_path = CHECKPOINT_DIR / f"{name}_specialist_seed{ckpt_seed}.pt"
         if not ckpt_path.exists():
             raise FileNotFoundError(f"Missing checkpoint: {ckpt_path}")
         print(f"  Loading {name} from {ckpt_path}")
@@ -958,6 +966,10 @@ def main():
                         help="Override ROUTER_STEPS constant (e.g. 2000 or 4000 for FE-01/02 sweep).")
     parser.add_argument("--seeds", type=str, default=None,
                         help="Comma-separated seeds to run, e.g. '42,137,2026'. Overrides SEEDS constant.")
+    parser.add_argument("--specialist-seed", type=int, default=None,
+                        help="Use this seed's specialist checkpoints for all router seeds. "
+                             "Useful when only one set of specialist checkpoints exists on pod. "
+                             "e.g. --specialist-seed 42 --seeds 137,2026")
     args = parser.parse_args()
 
     global ROUTER_STEPS, SEEDS
@@ -967,6 +979,8 @@ def main():
     if args.seeds is not None:
         SEEDS = [int(s.strip()) for s in args.seeds.split(",")]
         print(f"[override] SEEDS = {SEEDS}")
+    if args.specialist_seed is not None:
+        print(f"[override] specialist checkpoints will use seed={args.specialist_seed} for all router seeds")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
@@ -991,7 +1005,8 @@ def main():
     for seed in SEEDS:
         if args.router_only:
             retry_path = RESULTS_DIR / f"result_seed{seed}_router_retry.json"
-            result = run_router_only(seed, tokenizer, device, train_chunks, held_out_chunks)
+            result = run_router_only(seed, tokenizer, device, train_chunks, held_out_chunks,
+                                     specialist_seed=args.specialist_seed)
             print_results_summary(result)
             with open(retry_path, "w") as f:
                 json.dump(result, f, indent=2)
