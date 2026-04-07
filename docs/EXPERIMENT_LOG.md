@@ -199,12 +199,19 @@ All experiments, results, and file locations. Single source of truth for what wa
 **Model:** Pythia-410M @ step10000
 **Domains:** Tamil (Wikipedia), Yoruba (Wikipedia), Welsh (Wikipedia), Code (code_search_net)
 **Protocol:** 2,000 steps, freeze=0, seeds 42/137/2026, router 500 steps
-**Key result (clean seeds 137 / 2026):** +21.76% ±0.005pp vs best specialist
-**Mean divergence:** 25.65% (Tamil ~23.3%, Yoruba ~45.5%, Welsh ~33.2%, Code ~0.4%)
+**Key result (original, seeds 137/2026 only):** +21.76% ±0.005pp vs best specialist
+**Seed 42 note (original):** Router collapse — Yoruba routes 99.84% to Tamil expert. Fixed by curriculum warm-start (see EXP-17b).
+
+### EXP-17b: Cross-Lingual Fusion — Curriculum Warm-Start (Router Collapse Fix)
+**Status:** COMPLETE — all 3 seeds GO
+**Fix:** Stage A: 100 domain-pure router steps (round-robin, one language per step) → Stage B: 400 mixed steps
+**Key result:** **+21.87% ±0.12pp** (seed42: +22.04%, seed137: +21.79%, seed2026: +21.77%) — 3-seed mean
+**Mean divergence:** ~25.66% across seeds
 **Perplexity highlights:** Yoruba 41.9 → 7.7 (5.4×), Welsh 102.7 → 22.1 (4.6×)
-**Seed 42 note:** Router collapse — Yoruba routes 99.84% to Tamil expert (stochastic init failure at high divergence). Seeds 137/2026 route correctly at >99.98%. Seed 42 result (+6.14%) excluded from headline figure; collapse documented in collapse_analysis.json.
-**Scripts:** `experiments/kalavai_phase2_exp1.py`, `experiments/kalavai_router_collapse_analysis.py`
-**Results:** `results/phase2/cross_lingual/result_seed42.json`, `result_seed137.json`, `result_seed2026.json`, `summary.json`, `collapse_analysis.json`
+**Router collapse:** Eliminated — all seeds route correctly
+**Scripts:** `experiments/kalavai_phase2_exp1_curriculum.py`
+**Results:** `results/phase2/cross_lingual/curriculum/result_seed42.json`, `result_seed137.json`, `result_seed2026.json`
+**Paper status:** Paper still shows old +21.76% (2-seed) — needs update to +21.87% ±0.12pp (3 seeds)
 
 ---
 
@@ -224,13 +231,20 @@ All experiments, results, and file locations. Single source of truth for what wa
 **Model:** Pythia-1B @ step10000
 **Domains:** 10 languages (Tamil, Yoruba, Welsh, Spanish, Hindi, Swahili, Vietnamese, Arabic, Indonesian, Thai) + 10 domains (code, medical, legal, patent, math, finance, chemistry, fiction, dialogue, instructions)
 **Protocol:** 2,000 steps, freeze=0, router 1,000 steps (not 500 — different from Phase 1), seeds 42/137/2026
-**Key result:** +16.71% ±0.07pp vs best specialist (3-seed mean)
+**Key result (prior run):** +16.71% ±0.07pp vs best specialist (3-seed mean)
 **vs base:** +17.09%
 **Mean divergence:** 15.68% (excludes dialogue/instructions which have negative divergence)
 **Negative-divergence specialists:** dialogue (−24.9%), instructions (−16.3%) — router correctly down-weights both (<2%)
 **Per-seed:** seed42 +16.79%, seed137 +16.65%, seed2026 +16.68%
 **Scripts:** `experiments/kalavai_20contributor_experiment.py`
-**Results:** `results/phase2/twenty_contributor/result_seed42_router_retry.json`, `result_seed137.json`, `result_seed2026.json`
+**Results (prior):** `results/phase2/twenty_contributor/result_seed42.json`, `result_seed137.json`, `result_seed2026.json`
+
+**Status as of 2026-04-07:** Router-only retry running overnight on RunPod A100 80GB.
+- All 20 specialist checkpoints saved, GPU mode active (all 20 on GPU simultaneously)
+- Running: `--router-only --seeds 42,137,2026`, 1,000 steps, lr=2e-4
+- Expected completion: morning 2026-04-08
+- Results will land at: `results/phase2/twenty_contributor/result_seed{42,137,2026}_router_retry.json`
+- Code fix: replaced per-step `from_pretrained` rebuild (35s/step) with GPU mode + CPU-swap fallback (~10-15s/step)
 
 ---
 
@@ -375,6 +389,19 @@ All experiments, results, and file locations. Single source of truth for what wa
 **Key result:** Dense MoE latency = 2.86× base (410M), 3.35× base (1B). VRAM scales linearly with N specialists. Frozen layers run once — effective overhead ≈ 2.5× for freeze=4 configuration.
 **Scripts:** `experiments/kalavai_inference_benchmark.py`
 **Results:** `results/pythia/inference_benchmark.json`
+
+---
+
+### EXP-32: Leave-One-Out (LOO) Regression Validation
+**Purpose:** Validate the "predictive heuristic" claim in the paper — does the divergence-gain formula generalise?
+**Setup:** 6-point regression (Qwen, 6.9B, 1B, 410M, Private, Cross-lingual). LOO cross-validation: fit on 5, predict left-out.
+**Key results:**
+- LOO-MAE (all 6, using 2-seed cross-lingual +21.76%): 3.77pp
+- LOO-MAE (excl. cross-lingual, 5 points): 2.86pp
+- LOO-MAE (using 3-seed cross-lingual mean +16.55%): 1.62pp
+- Cross-lingual has largest LOO residual (+8.32pp) — highly influential point
+**Scripts:** `experiments/analysis/loo_analysis.py`
+**Results:** `results/analysis/loo_analysis.json`
 
 ---
 

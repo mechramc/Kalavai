@@ -1,5 +1,62 @@
 # KALAVAI — Development Checkpoints
 
+---
+
+## Checkpoint 3: NeurIPS Sprint — Paper Fixed + Experiments In Progress (2026-04-07)
+
+**Commit**: `03a297e` on `main`
+**Status**: EXP-19 router-only retry running overnight on RunPod
+
+### Completed this session
+
+**Paper fixes (submission-ready):**
+- Table 1 caption: all MoE rows now correctly stated as 3-seed means
+- Abstract + checklist: 6.9B seed count, sequence length, LR hyperparams corrected
+- Supplementary ZIP rebuilt: all absolute local paths removed, pyproject.toml fixed
+
+**EXP-17b (Cross-lingual curriculum warm-start):** COMPLETE
+- All 3 seeds GO: **+21.87% ±0.12pp** (was +21.76% on 2 seeds, seed 42 collapsed)
+- Router collapse fixed by 100-step domain-pure warm-start before mixed training
+- Script: `experiments/kalavai_phase2_exp1_curriculum.py`
+- Results: `results/phase2/cross_lingual/curriculum/result_seed{42,137,2026}.json`
+
+**EXP-32 (LOO analysis):** COMPLETE
+- LOO-MAE = 3.77pp (all 6), 2.86pp (excl. cross-lingual), 1.62pp (3-seed cross-lingual)
+- Script: `experiments/analysis/loo_analysis.py`
+- Results: `results/analysis/loo_analysis.json`
+
+**Code fix — TwentyExpertMoE router training:**
+- Old: `_run_one_cpu` rebuilt Pythia-1B from scratch every forward pass → ~35s/step
+- New: GPU mode (all 20 on GPU) + CPU-swap fallback (pre-built models) → ~10-15s/step
+- Root cause of slowness: mem_get_info VRAM gate returned stale value after eval loops, silently falling to CPU-swap
+- Fix: removed gate, always attempts GPU mode, let OOM handler decide
+- Tests: `experiments/tests/test_moe_gpu_offload.py` — 13/13 passing
+
+### In progress
+
+**EXP-19 router-only retry:**
+- Running: `--router-only --seeds 42,137,2026`, 1,000 steps, GPU mode active
+- Expected completion: 2026-04-08 morning
+- Results: `results/phase2/twenty_contributor/result_seed{42,137,2026}_router_retry.json`
+
+### Pending (next session)
+
+- Update paper cross-lingual numbers: +21.76% (2-seed) → +21.87% ±0.12pp (3 seeds)
+- FE-01/02: 2k and 4k router step sweeps (after baseline completes)
+- FE-03: 18-expert ablation (drop dialogue+instructions)
+- FE-04/05/06: replacement specialist domains
+- LG-01/02/03/04: 6.9B freeze sweep
+
+### How to resume
+
+```bash
+cd C:/Github/Kalavai
+git pull
+# Check overnight results:
+ls results/phase2/twenty_contributor/result_seed*_router_retry.json
+python experiments/kalavai_20contributor_experiment.py --router-only --seeds 42,137,2026  # if not done
+```
+
 A log of completed milestones for any agent or developer resuming work.
 
 ---

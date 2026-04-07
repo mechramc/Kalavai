@@ -1,8 +1,8 @@
 # KALAVAI — Project Status
 
-**Last Updated**: 2026-03-09
+**Last Updated**: 2026-04-07
 **Branch**: main
-**Tests**: 149 passing
+**Tests**: 149 passing (src/kalavai lib) + 13/13 passing (experiments/tests/test_moe_gpu_offload.py)
 **Source Lines**: ~2,350 (src) + ~2,400 (tests)
 
 ---
