@@ -211,7 +211,7 @@ All experiments, results, and file locations. Single source of truth for what wa
 **Router collapse:** Eliminated — all seeds route correctly
 **Scripts:** `experiments/kalavai_phase2_exp1_curriculum.py`
 **Results:** `results/phase2/cross_lingual/curriculum/result_seed42.json`, `result_seed137.json`, `result_seed2026.json`
-**Paper status:** Paper still shows old +21.76% (2-seed) — needs update to +21.87% ±0.12pp (3 seeds)
+**Paper status:** Paper updated 2026-04-08 — all cross-lingual occurrences now show +21.87% ±0.12pp (3 seeds, curriculum). LOO analysis updated to use 21.87% primary value.
 
 ---
 
@@ -395,11 +395,11 @@ All experiments, results, and file locations. Single source of truth for what wa
 ### EXP-32: Leave-One-Out (LOO) Regression Validation
 **Purpose:** Validate the "predictive heuristic" claim in the paper — does the divergence-gain formula generalise?
 **Setup:** 6-point regression (Qwen, 6.9B, 1B, 410M, Private, Cross-lingual). LOO cross-validation: fit on 5, predict left-out.
-**Key results:**
-- LOO-MAE (all 6, using 2-seed cross-lingual +21.76%): 3.77pp
-- LOO-MAE (excl. cross-lingual, 5 points): 2.86pp
-- LOO-MAE (using 3-seed cross-lingual mean +16.55%): 1.62pp
-- Cross-lingual has largest LOO residual (+8.32pp) — highly influential point
+**Key results (updated 2026-04-08, primary = +21.87% 3-seed curriculum):**
+- LOO-MAE (all 6): 3.82pp
+- LOO-MAE (excl. cross-lingual, 5 points): 2.89pp
+- LOO-MAE (sensitivity: pre-curriculum +16.55%): 1.62pp
+- Cross-lingual LOO residual: +8.43pp (largest outlier — base-model incompetence amplifies gain beyond linear prediction)
 **Scripts:** `experiments/analysis/loo_analysis.py`
 **Results:** `results/analysis/loo_analysis.json`
 
@@ -462,7 +462,7 @@ All experiments, results, and file locations. Single source of truth for what wa
 | EXP-14 | Maturity sweep — 1B | 1B | step10k optimal | 1–3 | Done |
 | EXP-15 | Shared init ablation | 410M | −0.93pp for large gap | 3 | Done |
 | EXP-16 | Heterogeneous cooperative | 410M | robust (±0.41pp spread) | 1 | Done |
-| EXP-17 | Cross-lingual (Tamil/Yoruba/Welsh/Code) | 410M | +21.76% ±0.005pp | 2 clean | Done |
+| EXP-17 | Cross-lingual (Tamil/Yoruba/Welsh/Code) | 410M | +21.87% ±0.12pp (curriculum) | 3 | Done |
 | EXP-18 | Private-domain (Medical/Legal/Patent) | 410M | +10.17% ±0.15pp | 3 | Done |
 | EXP-19 | 20-contributor federation | 1B | +16.71% ±0.07pp | 3 | Done |
 | EXP-20 | Divergence–gain regression (n=6) | — | R²=0.857 | — | Done |

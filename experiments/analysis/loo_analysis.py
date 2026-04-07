@@ -24,10 +24,10 @@ DATA = [
     ("Pythia-1B",          15.28,  7.49),
     ("Pythia-410M",        15.65,  7.70),
     ("Exp2 (private)",     18.52, 10.17),
-    ("Exp1 cross-lingual", 25.65, 21.76),  # 2-seed clean result
+    ("Exp1 cross-lingual", 25.65, 21.87),  # 3-seed mean (curriculum warm-start; seed42: +22.04%, seed137: +21.79%, seed2026: +21.77%)
 ]
 
-# Alternative cross-lingual value: 3-seed mean
+# Sensitivity: pre-curriculum 3-seed mean (seed 42 collapsed at +6.14%)
 CROSSLINGUAL_3SEED_GAIN = 16.55
 CROSSLINGUAL_INDEX = 5  # 0-based index of the cross-lingual point
 
@@ -162,14 +162,14 @@ r2_full = r_squared(divs, gains, slope_full, intercept_full)
 # ---------------------------------------------------------------------------
 output = {
     "description": "Leave-one-out regression analysis on 6-point divergence–gain dataset",
-    "dataset_note": "2-seed clean result for Exp1 cross-lingual = 21.76%",
+    "dataset_note": "3-seed mean (curriculum warm-start) for Exp1 cross-lingual = 21.87%",
     "full_ols": {
         "slope":     round(slope_full, 4),
         "intercept": round(intercept_full, 4),
         "r2":        round(r2_full, 4),
     },
     "loo_primary": {
-        "crosslingual_gain_used_pct": 21.76,
+        "crosslingual_gain_used_pct": 21.87,
         "per_condition": loo_records,
         "loo_mae_all_6_pct":        round(loo_mae_all, 4),
         "loo_mae_5_excl_crosslingual_pct": round(loo_mae_5, 4),
@@ -211,7 +211,7 @@ print("=" * len(HEADER))
 print(f"\nFull OLS (all 6): gain = {intercept_full:+.4f} + {slope_full:.4f} × div   R²={r2_full:.3f}")
 print(f"  (Paper values:  gain = -2.72        + 0.82         × div   R²=0.856)\n")
 
-print("PRIMARY DATASET  (cross-lingual = 21.76%, 2-seed clean)")
+print("PRIMARY DATASET  (cross-lingual = 21.87%, 3-seed mean curriculum warm-start)")
 print(SEP)
 print(HEADER)
 print(SEP)

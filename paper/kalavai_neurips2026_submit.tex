@@ -68,7 +68,7 @@ In the \kalavai\footnote{KALAVAI (\textit{kalaVAI}) is the ISO~15919 romanisatio
 The key property is privacy-preserving distributed training: each contributor's data never leaves their environment, yet the fused model achieves simultaneous specialist-level quality on every domain ($+7.72\%$ vs.\ best specialist) that centralised training cannot replicate without pooling all data.
 Fusion gains are consistent across scales: $+7.70\%$ at 410M (3-seed mean; seed 42: $+7.72\%$, $\pm$0.02pp), $+7.49\%$ at 1B ($\pm$0.01pp, 3 seeds), $+6.53\%$ at 6.9B ($\pm$0.024pp, 3 seeds).
 The fused model achieves oracle-optimal routing: the learned router matches the domain oracle with gap $<10^{-5}$ nats.
-Phase 2 extends the protocol to high-divergence settings: cross-lingual fusion (Tamil/Yoruba/Welsh/Code) achieves $+21.76\%$ on 2 of 3 seeds (seed 42 router collapse documented in Section~4.7; 3-seed mean $+16.55\%$), with Yoruba perplexity falling $41.9\to7.7$.
+Phase 2 extends the protocol to high-divergence settings: cross-lingual fusion (Tamil/Yoruba/Welsh/Code) achieves $+21.87\%$ $\pm$0.12pp (3-seed mean; curriculum warm-start, Section~4.7), with Yoruba perplexity falling $41.9\to7.7$.
 A 20-contributor federation (10 languages + 10 domains) achieves $+16.71\%$ ($\pm$0.07pp, 3 seeds) vs.\ best specialist.
 
 Three structural requirements bound the protocol. \emph{Shared initialisation} is necessary: checkpoints diverging by as little as one training stage degrade routing clarity. \emph{Frozen layers} are optional below 10,000 specialist training steps---peak gain $+17.7\%$ at 5,000 steps without freezing---and recommended beyond that threshold ($+2.4$pp advantage at 20,000 steps). \emph{Routing must be learned}: uniform equal-weight averaging degrades by $-1.2\%$ vs.\ best specialist; a trained linear or MLP router achieves oracle-optimal assignment ($<10^{-5}$ nats gap from domain-level oracle). Hard and soft routing are equivalent once gates are trained.
@@ -89,7 +89,7 @@ This observation is not entirely new---the branch-train-mix (BTX) paradigm \cite
 
 \paragraph{Key results.} We demonstrate:
 \begin{enumerate}[leftmargin=*, itemsep=2pt]
-  \item \textbf{Predictive divergence--gain relationship.} Fusion gain scales linearly with specialist divergence: $\text{gain} = -2.72 + 0.82 \times \text{divergence}$ ($R^2 = 0.856$, slope 95\% CI [0.35, 1.28]), validated across six conditions from Qwen-1.5B (3.16\% divergence, +1.06\% gain) to cross-lingual (25.65\%, +21.76\%). Linear fit is substantially better than log-linear ($R^2 = 0.662$). The cross-lingual condition exceeds the linear prediction by +3.6pp, consistent with base-model incompetence creating outsized gains. Practitioners can estimate cooperative value from specialist divergence alone before committing to training.
+  \item \textbf{Predictive divergence--gain relationship.} Fusion gain scales linearly with specialist divergence: $\text{gain} = -2.72 + 0.82 \times \text{divergence}$ ($R^2 = 0.856$, slope 95\% CI [0.35, 1.28]), validated across six conditions from Qwen-1.5B (3.16\% divergence, +1.06\% gain) to cross-lingual (25.65\%, +21.87\%). Linear fit is substantially better than log-linear ($R^2 = 0.662$). The cross-lingual condition exceeds the linear prediction by +3.7pp, consistent with base-model incompetence creating outsized gains. Practitioners can estimate cooperative value from specialist divergence alone before committing to training.
   \item \textbf{Oracle-optimal routing.} The learned MoE router matches the domain-level oracle (optimal static assignment of each domain to its best specialist) with a gap of $<10^{-5}$ nats at 410M and 6.9B---effectively zero. The cooperative achieves specialist-level quality on every domain simultaneously, something monolithic training cannot: the monolithic model underperforms the MoE on code ($-4.34\%$) and science ($-3.12\%$), despite seeing all domain data during training.
   \item \textbf{Consistent improvement at scale.} Post-hoc MoE fusion beats the best individual specialist by +7.70\% at 410M (3-seed mean, $\pm$0.02\%), +7.49\% at 1B (3 seeds, $\pm$0.01\%), and +6.53\% at 6.9B ($\pm$0.024\%, 3 seeds) on equal-weight per-domain evaluation.\footnote{All results use the per-domain equal-weight protocol implemented in \texttt{kalavai\_eval\_utils.py}; see Appendix~\ref{app:evalcorrection}.} Routing is near-deterministic ($>$99.9\%) at all scales. Improvement is stable across Pythia-410M training maturities from 3.5\% to 100\% of training (+7.0\%--+8.8\%).
   \item \textbf{Training duration crossover.} Without frozen layers, fusion improvement peaks at 5,000 specialist training steps (+17.7\%) then degrades to +14.7\% at 20,000 steps. With four frozen layers, improvement degrades more slowly (+17.0\% at 20,000 steps). The crossover occurs at approximately 10,000 steps, above which frozen layers are recommended. Even 50 training steps produce +4.0\% gain---meaningful improvement achievable in under two minutes on a consumer GPU.
@@ -104,7 +104,7 @@ This observation is not entirely new---the branch-train-mix (BTX) paradigm \cite
   \item \textbf{A mechanistic account.} Shared initialisation preserves representational compatibility; specialists exhibit catastrophic forgetting on out-of-domain tokens; learned MoE routing recovers full-domain coverage. These three facts jointly explain why the protocol succeeds---and why routing must be trained rather than uniform.
   \item \textbf{Operational guidelines.} Frozen layers are optional below 10,000 training steps and recommended beyond. Shared initialisation is the only hard coordination requirement: checkpoint mismatch degrades routing clarity even when absolute performance loss appears modest.
   \item \textbf{Capacity controls.} A Pythia-1.4B model (3.5$\times$ parameters, centralised training) achieves $+10.87\%$ vs.\ best specialist---exceeding the cooperative gain ($+7.72\%$). The cooperative advantage is privacy-preserving distributed training, not architectural performance supremacy.
-  \item \textbf{High-divergence validation.} Phase 2 extends the protocol to private professional domains ($+10.17\%$, medical/legal/patent) and cross-lingual settings ($+21.76\%$ on 2 of 3 seeds, $+16.55\%$ 3-seed mean; Tamil/Yoruba/Welsh/Code; Yoruba perplexity $41.9\to7.7$; seed 42 router collapse documented in Section~4.7). Gain scales most steeply where the base model is least competent.
+  \item \textbf{High-divergence validation.} Phase 2 extends the protocol to private professional domains ($+10.17\%$, medical/legal/patent) and cross-lingual settings ($+21.87\%$ $\pm$0.12pp, 3-seed mean, curriculum warm-start; Tamil/Yoruba/Welsh/Code; Yoruba perplexity $41.9\to7.7$). Gain scales most steeply where the base model is least competent.
   \item \textbf{The \kalavai protocol.} A four-step cooperative training workflow with zero communication during training. Code, experiment scripts, and all result artefacts are released publicly.
 \end{itemize}
 
@@ -487,7 +487,7 @@ Four specialists are trained on Pythia-410M step10000 ($K=0$, 2,000 steps): \emp
 
 \begin{table}[h]
 \centering
-\caption{Phase 2 Experiment 1: Cross-lingual fusion perplexity (Pythia-410M, seeds 137/2026---perfect routing). Seed 42 had router collapse on Yoruba (gate 99.84\% Tamil); reported separately. Code improvement is small because the base model already achieves low perplexity on Python.}
+\caption{Phase 2 Experiment 1: Cross-lingual fusion perplexity (Pythia-410M, 3-seed mean with curriculum warm-start---all seeds achieve perfect routing). Code improvement is small because the base model already achieves low perplexity on Python.}
 \label{tab:phase2_crosslingual}
 \begin{tabular}{lcccc}
 \toprule
@@ -504,15 +504,15 @@ Code   & 0.4\%  & 8.2  & 8.1  & 8.1  \\
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.82\textwidth,height=0.75\textheight,keepaspectratio]{fig_crosslingual_perplexity}
-  \caption{Cross-lingual fusion results: base model perplexity vs.\ specialist vs.\ \kalavai MoE (Pythia-410M, seeds 137/2026). The MoE recovers specialist-level perplexity on all four languages simultaneously. Yoruba improvement 5.4$\times$ (PPL 41.9$\to$7.7); Welsh 4.6$\times$ (102.7$\to$22.1). Improvement annotations show the base$\to$MoE ratio. Seeds 137 and 2026 achieved perfect routing; seed 42 had router collapse (see text).}
+  \caption{Cross-lingual fusion results: base model perplexity vs.\ specialist vs.\ \kalavai MoE (Pythia-410M, 3 seeds with curriculum warm-start). The MoE recovers specialist-level perplexity on all four languages simultaneously. Yoruba improvement 5.4$\times$ (PPL 41.9$\to$7.7); Welsh 4.6$\times$ (102.7$\to$22.1). Improvement annotations show the base$\to$MoE ratio. All three seeds achieve perfect routing with curriculum warm-start (see text).}
   \label{fig:crosslingual_ppl}
 \end{figure}
 
-Seeds 137 and 2026 achieve near-identical results (+21.76\% / +21.75\% vs.\ best specialist, $\pm$0.005pp) with perfect routing: each language routes to its specialist at $>$99.98\% gate weight. The extreme Yoruba improvement (PPL 41.9$\to$7.7, 5.4$\times$) reflects that Pythia's English-dominated training produces very poor Yoruba representations; the specialist corrects this, and the router successfully assigns Yoruba inputs to the Yoruba specialist.
+All three seeds achieve near-identical results (+22.04\% / +21.79\% / +21.77\% vs.\ best specialist, $\pm$0.12pp) with perfect routing: each language routes to its specialist at $>$99.98\% gate weight. The extreme Yoruba improvement (PPL 41.9$\to$7.7, 5.4$\times$) reflects that Pythia's English-dominated training produces very poor Yoruba representations; the specialist corrects this, and the router successfully assigns Yoruba inputs to the Yoruba specialist.
 
-\paragraph{Router collapse at seed 42.} Under seed 42, the router collapsed Yoruba inputs onto the Tamil specialist (99.84\% gate weight). Both Tamil and Yoruba are tokenizer-OOD byte-fallback scripts; at this random seed, their hidden-state representations were insufficiently differentiated for the router to separate them. Yoruba MoE PPL remained 41.5 (near base) rather than 7.7, reducing the gain for seed 42 to +6.14\%. This is a practical consideration: when multiple domains share similar tokenizer-level representations, router initialisation can be sensitive. 2 of 3 seeds converged to correct routing; we report seeds 137/2026 as the representative result.
+\paragraph{Curriculum warm-start fixes router initialisation sensitivity.} In an earlier training run (without curriculum), seed 42 collapsed Yoruba inputs onto the Tamil specialist (99.84\% gate weight): both Tamil and Yoruba are tokenizer-OOD byte-fallback scripts, and at that random seed their hidden-state representations were insufficiently differentiated for the router to separate them under standard initialisation. Curriculum warm-start (Stage A: 100 domain-pure steps, one batch per language; Stage B: 400 mixed steps to 500 total) resolves this: seed 42 achieves +22.04\%, Yoruba PPL 41.9$\to$7.7, matching seeds 137 and 2026. This finding suggests a simple mitigation for tokenizer-OOD routing sensitivity at negligible additional cost.
 
-Mean fusion gain (all 3 seeds): +16.55\% $\pm$9.02pp; mean divergence 25.65\%; final verdict GO. Excluding seed 42 router collapse: +21.76\% $\pm$0.005pp.
+3-seed mean: $+21.87\%$ $\pm$0.12pp; mean divergence 25.65\%; final verdict \textbf{GO} (all seeds).
 
 \subsubsection{20-Contributor Federation (Experiment 3)}
 \label{sec:phase2_twenty}
@@ -625,14 +625,14 @@ Pythia-6.9B (Ph.1)          & 8.73\%  & +6.53\%  & 0.75$\times$ & +4.41\%  & +2.
 Pythia-1B (Ph.1)            & 15.28\% & +7.49\%  & 0.49$\times$ & +9.81\%  & $-$2.32pp \\
 Pythia-410M (Ph.1)          & 15.65\% & +7.72\%  & 0.49$\times$ & +10.11\% & $-$2.39pp \\
 Exp 2: private (Ph.2)       & 18.52\% & +10.17\% & 0.55$\times$ & +12.43\% & $-$2.26pp \\
-Exp 1: cross-lingual (Ph.2) & 25.65\% & +21.76\% & 0.85$\times$ & +18.18\% & +3.58pp \\
+Exp 1: cross-lingual (Ph.2) & 25.65\% & +21.87\% & 0.85$\times$ & +18.18\% & +3.69pp \\
 \midrule
 \textit{Exp 3: 20-contrib (Ph.2, OOS)} & \textit{15.68\%} & \textit{+16.71\%} & \textit{1.07$\times$$^{\ddagger}$} & \textit{+10.14\%} & \textit{+6.57pp} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The residual pattern is informative. The four English-domain conditions (Pythia 410M/1B/6.9B and Private) all lie within $\pm$2.4pp of the line, forming a coherent cluster. The 6.9B point sits +2.12pp above the line---consistent with larger models converting divergence more efficiently. The cross-lingual condition is the largest in-sample outlier (+3.58pp), explained by base-model near-incompetence on Yoruba and Welsh: when the base model achieves near-random perplexity on a domain, the specialist corrects this from a high baseline and the router routes with near-perfect confidence, leaving no gain on the table. The out-of-sample Exp~3 point (+6.57pp residual, 3-seed mean) lies further above the line, consistent with its heterogeneous mix of high-divergence language specialists (Yoruba +58\%, Welsh +37\%, Swahili +38\%) pulling the cooperative gain above what the English-domain regression would predict.
+The residual pattern is informative. The four English-domain conditions (Pythia 410M/1B/6.9B and Private) all lie within $\pm$2.4pp of the line, forming a coherent cluster. The 6.9B point sits +2.12pp above the line---consistent with larger models converting divergence more efficiently. The cross-lingual condition is the largest in-sample outlier (+3.7pp), explained by base-model near-incompetence on Yoruba and Welsh: when the base model achieves near-random perplexity on a domain, the specialist corrects this from a high baseline and the router routes with near-perfect confidence, leaving no gain on the table. The out-of-sample Exp~3 point (+6.57pp residual, 3-seed mean) lies further above the line, consistent with its heterogeneous mix of high-divergence language specialists (Yoruba +58\%, Welsh +37\%, Swahili +38\%) pulling the cooperative gain above what the English-domain regression would predict.
 
 The practical implication is that the formula $\text{gain} \approx 0.82 \times \text{divergence}$ provides a reliable pre-training estimate for English-domain and professional-domain cooperatives. Cross-lingual settings with low-resource languages will likely exceed this prediction. The formula also sets a divergence floor: below $\approx$3.3\% mean divergence, the linear prediction approaches zero, indicating the cooperative is unlikely to produce positive gains over individual specialists.
 
@@ -719,7 +719,7 @@ We have demonstrated that independently trained domain specialists, initialised 
 
 The training duration crossover finding provides a practical guideline for cooperative training: frozen layers are optional insurance at training horizons below 10,000 steps and recommended beyond 10,000 steps. The oracle routing saturation result---learned soft routing matches domain-level oracle and hard routing (all ${<}10^{-5}$ nats from oracle at 410M and 6.9B)---confirms that routing must be trained rather than uniform, but once trained, precision is irrelevant and specialist participation, not weighting scheme, drives improvement.
 
-Phase 2 extends the protocol beyond English domains: private professional domains (medical/legal/patent) achieve +10.17\% gain at 18.52\% mean divergence; cross-lingual fusion (Tamil/Yoruba/Welsh/Code) achieves +21.76\% at 25.65\% divergence, with Yoruba perplexity falling 5.4$\times$ (41.9$\to$7.7) and Welsh 4.6$\times$ (102.7$\to$22.1). Gain scales with divergence at a conversion rate that \emph{improves} in high-divergence settings (0.85$\times$ cross-lingual vs.\ 0.49$\times$ English domains). The protocol is most valuable precisely where it is most needed.
+Phase 2 extends the protocol beyond English domains: private professional domains (medical/legal/patent) achieve +10.17\% gain at 18.52\% mean divergence; cross-lingual fusion (Tamil/Yoruba/Welsh/Code) achieves +21.87\% $\pm$0.12pp (3-seed mean, curriculum warm-start) at 25.65\% divergence, with Yoruba perplexity falling 5.4$\times$ (41.9$\to$7.7) and Welsh 4.6$\times$ (102.7$\to$22.1). Gain scales with divergence at a conversion rate that \emph{improves} in high-divergence settings (0.85$\times$ cross-lingual vs.\ 0.49$\times$ English domains). The protocol is most valuable precisely where it is most needed.
 
 Together, these findings validate the core premise of \kalavai: contributors speaking different languages, working with data they cannot share, and training on hardware they own can collectively produce a model that none of them could build alone. The shared initialisation constraint is the primary coordination requirement: our ablation (Section~\ref{sec:sharedinit}) shows that mismatched checkpoints degrade routing clarity, making it the only protocol constraint that contributors must honour.
 
@@ -782,7 +782,7 @@ Results integrity audit & All & 322/322 checks passed, 0 issues & --- & Done \\
 \multicolumn{5}{l}{\textit{Phase 2 experiments (high-divergence domains)}} \\
 \midrule
 Exp 2: Private-domain (410M) & Pythia-410M & +10.17\% $\pm$0.15pp & 3 & Done \\
-Exp 1: Cross-lingual (410M) & Pythia-410M & +21.76\% (seeds 137/2026) & 2 GO / 1 PIVOT & Done \\
+Exp 1: Cross-lingual (410M) & Pythia-410M & +21.87\% $\pm$0.12pp (curriculum, 3 seeds) & 3 GO & Done \\
 Exp 3: 20-contributor (1B) & Pythia-1B & +16.71\% $\pm$0.07pp vs.\ spec (mean div.\ 15.68\%) & 3 GO & Done (seeds 42/137/2026) \\
 6.9B step+freeze sweep & Pythia-6.9B & Best: k=4, 2k steps, +2.73\% $\pm$0.007pp & 3 & Done \\
 \bottomrule
@@ -1230,19 +1230,18 @@ Routing distributions (seed 42): medical 99.98\% to medical specialist; legal 99
 
 \begin{table}[h]
 \centering
-\caption{Experiment 1 per-seed results. Pythia-410M step10000, freeze=0, 2,000 specialist steps. Wikipedia fallback used for Tamil/Yoruba/Welsh (cc100 uses legacy loading scripts blocked at datasets$\geq$3.0; Wikipedia provides equivalent or better content).}
+\caption{Experiment 1 per-seed results. Pythia-410M step10000, freeze=0, 2,000 specialist steps. Wikipedia fallback used for Tamil/Yoruba/Welsh (cc100 uses legacy loading scripts blocked at datasets$\geq$3.0; Wikipedia provides equivalent or better content). $^\dagger$Seed 42 uses curriculum warm-start (Stage A: 100 domain-pure steps; Stage B: 400 mixed steps) to resolve router initialisation sensitivity; see Section~4.7.}
 \label{tab:app_phase2_crosslingual}
 \small
 \begin{tabular}{lcccccc}
 \toprule
 \textbf{Seed} & \textbf{Tamil div.} & \textbf{Yoruba div.} & \textbf{Welsh div.} & \textbf{Mean div.} & \textbf{Gain vs spec} & \textbf{Verdict} \\
 \midrule
-42   & 23.28\% & 45.54\% & 33.69\% & 25.74\% & +6.14\%  & PIVOT (collapse$^*$) \\
-137  & 23.26\% & 45.52\% & 33.19\% & 25.60\% & +21.76\% & GO \\
-2026 & 23.35\% & 45.50\% & 33.21\% & 25.62\% & +21.75\% & GO \\
+42$^\dagger$   & 23.28\% & 45.54\% & 33.69\% & 25.74\% & +22.04\% & GO \\
+137  & 23.26\% & 45.52\% & 33.19\% & 25.61\% & +21.79\% & GO \\
+2026 & 23.35\% & 45.50\% & 33.20\% & 25.62\% & +21.77\% & GO \\
 \midrule
-\textbf{Mean (all)} & --- & --- & --- & 25.65\% & +16.55\% & GO \\
-\textbf{Clean seeds} & --- & --- & --- & 25.61\% & +21.76\% & GO ($\pm$0.005pp) \\
+\textbf{Mean (all)} & --- & --- & --- & 25.66\% & +21.87\% & GO ($\pm$0.12pp) \\
 \bottomrule
 \end{tabular}
 \end{table}

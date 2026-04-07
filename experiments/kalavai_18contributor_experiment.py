@@ -79,7 +79,7 @@ N_SAMPLES          = 2000   # per domain (long articles — 2000 texts → thous
 N_SAMPLES_LANGUAGE = 50000  # per cc100 language (short sentences ~20-50 tokens each;
                              # need 50k lines to get ~1000+ packed 512-token chunks)
 
-SEEDS           = [137, 2026]
+SEEDS           = [42, 137, 2026]
 
 # Override via env vars to redirect large checkpoint/cache dirs to local NVMe
 # (avoids filling network drive — 18 × Pythia-1B checkpoints = ~50 GB)
@@ -324,8 +324,8 @@ def _make_loader(name: str):
 
 
 def load_all_data(tokenizer) -> tuple[dict, dict]:
-    """Load (and cache) tokenized chunks for all 20 specialists. Split 80/10/10."""
-    print("\n── Loading data (20 specialists) ──────────────────────────────────────")
+    """Load (and cache) tokenized chunks for all 18 specialists. Split 80/10/10."""
+    print(f"\n── Loading data ({len(SPECIALISTS)} specialists) ──────────────────────────────────────")
     train_chunks, held_out_chunks = {}, {}
     for name in SPECIALISTS:
         chunks = _load_or_build_chunks(name, _make_loader(name), tokenizer)
@@ -684,7 +684,7 @@ def run_seed(seed: int, tokenizer, device: str,
         torch.cuda.empty_cache()
 
     # ── Build + train MoE ────────────────────────────────────────────────────
-    print(f"\n[moe]  building 20-expert MoE + training router ({ROUTER_STEPS} steps)...")
+    print(f"\n[moe]  building {len(SPECIALISTS)}-expert MoE + training router ({ROUTER_STEPS} steps)...")
     moe = TwentyExpertMoE(
         specialist_state_dicts=spec_state_dicts,
         model_id=MODEL_ID,
@@ -859,7 +859,7 @@ def run_router_only(seed: int, tokenizer, device: str,
                 spec, held_out_sets, device, EVAL_BATCH_SIZE, EVAL_BATCHES)
             del spec; torch.cuda.empty_cache()
 
-    print(f"\n[moe]  rebuilding 20-expert MoE + retraining router ({ROUTER_STEPS} steps, lr={ROUTER_LR}, bs={ROUTER_BATCH})...")
+    print(f"\n[moe]  rebuilding {len(SPECIALISTS)}-expert MoE + retraining router ({ROUTER_STEPS} steps, lr={ROUTER_LR}, bs={ROUTER_BATCH})...")
     moe = TwentyExpertMoE(
         specialist_state_dicts=spec_state_dicts,
         model_id=MODEL_ID,

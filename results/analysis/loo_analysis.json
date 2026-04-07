@@ -1,86 +1,86 @@
 {
   "description": "Leave-one-out regression analysis on 6-point divergence\u2013gain dataset",
-  "dataset_note": "2-seed clean result for Exp1 cross-lingual = 21.76%",
+  "dataset_note": "3-seed mean (curriculum warm-start) for Exp1 cross-lingual = 21.87%",
   "full_ols": {
-    "slope": 0.8169,
-    "intercept": -2.726,
-    "r2": 0.8561
+    "slope": 0.821,
+    "intercept": -2.7661,
+    "r2": 0.8545
   },
   "loo_primary": {
-    "crosslingual_gain_used_pct": 21.76,
+    "crosslingual_gain_used_pct": 21.87,
     "per_condition": [
       {
         "label": "Qwen-1.5B",
         "div_pct": 3.16,
         "gain_actual_pct": 1.06,
-        "loo_slope": 0.9262,
-        "loo_intercept": -4.7981,
-        "loo_train_r2": 0.8079,
-        "gain_predicted_pct": -1.8714,
-        "residual_pct": 2.9314,
-        "abs_residual_pct": 2.9314
+        "loo_slope": 0.9327,
+        "loo_intercept": -4.8853,
+        "loo_train_r2": 0.807,
+        "gain_predicted_pct": -1.9381,
+        "residual_pct": 2.9981,
+        "abs_residual_pct": 2.9981
       },
       {
         "label": "Pythia-6.9B",
         "div_pct": 8.73,
         "gain_actual_pct": 6.53,
-        "loo_slope": 0.8726,
-        "loo_intercept": -4.0212,
-        "loo_train_r2": 0.8783,
-        "gain_predicted_pct": 3.5962,
-        "residual_pct": 2.9338,
-        "abs_residual_pct": 2.9338
+        "loo_slope": 0.8767,
+        "loo_intercept": -4.0643,
+        "loo_train_r2": 0.8764,
+        "gain_predicted_pct": 3.5894,
+        "residual_pct": 2.9406,
+        "abs_residual_pct": 2.9406
       },
       {
         "label": "Pythia-1B",
         "div_pct": 15.28,
         "gain_actual_pct": 7.49,
-        "loo_slope": 0.8239,
-        "loo_intercept": -2.373,
-        "loo_train_r2": 0.8806,
-        "gain_predicted_pct": 10.2169,
-        "residual_pct": -2.7269,
-        "abs_residual_pct": 2.7269
+        "loo_slope": 0.828,
+        "loo_intercept": -2.4098,
+        "loo_train_r2": 0.8792,
+        "gain_predicted_pct": 10.2427,
+        "residual_pct": -2.7527,
+        "abs_residual_pct": 2.7527
       },
       {
         "label": "Pythia-410M",
         "div_pct": 15.65,
         "gain_actual_pct": 7.7,
-        "loo_slope": 0.8277,
-        "loo_intercept": -2.4078,
-        "loo_train_r2": 0.8832,
-        "gain_predicted_pct": 10.5459,
-        "residual_pct": -2.8459,
-        "abs_residual_pct": 2.8459
+        "loo_slope": 0.8318,
+        "loo_intercept": -2.4448,
+        "loo_train_r2": 0.8819,
+        "gain_predicted_pct": 10.5736,
+        "residual_pct": -2.8736,
+        "abs_residual_pct": 2.8736
       },
       {
         "label": "Exp2 (private)",
         "div_pct": 18.52,
         "gain_actual_pct": 10.17,
-        "loo_slope": 0.8548,
-        "loo_intercept": -2.7974,
-        "loo_train_r2": 0.8824,
-        "gain_predicted_pct": 13.0332,
-        "residual_pct": -2.8632,
-        "abs_residual_pct": 2.8632
+        "loo_slope": 0.8594,
+        "loo_intercept": -2.8386,
+        "loo_train_r2": 0.8814,
+        "gain_predicted_pct": 13.0775,
+        "residual_pct": -2.9075,
+        "abs_residual_pct": 2.9075
       },
       {
         "label": "Exp1 cross-lingual",
         "div_pct": 25.65,
-        "gain_actual_pct": 21.76,
+        "gain_actual_pct": 21.87,
         "loo_slope": 0.5122,
         "loo_intercept": 0.3064,
         "loo_train_r2": 0.8952,
         "gain_predicted_pct": 13.4442,
-        "residual_pct": 8.3158,
-        "abs_residual_pct": 8.3158
+        "residual_pct": 8.4258,
+        "abs_residual_pct": 8.4258
       }
     ],
-    "loo_mae_all_6_pct": 3.7695,
-    "loo_mae_5_excl_crosslingual_pct": 2.8602,
+    "loo_mae_all_6_pct": 3.8164,
+    "loo_mae_5_excl_crosslingual_pct": 2.8945,
     "largest_residual": {
       "label": "Exp1 cross-lingual",
-      "residual_pct": 8.3158
+      "residual_pct": 8.4258
     }
   },
   "loo_sensitivity_3seed": {

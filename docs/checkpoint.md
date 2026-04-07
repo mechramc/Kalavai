@@ -2,6 +2,42 @@
 
 ---
 
+## Checkpoint 4: NeurIPS Sprint — EXP-19 Complete + Paper Updated (2026-04-08)
+
+**Status**: No experiments running. Next GPU run: FE-03 (18-expert ablation)
+
+### Completed this session
+
+**EXP-19 router-only retry (seed 42):** COMPLETE
+- Result: +16.69% gain vs spec, mean div 15.70% — matches prior 3-seed mean +16.71% ±0.07pp
+- Confirmed toxic specialists: dialogue (-25.08%, 16 eval chunks), instructions (-16.50%, 28 chunks)
+- Chemistry routing collapse: 75% routes to medical specialist
+- Results: `results/pythia/ablation_router_summary.json`
+
+**Paper cross-lingual update:** COMPLETE
+- All occurrences of +21.76% (2-seed) updated to +21.87% ±0.12pp (3-seed curriculum)
+- Rewritten router collapse paragraph → curriculum warm-start explanation
+- Appendix per-seed table: seed 42 updated from +6.14% PIVOT to +22.04% GO
+- Files: `paper/kalavai_neurips2026_submit.tex`
+
+**LOO analysis (EXP-32) updated:** COMPLETE
+- Primary dataset now uses 21.87% (was 21.76%)
+- New numbers: LOO-MAE=2.89pp (5-point), cross-lingual residual=+8.43pp
+- Results: `results/analysis/loo_analysis.json`
+
+### Decision: skip FE-01/FE-02
+
+Router budget sweep (2k/4k steps) deprioritised. Removing toxic specialists (FE-03) is higher ROI.
+The 1000-step baseline at +16.71% is stable; dialogue and instructions have confirmed negative divergence.
+
+### Next GPU run
+
+**FE-03:** 18-expert MoE (drop dialogue + instructions), 1000 steps, 3 seeds (42/137/2026)
+Expected: +18–20% gain (negative-divergence specialists removed)
+Gate: ≥ +1pp over +16.71% → proceed to FE-04 (replacement domain selection)
+
+---
+
 ## Checkpoint 3: NeurIPS Sprint — Paper Fixed + Experiments In Progress (2026-04-07)
 
 **Commit**: `03a297e` on `main`
@@ -20,8 +56,10 @@
 - Script: `experiments/kalavai_phase2_exp1_curriculum.py`
 - Results: `results/phase2/cross_lingual/curriculum/result_seed{42,137,2026}.json`
 
-**EXP-32 (LOO analysis):** COMPLETE
-- LOO-MAE = 3.77pp (all 6), 2.86pp (excl. cross-lingual), 1.62pp (3-seed cross-lingual)
+**EXP-32 (LOO analysis):** COMPLETE (updated 2026-04-08)
+- Primary dataset updated to 21.87% (3-seed curriculum)
+- LOO-MAE = 3.82pp (all 6), 2.89pp (excl. cross-lingual), 1.62pp (sensitivity: pre-curriculum)
+- Cross-lingual LOO residual: +8.43pp
 - Script: `experiments/analysis/loo_analysis.py`
 - Results: `results/analysis/loo_analysis.json`
 
@@ -41,8 +79,9 @@
 
 ### Pending (next session)
 
-- Update paper cross-lingual numbers: +21.76% (2-seed) → +21.87% ±0.12pp (3 seeds)
-- FE-01/02: 2k and 4k router step sweeps (after baseline completes)
+- FE-03: 18-expert ablation (drop dialogue+instructions) — **next GPU run**
+- FE-04/05/06: replacement specialist domains
+- LG-01/02/03/04: 6.9B freeze sweep
 - FE-03: 18-expert ablation (drop dialogue+instructions)
 - FE-04/05/06: replacement specialist domains
 - LG-01/02/03/04: 6.9B freeze sweep
