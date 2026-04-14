@@ -1,0 +1,70 @@
+{
+  "seed": 2026,
+  "model_id": "EleutherAI/pythia-410m",
+  "revision": "step10000",
+  "n_experts": 2,
+  "domains": [
+    "code",
+    "science"
+  ],
+  "experiment": "regression_p1_2domain",
+  "eval_batch_size": 4,
+  "eval_batches": 50,
+  "eval_method": "per-domain-separate-then-equal-weight-avg",
+  "base_losses": {
+    "code": 2.08723,
+    "science": 2.891694,
+    "equal_weight_avg": 2.489462
+  },
+  "specialist_losses": {
+    "code": {
+      "code": 1.880022,
+      "science": 2.908826,
+      "equal_weight_avg": 2.394424
+    },
+    "science": {
+      "code": 2.173871,
+      "science": 2.556486,
+      "equal_weight_avg": 2.365178
+    }
+  },
+  "moe_losses": {
+    "code": 1.880142,
+    "science": 2.55647,
+    "equal_weight_avg": 2.218306
+  },
+  "per_specialist_divergence": {
+    "code": 9.9274,
+    "science": 11.5921
+  },
+  "router_distribution": {
+    "code": [
+      0.9993,
+      0.0007
+    ],
+    "science": [
+      0.0003,
+      0.9997
+    ]
+  },
+  "metrics": {
+    "base_equal_weight": 2.489462,
+    "best_spec_equal_weight": 2.365178,
+    "best_spec_domain": "science",
+    "moe_equal_weight": 2.218306,
+    "improvement_vs_spec": 6.2098,
+    "improvement_vs_base": 10.8922,
+    "mean_divergence": 10.7598
+  },
+  "config": {
+    "freeze_layers": 4,
+    "lr": 2e-05,
+    "max_steps": 2000,
+    "batch_size": 2,
+    "grad_accum": 4,
+    "router_steps": 500,
+    "router_lr": 0.001,
+    "router_batch": 4,
+    "n_samples_per_domain": 3000
+  }
+}
