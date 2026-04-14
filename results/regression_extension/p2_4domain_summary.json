@@ -1,0 +1,30 @@
+{
+  "experiment": "regression_p2_4domain",
+  "model_id": "EleutherAI/pythia-410m",
+  "revision": "step10000",
+  "domains": [
+    "code",
+    "science",
+    "fiction",
+    "legal"
+  ],
+  "seeds": [
+    42,
+    137,
+    2026
+  ],
+  "per_seed_gain_vs_spec": [
+    14.7298,
+    14.6893,
+    14.7063
+  ],
+  "per_seed_mean_div": [
+    19.9042,
+    19.783,
+    19.8313
+  ],
+  "mean_gain_vs_spec": 14.7085,
+  "std_gain_vs_spec": 0.0203,
+  "mean_divergence": 19.8395,
+  "regression_prediction": 13.5484
+}

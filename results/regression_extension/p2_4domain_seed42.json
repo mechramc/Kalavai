@@ -1,0 +1,144 @@
+{
+  "seed": 42,
+  "model_id": "EleutherAI/pythia-410m",
+  "revision": "step10000",
+  "n_experts": 4,
+  "domains": [
+    "code",
+    "science",
+    "fiction",
+    "legal"
+  ],
+  "experiment": "regression_p2_4domain",
+  "eval_batch_size": 4,
+  "eval_batches": 50,
+  "eval_method": "per-domain-separate-then-equal-weight-avg",
+  "base_losses": {
+    "code": 2.08723,
+    "science": 2.891694,
+    "fiction": 2.97403,
+    "legal": 2.774958,
+    "equal_weight_avg": 2.681978
+  },
+  "specialist_losses": {
+    "code": {
+      "code": 1.879184,
+      "science": 2.908428,
+      "fiction": 2.976831,
+      "legal": 2.801328,
+      "equal_weight_avg": 2.641443
+    },
+    "science": {
+      "code": 2.173825,
+      "science": 2.556674,
+      "fiction": 3.061209,
+      "legal": 2.886126,
+      "equal_weight_avg": 2.669459
+    },
+    "fiction": {
+      "code": 2.101712,
+      "science": 2.890271,
+      "fiction": 2.219027,
+      "legal": 2.785817,
+      "equal_weight_avg": 2.499207
+    },
+    "legal": {
+      "code": 2.127815,
+      "science": 2.953037,
+      "fiction": 3.059954,
+      "legal": 1.868182,
+      "equal_weight_avg": 2.502247
+    }
+  },
+  "moe_losses": {
+    "code": 1.879491,
+    "science": 2.556492,
+    "fiction": 2.220071,
+    "legal": 1.868265,
+    "equal_weight_avg": 2.13108
+  },
+  "per_specialist_divergence": {
+    "code": 9.9676,
+    "science": 11.5856,
+    "fiction": 25.3865,
+    "legal": 32.6771
+  },
+  "router_distribution": {
+    "code": {
+      "labels": [
+        "code",
+        "science",
+        "fiction",
+        "legal"
+      ],
+      "gates": [
+        0.9973,
+        0.0002,
+        0.0015,
+        0.001
+      ]
+    },
+    "science": {
+      "labels": [
+        "code",
+        "science",
+        "fiction",
+        "legal"
+      ],
+      "gates": [
+        0.0002,
+        0.9976,
+        0.0012,
+        0.0011
+      ]
+    },
+    "fiction": {
+      "labels": [
+        "code",
+        "science",
+        "fiction",
+        "legal"
+      ],
+      "gates": [
+        0.0006,
+        0.0007,
+        0.9977,
+        0.0011
+      ]
+    },
+    "legal": {
+      "labels": [
+        "code",
+        "science",
+        "fiction",
+        "legal"
+      ],
+      "gates": [
+        0.0,
+        0.0003,
+        0.001,
+        0.9987
+      ]
+    }
+  },
+  "metrics": {
+    "base_equal_weight": 2.681978,
+    "best_spec_equal_weight": 2.499207,
+    "best_spec_domain": "fiction",
+    "moe_equal_weight": 2.13108,
+    "improvement_vs_spec": 14.7298,
+    "improvement_vs_base": 20.5407,
+    "mean_divergence": 19.9042
+  },
+  "config": {
+    "freeze_layers": 4,
+    "lr": 2e-05,
+    "max_steps": 2000,
+    "batch_size": 2,
+    "grad_accum": 4,
+    "router_steps": 500,
+    "router_lr": 0.001,
+    "router_batch": 4,
+    "n_samples_per_domain": 3000
+  }
+}
