@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+import os
 import sys
+os.environ["HF_HUB_DISABLE_SAFETENSORS_REDIRECT"] = "1"  # suppress auto-conversion thread
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 """
@@ -150,7 +152,7 @@ def load_code_texts(n: int) -> list[str]:
     from datasets import load_dataset
     print(f"  Loading code (n={n})...")
     ds = load_dataset("code_search_net", "python", split="train",
-                      streaming=True, trust_remote_code=True)
+                      streaming=True)
     texts = []
     for item in ds:
         content = item.get("whole_func_string", "") or item.get("func_code_string", "")
