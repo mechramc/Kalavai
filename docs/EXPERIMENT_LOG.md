@@ -263,14 +263,33 @@ All experiments, results, and file locations. Single source of truth for what wa
 
 ## Analysis Experiments
 
-### EXP-20: Divergence–Gain Regression (n=6 in-sample)
+### EXP-20: Divergence–Gain Regression (n=8 in-sample, updated 2026-04-14)
 **Purpose:** Fit predictive formula relating mean specialist divergence to fusion gain
-**In-sample conditions:** Qwen-1.5B, Pythia-6.9B, Pythia-1B, Pythia-410M, Private-domain, Cross-lingual (6 points)
-**Formula:** `gain = 0.82 × divergence − 2.72` (R² = 0.857, n=6)
-**Full precision:** slope=0.8170, intercept=−2.7237, R²=0.8565
-**Divergence floor:** ~3.3% (below this → near-zero gain)
-**Scripts:** (inline in paper analysis scripts)
+**In-sample conditions:** Qwen-1.5B, Pythia-6.9B, P1 2-domain, Pythia-1B, Pythia-410M, Private-domain, P2 4-domain, Cross-lingual (8 points)
+**Formula:** `gain = 0.83 × divergence − 2.80` (R² = 0.872, n=8)
+**Full precision:** slope=0.8335, intercept=−2.7956, R²=0.8723
+**Divergence floor:** ~3.4% (below this → near-zero gain)
+**Scripts:** `experiments/analysis/item1_regression_fit.py`
 **Results:** `results/analysis/regression_fit.json`
+**Previous (n=6):** slope=0.8170, intercept=−2.7237, R²=0.8565
+
+---
+
+### REG-P1: Regression Extension P1 — 2-Domain (Code + Science) [2026-04-14]
+**Purpose:** Add (div=10.77%, gain=+6.22%) data point to fill Gap 1 in divergence-gain regression (8.73%–15.28%)
+**Setup:** Pythia-410M @ step10000, 2 specialists (code + science), 2000 steps, 3 seeds [42, 137, 2026]
+**Result:** mean div=10.77%, gain=+6.22% ±0.01pp — regression prediction was +6.18% (residual +0.04pp, on the line)
+**Scripts:** `experiments/kalavai_regression_p1_2domain.py`
+**Results:** `results/regression_extension/p1_2domain_summary.json`
+
+---
+
+### REG-P2: Regression Extension P2 — 4-Domain (Code + Science + Fiction + Legal) [2026-04-14]
+**Purpose:** Add (div=19.84%, gain=+14.71%) data point to fill Gap 2 in divergence-gain regression (18.52%–25.65%)
+**Setup:** Pythia-410M @ step10000, 4 specialists (code + science + fiction + legal/eurlex), 2000 steps, 3 seeds [42, 137, 2026]
+**Result:** mean div=19.84%, gain=+14.71% ±0.02pp — regression prediction was +13.74% (residual +0.97pp, within band)
+**Scripts:** `experiments/kalavai_regression_p2_4domain.py`
+**Results:** `results/regression_extension/p2_4domain_summary.json`
 
 ---
 

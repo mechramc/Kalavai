@@ -4,7 +4,7 @@
 
 20 people. 20 GPUs. 1 model none of them could build alone.
 
-**Fusion gain ≈ 0.82 × divergence − 2.72** (R² = 0.857). Before you train a single specialist, you can predict whether the cooperative is worth it.
+**Fusion gain ≈ 0.83 × divergence − 2.80** (R² = 0.872, n=8). Before you train a single specialist, you can predict whether the cooperative is worth it.
 
 ```
 pip install transformers datasets torch
@@ -67,7 +67,7 @@ Cross-lingual highlights: Yoruba perplexity 41.9 → 7.7 (5.4×). Welsh 102.7 �
 Across all experimental conditions, fusion gain scales linearly with specialist divergence:
 
 ```
-gain ≈ 0.82 × divergence − 2.72    (R² = 0.857, n = 6)
+gain ≈ 0.83 × divergence − 2.80    (R² = 0.872, n = 8)
 ```
 
 Before committing to a cooperative, measure how much your specialists diverge from the base model. If divergence is 15%, expect ~+10% gain. If divergence is 25% (cross-lingual), expect ~+18% — and likely more, since high-divergence settings exceed the linear prediction. Below ~3.3% divergence, expect no gain.
@@ -75,12 +75,14 @@ Before committing to a cooperative, measure how much your specialists diverge fr
 | Condition | Mean Div. | Gain | Predicted | Residual |
 |---|---|---|---|---|
 | Qwen-1.5B | 3.16% | +1.06% | ≈0% | — |
-| Pythia-6.9B | 8.73% | +6.53% | +4.41% | +2.12pp |
-| Pythia-1B | 15.28% | +7.49% | +9.81% | −2.32pp |
-| Pythia-410M | 15.65% | +7.72% | +10.11% | −2.39pp |
-| Private-domain | 18.52% | +10.17% | +12.43% | −2.26pp |
-| Cross-lingual | 25.65% | +21.76% | +18.18% | +3.58pp |
-| 20-contributor | 15.71% | +16.79% | +10.11% | +6.68pp |
+| Pythia-6.9B | 8.73% | +6.53% | +4.48% | +2.05pp |
+| P1: 2-domain | 10.77% | +6.22% | +6.18% | +0.04pp |
+| Pythia-1B | 15.28% | +7.49% | +9.94% | −2.45pp |
+| Pythia-410M | 15.65% | +7.72% | +10.25% | −2.53pp |
+| Private-domain | 18.52% | +10.17% | +12.64% | −2.47pp |
+| P2: 4-domain | 19.84% | +14.71% | +13.74% | +0.97pp |
+| Cross-lingual | 25.65% | +21.87% | +18.58% | +3.29pp |
+| 20-contributor (OOS) | 15.71% | +16.79% | +10.34% | +6.45pp |
 
 ### Key Controls
 

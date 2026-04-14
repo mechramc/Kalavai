@@ -35,17 +35,19 @@
 | Exp2: Private-domain | +10.17% ±0.15pp vs best spec | 3 |
 | Exp3: 20-contributor federation | +16.71% ±0.07pp vs best spec | 3 |
 | FE-03: 18-contributor ablation | +21.13% ±0.01pp vs best spec | 3 |
+| REG-P1: 2-domain regression ext | +6.22% ±0.01pp vs best spec (div=10.77%) | 3 |
+| REG-P2: 4-domain regression ext | +14.71% ±0.02pp vs best spec (div=19.84%) | 3 |
 
-### Regression extension — next GPU run
+### Regression extension — **COMPLETE** (2026-04-14)
 
-Designed to push the divergence-gain regression from n=6 to n=8.
+Regression pushed from n=6 to n=8. Both new points within 95% prediction band.
 
-| Script | Domains | Expected div | Status |
-|--------|---------|-------------|--------|
-| `experiments/kalavai_regression_p1_2domain.py` | code + science | ~11% | **Ready to run** |
-| `experiments/kalavai_regression_p2_4domain.py` | code+science+fiction+legal | ~19–22% | **Ready to run** |
+| Script | Domains | Mean Div | Gain | Predicted | Status |
+|--------|---------|----------|------|-----------|--------|
+| `kalavai_regression_p1_2domain.py` | code + science | 10.77% | +6.22% ±0.01pp | +6.18% | **Done** |
+| `kalavai_regression_p2_4domain.py` | code+science+fiction+legal | 19.84% | +14.71% ±0.02pp | +13.74% | **Done** |
 
-Run both in parallel on two A10G pods (~$7 total, ~4h wallclock).
+Updated regression: `gain = 0.83 × divergence − 2.80` (R² = 0.872, n=8, slope CI [0.52, 1.15]).
 
 ---
 

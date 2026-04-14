@@ -2,7 +2,8 @@
 """
 Item 1: Divergence-Gain Regression Fit
 =======================================
-Fits linear and log-linear regressions to the 6 existing divergence-gain data points.
+Fits linear and log-linear regressions to the 8 divergence-gain data points
+(6 original + 2 regression extension points P1/P2 from 2026-04-14).
 Outputs: R², slope/intercept with 95% CIs, residuals, and updated scatter figure
 with regression line and confidence band.
 
@@ -28,12 +29,15 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 # ── Data (from corrected Table 9 / paper) ─────────────────────────────────────
+# P1/P2 added 2026-04-14: regression extension experiments filling gaps at ~11% and ~20% divergence
 CONDITIONS = [
     {"label": "Qwen-1.5B",         "div": 3.16,  "gain": 1.06,  "color": "#888888", "marker": "s"},
     {"label": "Pythia-6.9B",        "div": 8.73,  "gain": 6.53,  "color": "#2196F3", "marker": "D"},
+    {"label": "P1: 2-domain",       "div": 10.77, "gain": 6.22,  "color": "#00BCD4", "marker": "v"},
     {"label": "Pythia-1B",          "div": 15.28, "gain": 7.49,  "color": "#4CAF50", "marker": "^"},
     {"label": "Pythia-410M",        "div": 15.65, "gain": 7.72,  "color": "#FF9800", "marker": "o"},
     {"label": "Exp2: Private",      "div": 18.52, "gain": 10.17, "color": "#9C27B0", "marker": "P"},
+    {"label": "P2: 4-domain",       "div": 19.84, "gain": 14.71, "color": "#FF5722", "marker": "X"},
     {"label": "Exp1: Cross-lingual","div": 25.65, "gain": 21.76, "color": "#F44336", "marker": "*"},
 ]
 
