@@ -20,7 +20,7 @@
 | Main body pages | 9 (bibliography page 10, appendix 11–35) |
 | Compilation | 0 fatal errors, 4 Overfull \hbox <20pt |
 | NeurIPS reviewer rating | 7.5/10, ~40–50% acceptance probability |
-| Abstract | Intuition-first, n=6 caveat, regression formula, key results |
+| Abstract | Intuition-first, n=8 regression formula (R²=0.872), key results |
 | Contributions | 5 items with Intuitively/Surprisingly/In practice signals |
 | Discussion | Cooperative sparsity paragraph (G=2, Kimi K2/DeepSeek-V3), future work |
 

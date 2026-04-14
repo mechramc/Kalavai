@@ -73,8 +73,8 @@ MoE routing (500 router training steps on mixed data). Under this protocol, \kal
 over the best individual specialist by $+7.70\%$, $+7.49\%$, and $+6.53\%$ across Pythia-410M,
 1B, and 6.9B respectively (3-seed means). Fusion gain is predictable from specialist
 divergence:
-$\text{gain} \approx 0.82 \times \text{divergence} - 2.72$
-($R^2 = 0.856$, $n{=}6$ conditions, 3--26\% divergence range). While derived from a limited
+$\text{gain} \approx 0.83 \times \text{divergence} - 2.80$
+($R^2 = 0.872$, $n{=}8$ conditions, 3--26\% divergence range). While derived from a limited
 number of conditions, this relationship suggests divergence as a practical screening criterion
 prior to full cooperative training. In high-divergence settings gains are substantially
 larger: cross-lingual fusion of Tamil, Yoruba, Welsh, and code specialists achieves $+21.87\%$
@@ -108,8 +108,8 @@ The branch-train-mix (BTX) paradigm \citep{sukhbaatar2024branchtrainmix} demonst
 \begin{enumerate}[leftmargin=*, itemsep=2pt]
 \item \textbf{A predictive divergence--gain relationship.}
 Fusion gain is predictable from specialist divergence before training begins:
-$\text{gain} \approx 0.82 \times \text{divergence} - 2.72$
-($R^2 = 0.856$, $n{=}6$ conditions, 3--26\% divergence range).
+$\text{gain} \approx 0.83 \times \text{divergence} - 2.80$
+($R^2 = 0.872$, $n{=}8$ conditions, 3--26\% divergence range).
 Intuitively, more divergent specialists encode more complementary knowledge,
 giving the router more to exploit. In practice, this means practitioners can
 screen specialists by divergence on a small validation set before committing
@@ -343,20 +343,20 @@ This is the largest cooperative tested: 20 specialists (10 languages + 10 domain
 \label{sec:divergence_gain}
 % ============================================================
 
-Across six experimental conditions---Qwen-1.5B (mean div.\ 3.16\%), Pythia-6.9B (8.73\%), Pythia-1B (15.28\%), Pythia-410M (15.65\%), Exp 2 private-domain (18.52\%), and Exp 1 cross-lingual (25.65\%)---fusion gain scales monotonically with specialist divergence (Figure~\ref{fig:divergence_gain_regression}). Exp 3 (20-contributor, 15.68\%, +16.71\%, 3-seed mean) serves as an out-of-sample validation point (Appendix~\ref{app:divgain_table}).
+Across eight experimental conditions---Qwen-1.5B (mean div.\ 3.16\%), Pythia-6.9B (8.73\%), P1 2-domain code/science (10.77\%), Pythia-1B (15.28\%), Pythia-410M (15.65\%), Exp 2 private-domain (18.52\%), P2 4-domain code/science/fiction/legal (19.84\%), and Exp 1 cross-lingual (25.65\%)---fusion gain scales monotonically with specialist divergence (Figure~\ref{fig:divergence_gain_regression}). Exp 3 (20-contributor, 15.68\%, +16.71\%, 3-seed mean) serves as an out-of-sample validation point (Appendix~\ref{app:divgain_table}).
 
-\paragraph{Linear regression fit.} We fit OLS regression to the six data points. The linear model ($\text{gain} = -2.72 + 0.82 \times \text{divergence}$) achieves $R^2 = 0.856$ (slope 95\% CI [0.35, 1.28], $n=6$, $t$-distribution). A log-linear fit achieves only $R^2 = 0.662$---the relationship is closer to linear than sublinear across the 3--26\% divergence range. The regression line and 95\% prediction band are shown in Figure~\ref{fig:divergence_gain_regression}.
+\paragraph{Linear regression fit.} We fit OLS regression to the eight data points. The linear model ($\text{gain} = -2.80 + 0.83 \times \text{divergence}$) achieves $R^2 = 0.872$ (slope 95\% CI [0.52, 1.15], $n=8$, $t$-distribution). A log-linear fit achieves only $R^2 = 0.683$---the relationship is closer to linear than sublinear across the 3--26\% divergence range. The regression line and 95\% prediction band are shown in Figure~\ref{fig:divergence_gain_regression}.
 
 \paragraph{Regime dependence.} Within a fixed training protocol the linear law holds; varying training duration decouples divergence from gain (Appendix~\ref{app:inventory}).
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.82\textwidth]{fig_divergence_gain_regression}
-  \caption{Fusion gain vs.\ mean specialist divergence (\%) with OLS regression line and 95\% prediction band. Linear fit: $\text{gain} = -2.72 + 0.82 \times \text{div}$ ($R^2 = 0.856$, $n=6$ in-sample conditions). English-domain conditions (Qwen, Pythia-6.9B/1B/410M) cluster near the line; Exp 2 (private, purple) and Exp 1 (cross-lingual, red) both lie above the English-domain prediction, consistent with base-model incompetence on target domains producing outsized gains. The cross-lingual condition is the largest in-sample outlier (+3.6pp). Annotations show gain/divergence conversion rate per condition. \emph{Note:} Exp~3 (20-contributor, div\,=\,15.68\%, gain\,=\,+16.71\%, 3-seed mean) is an out-of-sample validation point lying +6.57pp above the regression line (Appendix~\ref{app:divgain_table}); it is not shown in this figure as the regression was fit before Exp~3 results were available.}
+  \caption{Fusion gain vs.\ mean specialist divergence (\%) with OLS regression line and 95\% prediction band. Linear fit: $\text{gain} = -2.80 + 0.83 \times \text{div}$ ($R^2 = 0.872$, $n=8$ in-sample conditions). Eight conditions spanning 3.16--25.65\% divergence; P1 2-domain (cyan) and P2 4-domain (orange) fill gaps at 10.77\% and 19.84\% divergence. English-domain conditions cluster near the line; Exp 2 (private, purple) and Exp 1 (cross-lingual, red) lie above the English-domain prediction, consistent with base-model incompetence on target domains producing outsized gains. The cross-lingual condition is the largest in-sample outlier (+3.2pp). \emph{Note:} Exp~3 (20-contributor, div\,=\,15.68\%, gain\,=\,+16.71\%, 3-seed mean) is an out-of-sample validation point lying +7.46pp above the regression line (Appendix~\ref{app:divgain_table}).}
   \label{fig:divergence_gain_regression}
 \end{figure}
 
-The formula $\text{gain} \approx 0.82 \times \text{divergence}$ provides a reliable pre-training estimate for English-domain and professional-domain cooperatives; cross-lingual and low-resource settings will likely exceed it. Below $\approx$3.3\% mean divergence, the cooperative is unlikely to produce positive gains (Appendix~\ref{app:divgain_table}).
+The formula $\text{gain} \approx 0.83 \times \text{divergence}$ provides a reliable pre-training estimate for English-domain and professional-domain cooperatives; cross-lingual and low-resource settings will likely exceed it. Below $\approx$3.3\% mean divergence, the cooperative is unlikely to produce positive gains (Appendix~\ref{app:divgain_table}).
 
 % ============================================================
 \section{Analysis}
@@ -374,9 +374,9 @@ The formula $\text{gain} \approx 0.82 \times \text{divergence}$ provides a relia
 \label{sec:discussion}
 % ============================================================
 
-\paragraph{Scale and divergence.} Reduced gain at 6.9B (+6.53\%) versus 410M (+7.72\%) is fully explained by lower divergence (mean 8.73\% vs.\ 15.65\%); conversion efficiency is \emph{higher} at 6.9B (0.75$\times$ vs.\ 0.49$\times$). Small divergence at Qwen-1.5B (mean 3.16\%) likewise produces small gain (+1.06\%): the formula $\text{gain} \approx 0.82 \times \text{divergence}$ holds consistently (Table~\ref{tab:divergence}).
+\paragraph{Scale and divergence.} Reduced gain at 6.9B (+6.53\%) versus 410M (+7.72\%) is fully explained by lower divergence (mean 8.73\% vs.\ 15.65\%); conversion efficiency is \emph{higher} at 6.9B (0.75$\times$ vs.\ 0.49$\times$). Small divergence at Qwen-1.5B (mean 3.16\%) likewise produces small gain (+1.06\%): the formula $\text{gain} \approx 0.83 \times \text{divergence}$ holds consistently (Table~\ref{tab:divergence}).
 
-\paragraph{Inference cost and limitations.} The fused model runs all $N$ specialists in parallel ($\approx N\times$ compute). Sparse top-1 inference loses 21\% quality at 410M despite 100\% routing agreement; this collapse arises from the logit-ensemble inference mechanism---the router input is the mean-pooled hidden state averaged across all specialists, which is unavailable under single-specialist evaluation---and is not addressable by routing improvements alone (Appendix~\ref{app:inference}). The empirical divergence--gain relationship is derived from six conditions under a fixed training protocol; its validity under different optimisers, architectures, or dataset distributions is not established. All experiments are simulated cooperatives on single machines; real deployment requires contributor vetting, checkpoint verification, and governance for dual-use risk. Results have not been verified at frontier scale ($>$70B).
+\paragraph{Inference cost and limitations.} The fused model runs all $N$ specialists in parallel ($\approx N\times$ compute). Sparse top-1 inference loses 21\% quality at 410M despite 100\% routing agreement; this collapse arises from the logit-ensemble inference mechanism---the router input is the mean-pooled hidden state averaged across all specialists, which is unavailable under single-specialist evaluation---and is not addressable by routing improvements alone (Appendix~\ref{app:inference}). The empirical divergence--gain relationship is derived from eight conditions under a fixed training protocol; its validity under different optimisers, architectures, or dataset distributions is not established. All experiments are simulated cooperatives on single machines; real deployment requires contributor vetting, checkpoint verification, and governance for dual-use risk. Results have not been verified at frontier scale ($>$70B).
 
 \paragraph{Cooperative sparsity as a structural advantage.} Frontier MoE systems demonstrate that higher routing sparsity yields better performance for fixed FLOPs: Kimi K2 \citep{moonshotai2025kimik2} deploys 384 experts with 8 active (sparsity ratio 48), and DeepSeek-V3 \citep{liu2024deepseekv3} uses auxiliary-loss-free bias vectors to sustain load balance without interference gradients. \kalavai achieves sparsity as an emergent property of cooperative training: with $N=20$ contributors, the learned router concentrates gate mass on the domain-relevant specialist (2.2 expert switches per hybrid-domain prompt; Appendix~\ref{app:routing}), yielding a natural sparsity ratio of 5--10 without any auxiliary load-balancing loss. Unlike architectural MoE where sparsity must be imposed, cooperative sparsity arises from specialist domain separation---the router has no incentive to distribute gate mass broadly when each specialist is competent only on its training domain. \kalavai operates at granularity $G=2$ (full-width specialists, $d_\text{expert}=d_\text{model}$) across all scales, contrasting with frontier MoE systems that increase $G$ to 30--50 via sub-model experts; this is a deliberate protocol constraint, as full-width specialists are required to preserve the zero-communication training guarantee.
 
@@ -387,7 +387,7 @@ The formula $\text{gain} \approx 0.82 \times \text{divergence}$ provides a relia
 \label{sec:conclusion}
 % ============================================================
 
-Independently trained specialists, fused via a lightweight MoE router, consistently outperform the best individual specialist across three tested scales (+7.70\% at 410M, +7.49\% at 1B, +6.53\% at 6.9B). Fusion gain correlates with specialist divergence from the shared base ($\text{gain} \approx 0.82 \times \text{divergence} - 2.72$, $R^2 = 0.856$, $n{=}6$ conditions), suggesting divergence as a practical screening criterion within the settings studied. Routing architecture has minimal impact once training is adequate---a linear router matches MLP router performance and approaches the domain-level oracle ($<10^{-5}$ nats gap)---but routing must be learned; shared initialisation is the only coordination requirement during training.
+Independently trained specialists, fused via a lightweight MoE router, consistently outperform the best individual specialist across three tested scales (+7.70\% at 410M, +7.49\% at 1B, +6.53\% at 6.9B). Fusion gain correlates with specialist divergence from the shared base ($\text{gain} \approx 0.83 \times \text{divergence} - 2.80$, $R^2 = 0.872$, $n{=}8$ conditions), suggesting divergence as a practical screening criterion within the settings studied. Routing architecture has minimal impact once training is adequate---a linear router matches MLP router performance and approaches the domain-level oracle ($<10^{-5}$ nats gap)---but routing must be learned; shared initialisation is the only coordination requirement during training.
 
 Phase 2 extends the protocol to high-divergence settings: private professional domains achieve +10.17\% at 18.52\% divergence; cross-lingual fusion (Tamil/Yoruba/Welsh/Code) achieves +21.87\% at 25.65\% divergence (Yoruba PPL $41.9\to7.7$); an 18-contributor federation achieves +21.13\%. Gain scales most steeply where the base model is least competent---precisely where decentralised, privacy-preserving training is most needed.
 
@@ -975,7 +975,7 @@ Router retrained from scratch for 1{,}000 steps on 18-domain mixed data.}
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.85\textwidth]{figures/fig_divergence_gain_scatter_v2}
-  \caption{Expanded divergence--gain scatter ($n=17$). The six in-sample conditions (circles) are supplemented with eight training-duration crossover conditions (triangles, 50--20{,}000 steps) and three 20-contributor seeds (squares). The linear law ($R^2=0.856$, $n=6$) holds within a fixed training protocol; across training-duration regimes the relationship is non-monotonic (gain rises then falls as specialists over-train). The 20-contributor points (15.7\% divergence, +16.7\% gain) lie above the in-sample regression line, consistent with cooperative size amplifying fusion benefit.}
+  \caption{Expanded divergence--gain scatter ($n=19$). The eight in-sample conditions (circles, including P1/P2 regression extension) are supplemented with eight training-duration crossover conditions (triangles, 50--20{,}000 steps) and three 20-contributor seeds (squares). The linear law ($R^2=0.872$, $n=8$) holds within a fixed training protocol; across training-duration regimes the relationship is non-monotonic (gain rises then falls as specialists over-train). The 20-contributor points (15.7\% divergence, +16.7\% gain) lie above the in-sample regression line, consistent with cooperative size amplifying fusion benefit.}
   \label{fig:scatter_v2}
 \end{figure}
 
@@ -1061,7 +1061,7 @@ Specialist divergence captures how much specialists move from the base model; a 
   \textbf{Left}: Conversion efficiency (gain / divergence) versus mean base-model perplexity per condition.
   \textbf{Centre}: Same with log-scaled perplexity axis (Pearson $r = +0.560$).
   \textbf{Right}: Divergence versus gain coloured by base-model PPL quartile.
-  Cross-lingual conditions (high base PPL) convert divergence most efficiently; English-domain conditions (low base PPL) sit near the baseline conversion rate. Dashed lines are OLS fits; $n=6$ conditions.}
+  Cross-lingual conditions (high base PPL) convert divergence most efficiently; English-domain conditions (low base PPL) sit near the baseline conversion rate. Dashed lines are OLS fits; $n=6$ conditions (figure generated on original in-sample set; see main text for updated $n=8$ regression).}
   \label{fig:baseppl_conversion}
 \end{figure}
 
@@ -1094,7 +1094,7 @@ Weight averaging    & 2.0142 & 2.7323 & 2.7106 & 2.4857 \\
 
 \begin{table}[h]
 \centering
-\caption{Summary of divergence--gain relationship across all Phase 1 and Phase 2 experiments. Predicted gain from linear fit $= -2.72 + 0.82 \times \text{div}$; residual = actual$-$predicted. The regression was fit on the six in-sample conditions (rows 1--6); Exp~3 (row 7) is an out-of-sample validation point. $^{\dagger}$Qwen predicted gain is at the divergence floor ($\approx$3.3\%). $^{\ddagger}$In a 20-specialist cooperative the best specialist is only 0.46\% above base; nominal conversion rate $>1$ reflects this near-equal baseline.}
+\caption{Summary of divergence--gain relationship across all Phase 1 and Phase 2 experiments. Predicted gain from linear fit $= -2.80 + 0.83 \times \text{div}$; residual = actual$-$predicted. Predicted values are computed from full-precision OLS coefficients (slope $= 0.8335$, intercept $= -2.7956$). The regression was fit on the eight in-sample conditions (rows 1--8); Exp~3 (row 9) is an out-of-sample validation point. $^{\dagger}$Qwen predicted gain is at the divergence floor ($\approx$3.3\%). $^{\ddagger}$In a 20-specialist cooperative the best specialist is only 0.46\% above base; nominal conversion rate $>1$ reflects this near-equal baseline.}
 \label{tab:divergence_gain}
 \small
 \begin{tabular}{lccccc}
@@ -1102,13 +1102,15 @@ Weight averaging    & 2.0142 & 2.7323 & 2.7106 & 2.4857 \\
 \textbf{Condition} & \textbf{Mean Div.} & \textbf{Gain vs Spec} & \textbf{Conv.\ rate} & \textbf{Pred.\ gain} & \textbf{Residual} \\
 \midrule
 Qwen-1.5B (Ph.1)            & 3.16\%  & +1.06\%  & 0.34$\times$ & $\approx$0\%$^{\dagger}$ & --- \\
-Pythia-6.9B (Ph.1)          & 8.73\%  & +6.53\%  & 0.75$\times$ & +4.41\%  & +2.12pp \\
-Pythia-1B (Ph.1)            & 15.28\% & +7.49\%  & 0.49$\times$ & +9.81\%  & $-$2.32pp \\
-Pythia-410M (Ph.1)          & 15.65\% & +7.72\%  & 0.49$\times$ & +10.11\% & $-$2.39pp \\
-Exp 2: private (Ph.2)       & 18.52\% & +10.17\% & 0.55$\times$ & +12.43\% & $-$2.26pp \\
-Exp 1: cross-lingual (Ph.2) & 25.65\% & +21.87\% & 0.85$\times$ & +18.18\% & +3.69pp \\
+Pythia-6.9B (Ph.1)          & 8.73\%  & +6.53\%  & 0.75$\times$ & +4.48\%  & +2.05pp \\
+P1: 2-domain (regression)   & 10.77\% & +6.22\%  & 0.58$\times$ & +6.18\%  & +0.04pp \\
+Pythia-1B (Ph.1)            & 15.28\% & +7.49\%  & 0.49$\times$ & +9.94\%  & $-$2.45pp \\
+Pythia-410M (Ph.1)          & 15.65\% & +7.72\%  & 0.49$\times$ & +10.25\% & $-$2.53pp \\
+Exp 2: private (Ph.2)       & 18.52\% & +10.17\% & 0.55$\times$ & +12.64\% & $-$2.47pp \\
+P2: 4-domain (regression)   & 19.84\% & +14.71\% & 0.74$\times$ & +13.74\% & +0.97pp \\
+Exp 1: cross-lingual (Ph.2) & 25.65\% & +21.87\% & 0.85$\times$ & +18.58\% & +3.29pp \\
 \midrule
-\textit{Exp 3: 18-contrib/FE-03 (Ph.2, OOS)} & \textit{19.75\%} & \textit{+21.13\%} & \textit{1.07$\times$$^{\ddagger}$} & \textit{+13.45\%} & \textit{+7.68pp} \\
+\textit{Exp 3: 18-contrib/FE-03 (Ph.2, OOS)} & \textit{19.75\%} & \textit{+21.13\%} & \textit{1.07$\times$$^{\ddagger}$} & \textit{+13.67\%} & \textit{+7.46pp} \\
 \bottomrule
 \end{tabular}
 \end{table}

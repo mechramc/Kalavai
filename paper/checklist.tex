@@ -5,7 +5,7 @@
 \item {\bf Claims}
     \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Every quantitative claim in the abstract and introduction is supported by experimental results in the main paper or appendix. The scope of the divergence--gain regression ($n=6$, 3--26\% divergence, single fixed training protocol) is stated explicitly in both the abstract and Section~4.5, and limitations of the formula are discussed in Section~5.
+    \item[] Justification: Every quantitative claim in the abstract and introduction is supported by experimental results in the main paper or appendix. The scope of the divergence--gain regression ($n=8$, 3--26\% divergence, single fixed training protocol) is stated explicitly in both the abstract and Section~4.5, and limitations of the formula are discussed in Section~5.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the abstract and introduction do not include the claims made in the paper.
@@ -17,7 +17,7 @@
 \item {\bf Limitations}
     \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Section~5 discusses the main limitations: the $N{\times}$ inference overhead that scales with cooperative size; the regression formula's empirical basis ($n=6$ in-sample conditions); router collapse at high divergence under certain random seeds (Section~4.7); failure of LoRA-based specialist training to achieve sufficient divergence (Section~3). The 20-contributor experiment identifies dialogue and instructions as domains where fine-tuning on available data actively hurts divergence, and this is noted alongside the result.
+    \item[] Justification: Section~5 discusses the main limitations: the $N{\times}$ inference overhead that scales with cooperative size; the regression formula's empirical basis ($n=8$ in-sample conditions); router collapse at high divergence under certain random seeds (Section~4.7); failure of LoRA-based specialist training to achieve sufficient divergence (Section~3). The 20-contributor experiment identifies dialogue and instructions as domains where fine-tuning on available data actively hurts divergence, and this is noted alongside the result.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper has no limitation while the answer \answerNo{} means that the paper has limitations, but those are not discussed in the paper.
