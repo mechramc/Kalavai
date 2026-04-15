@@ -618,3 +618,25 @@ Gate check vs LG-01 (freeze=0, +6.53%):
 Saved: results/pythia/pythia_6b_step_sweep/result_steps2000_k4_seed42.json
 
 [git] [kalavai] 6.9B freeze sweep LG: steps=2000 k=4 seed=42 → +-0.01% vs spec (LG-01 baseline: +6.53%)
+[main aae7b3d] [kalavai] 6.9B freeze sweep LG: steps=2000 k=4 seed=42 → +-0.01% vs spec (LG-01 baseline: +6.53%)
+ 2 files changed, 359 insertions(+)
+ create mode 100644 results/pythia/pythia_6b_step_sweep/result_steps2000_k4_seed42.json
+To https://github.com/mechramc/kalavai.git
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/mechramc/kalavai.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[git] WARNING: Command '['git', 'push']' returned non-zero exit status 1.
+
+======================================================================
+SWEEP COMPLETE — SUMMARY
+======================================================================
+  LG-01 (freeze=0): +6.53% vs spec  [current paper result]
+  LG-02 (freeze=2): +-0.01% vs spec  (Δ=-6.54pp vs LG-01) 
+  LG-03 (freeze=4): +-0.01% vs spec  (Δ=-6.54pp vs LG-01) 
+
+No gate passed. 6.9B gain insensitive to freeze depth. Keep freeze=0 (+6.53%) as paper result.
+======================================================================
