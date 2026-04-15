@@ -1,0 +1,76 @@
+{
+  "steps": 2000,
+  "freeze": 4,
+  "seed": 42,
+  "model_id": "EleutherAI/pythia-6.9b",
+  "revision": "step10000",
+  "eval_heldout": {
+    "base": {
+      "code": 1.835753,
+      "science": 2.588247,
+      "fiction": 2.694671,
+      "mixed": 1.835753
+    },
+    "code_spec": {
+      "code": 1.630601,
+      "science": 2.61918,
+      "fiction": 2.735054,
+      "mixed": 1.630601
+    },
+    "science_spec": {
+      "code": 1.960048,
+      "science": 2.435057,
+      "fiction": 2.845944,
+      "mixed": 1.960048
+    },
+    "fiction_spec": {
+      "code": 1.852143,
+      "science": 2.595946,
+      "fiction": 2.47992,
+      "mixed": 1.852143
+    },
+    "weight_avg": {
+      "code": 1.762779,
+      "science": 2.476618,
+      "fiction": 2.609453,
+      "mixed": 1.762779
+    },
+    "moe": {
+      "code": 1.630696,
+      "science": 2.435031,
+      "fiction": 2.480092,
+      "mixed": 1.630696
+    }
+  },
+  "base_mixed": 1.835753,
+  "best_spec_mixed": 1.630601,
+  "moe_mixed": 1.630696,
+  "improvement_vs_spec": -0.0058,
+  "improvement_vs_base": 11.1702,
+  "router_distribution": {
+    "code": [
+      0.9997,
+      0.0001,
+      0.0003
+    ],
+    "science": [
+      0.0,
+      0.9999,
+      0.0001
+    ],
+    "fiction": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "mixed": [
+      0.9997,
+      0.0001,
+      0.0003
+    ]
+  },
+  "lg01_vs_spec": 6.53,
+  "delta_vs_lg01": -6.5358,
+  "gate_passed": false,
+  "timestamp": "2026-04-15T04:23:06Z"
+}
