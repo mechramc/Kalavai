@@ -69,7 +69,7 @@ fusion succeeds, how much gain to expect, and what coordination it requires.
 
 We introduce \kalavai\footnote{KALAVAI (\textit{kalaVAI}) is the ISO~15919 romanisation of the Tamil word for ``fusion'' or ``mixing''.}, a protocol in which contributors train on private data without
 exchanging gradients, activations, or model updates, then submit checkpoints for lightweight
-MoE routing (500 router training steps on mixed data). Under this protocol, \kalavai improves
+Mixture-of-Experts (MoE) routing (500 router training steps on mixed data). Under this protocol, \kalavai improves
 over the best individual specialist by $+7.70\%$, $+7.49\%$, and $+6.53\%$ across Pythia-410M,
 1B, and 6.9B respectively (3-seed means). Fusion gain is predictable from specialist
 divergence:
@@ -85,9 +85,13 @@ mismatched checkpoints degrade routing coherence, because the representational g
 that enables clean routing is established at initialisation, not during training.
 \emph{Layer freezing} is beneficial only beyond approximately 10,000 specialist training
 steps ($+2.4$pp advantage at 20,000 steps; unnecessary below that threshold).
-\emph{Routing must be learned}: a trained linear router approaches the domain-level oracle
-with a gap of ${<}10^{-5}$ nats at 410M, while uniform weight averaging reduces performance
-by $1.2\%$ relative to the best individual specialist.
+\emph{Routing must be learned}: a trained linear router approaches the domain-level
+oracle---a hypothetical router with perfect per-token domain knowledge---with a gap of
+${<}10^{-5}$ nats (natural units of entropy; 1~nat $\approx$ 1.44~bits) at 410M scale,
+while uniform weight averaging reduces performance by $1.2\%$ relative to the best
+individual specialist.
+Section~\ref{sec:method} formalises the protocol; Sections~\ref{sec:core}--\ref{sec:divergence_gain}
+characterise these conditions empirically; Appendix~\ref{app:evalcorrection} details the evaluation protocol.
 \end{abstract}
 
 % ============================================================
@@ -97,7 +101,9 @@ by $1.2\%$ relative to the best individual specialist.
 
 Training competitive language models requires centralised compute at a scale most researchers and institutions cannot access. Frontier training runs demand hundreds of synchronised GPUs for weeks, concentrating capability in organisations with sufficient infrastructure. This creates a practical barrier: strong models are currently accessible primarily to those who can build or fund them. This raises a natural question: can the training effort itself be distributed, so that many contributors---each with their own data, hardware, and constraints---collectively produce a model none of them could build alone?
 
-\paragraph{Cooperative specialist fusion.} A structurally different approach is possible. If multiple contributors each fine-tune an independent copy of a shared base checkpoint on their own domain, and if those specialists are subsequently fused via a learned router, the resulting model can aggregate complementary knowledge that no single contributor could acquire alone. Intuitively, specialists trained on different domains diverge in complementary directions from the shared initialisation point; a router trained on mixed data can then assign each input to its most relevant specialist, recovering the benefits of specialisation simultaneously across all domains. The training step requires no communication: contributors work independently, asynchronously, on their own hardware, using their own data. The only coordination is the shared initial checkpoint. Contributor data remains private throughout; no pooling is required.
+\paragraph{Cooperative specialist fusion.} A structurally different approach is possible. If multiple contributors each fine-tune an independent copy of a shared base checkpoint on their own domain, the resulting specialists collectively aggregate complementary knowledge that no single contributor could build alone.
+
+The key insight is that specialists trained on different domains diverge in \emph{complementary} directions from the shared initialisation point: each becomes highly competent on its own domain while degrading on out-of-domain data. A lightweight router---trained on a small mixed-domain dataset after all specialists have submitted their checkpoints---exploits this structure by assigning each input token to its most relevant specialist, recovering specialisation quality across all domains simultaneously. This requires \emph{no communication during training}: contributors work independently, asynchronously, on their own hardware, using their own private data. The only coordination is the shared initial checkpoint.
 
 The branch-train-mix (BTX) paradigm \citep{sukhbaatar2024branchtrainmix} demonstrates that MoE fusion of independently trained models is feasible. However, the conditions under which post-hoc specialist fusion succeeds---what level of divergence is required, how training duration interacts with layer freezing, what routing architecture is necessary---have not been empirically characterised. This paper provides that characterisation, along with a protocol that operationalises cooperative training under realistic privacy constraints.
 
@@ -106,7 +112,7 @@ The branch-train-mix (BTX) paradigm \citep{sukhbaatar2024branchtrainmix} demonst
 \paragraph{Contributions.} We report five empirical findings:
 
 \begin{enumerate}[leftmargin=*, itemsep=2pt]
-\item \textbf{A predictive divergence--gain relationship.}
+\item \textbf{A predictive divergence--gain relationship} (Section~\ref{sec:divergence_gain}).
 Fusion gain is predictable from specialist divergence before training begins:
 $\text{gain} \approx 0.83 \times \text{divergence} - 2.80$
 ($R^2 = 0.872$, $n{=}8$ conditions, 3--26\% divergence range).
@@ -115,14 +121,15 @@ giving the router more to exploit. In practice, this means practitioners can
 screen specialists by divergence on a small validation set before committing
 to full cooperative training.\footnote{All results use the per-domain equal-weight protocol; see Appendix~\ref{app:evalcorrection}.}
 
-\item \textbf{Near-oracle routing with a linear router.}
-A trained linear router approaches the domain-level oracle with a gap of
-${<}10^{-5}$ nats at 410M scale. Surprisingly, routing architecture does not
-matter---linear and MLP routers perform equivalently---but routing must be
-learned; uniform weight averaging degrades performance below the best individual
-specialist. This suggests the bottleneck is training the router, not its capacity.
+\item \textbf{Near-oracle routing with a linear router} (Section~\ref{sec:analysis}).
+A trained linear router approaches the domain-level oracle (perfect per-token
+domain assignment) with a gap of ${<}10^{-5}$ nats at 410M scale. Surprisingly,
+routing architecture does not matter---linear and MLP routers perform
+equivalently---but routing must be trained; uniform weight averaging degrades
+performance below the best individual specialist. The bottleneck is whether the
+router is trained at all, not its architectural capacity.
 
-\item \textbf{Consistent gains across model scales.}
+\item \textbf{Consistent gains across model scales} (Section~\ref{sec:core}).
 \kalavai improves over the best specialist by $+7.70\%$ at 410M, $+7.49\%$ at
 1B, and $+6.53\%$ at 6.9B (3-seed means). Reduced gain at 6.9B reflects lower
 specialist divergence at that scale, not protocol degradation; conversion
@@ -130,14 +137,15 @@ efficiency is in fact higher at 6.9B ($0.75\times$) than at smaller scales
 ($0.49\times$). This suggests the mechanism strengthens, not weakens, as models
 grow more capable.
 
-\item \textbf{A training-duration crossover for layer freezing.}
+\item \textbf{A training-duration crossover for layer freezing} (Section~\ref{sec:crossover}).
 Layer freezing is unnecessary below approximately 10,000 specialist training
 steps; above that threshold, freezing lower layers preserves routing coherence
-and provides a measurable performance advantage. Intuitively, short specialisation
-runs naturally retain compatible lower-level features; only extended training
-erodes this shared geometry, at which point freezing acts as a structural anchor.
+and provides a measurable performance advantage ($+2.4$pp at 20,000 steps).
+Intuitively, short specialisation runs naturally retain compatible lower-level
+features; only extended training erodes this shared geometry, at which point
+frozen layers act as a structural anchor.
 
-\item \textbf{Substantial gains in high-divergence settings.}
+\item \textbf{Substantial gains in high-divergence settings} (Section~\ref{sec:phase2}).
 Cross-lingual cooperative fusion (Tamil, Yoruba, Welsh, and code) achieves
 $+21.87\%$ ($\pm$0.12pp, 3-seed mean); an 18-specialist multilingual federation
 achieves $+21.13\%$ ($\pm$0.01pp, 3 seeds). In practice, gains are largest
@@ -165,15 +173,17 @@ The \kalavai protocol consists of four phases.
 
 \paragraph{Phase 1: Shared initialisation.} A coordinator selects a publicly available base checkpoint $\theta_0$ and distributes it to all contributors. All specialists begin from \emph{identical} weights. This shared initialisation is the core structural guarantee that enables post-hoc fusion: specialists diverge in representation space, but their representational geometry remains compatible because they begin from the same point. Hash verification ensures all contributors use exactly the same checkpoint.
 
-\paragraph{Phase 2: Optional freezing.} Optionally, the first $K$ transformer layers are frozen during specialist training. Frozen layers help ensure that lower-level representations remain shared across specialists, providing a structural anchor that is robust to extended training. Our experiments show freezing is unnecessary at short training horizons ($\leq$10,000 steps) but becomes beneficial beyond approximately 10,000 steps (Section~\ref{sec:crossover}).
+\paragraph{Phase 2: Layer freezing (optional).} The first $K$ transformer layers may be frozen during specialist training. Frozen layers ensure that lower-level representations remain shared across all specialists---a structural anchor that prevents over-specialisation under extended training. Freezing is unnecessary below approximately 10,000 specialist training steps but provides a measurable advantage beyond that threshold (Section~\ref{sec:crossover}).
 
-\paragraph{Phase 3: Independent specialist training.} Each contributor trains their copy of $\theta_0$ on a single knowledge domain using standard next-token prediction loss. Training is fully independent: contributors never share data, gradients, or activations. Any training infrastructure, hardware, or optimiser the contributor prefers may be used, provided the architecture and freeze configuration match the coordinator's specification. We use full fine-tuning of unfrozen layers rather than low-rank adaptation (LoRA); LoRA specialists fall below the divergence threshold required for positive fusion gains, placing all tested LoRA configurations below the empirical gain floor (Appendix~\ref{app:design}, Table~\ref{tab:lora}).
+\paragraph{Phase 3: Independent specialist training.} Each contributor trains their copy of $\theta_0$ on a single knowledge domain using standard next-token prediction loss. Training is fully independent: contributors never share data, gradients, or activations. Any training infrastructure, hardware, or optimiser the contributor prefers may be used, provided the architecture and freeze configuration match the coordinator's specification.
 
 Formally, contributor $i$ trains specialist $\theta_i$ by minimising:
 \[
 \mathcal{L}_i = -\mathbb{E}_{x \sim \mathcal{D}_i} \left[\sum_t \log p_{\theta_i}(x_t \mid x_{<t})\right]
 \]
 where $\mathcal{D}_i$ is contributor $i$'s domain-specific dataset and $\theta_i$ shares the first $K$ frozen layers with all other specialists.
+
+\textbf{Design choice: full fine-tuning, not LoRA.} We use full fine-tuning of unfrozen layers rather than parameter-efficient adaptation. LoRA-trained specialists do not develop sufficient representational divergence from the base checkpoint to benefit from fusion: all tested LoRA configurations fall below the empirical divergence floor required for positive gains, confirming that representational divergence---not parameter count---drives cooperative benefit (Appendix~\ref{app:design}, Table~\ref{tab:lora}).
 
 \paragraph{Phase 4: Post-hoc MoE fusion.} After all specialists submit their checkpoints, a lightweight router is trained on a small mixed-domain dataset (500 gradient steps in our experiments). The router is a single linear layer mapping the model's hidden state at position $t$ to a distribution over experts:
 \[
@@ -304,7 +314,7 @@ The protocol tolerates heterogeneous contributor conditions: batch size, learnin
 \label{sec:phase2}
 % ============================================================
 
-Phase 1 establishes that the protocol works at English domain scales (code/science/fiction, divergence $\sim$8--16\%). Phase 2 tests whether the divergence-proportional gain relationship extends to settings where KALAVAI is most practically valuable: domains invisible to the base model and languages not in its training corpus.
+Phase 1 establishes that the protocol works at English domain scales (code/science/fiction, divergence $\sim$8--16\%). Phase 2 tests whether the divergence-proportional gain relationship extends to settings where \kalavai is most practically valuable: domains invisible to the base model and languages not in its training corpus.
 
 \subsubsection{Private-Domain Fusion (Experiment 2)}
 \label{sec:phase2_private}
