@@ -61,8 +61,12 @@ docs/*.mp4
 
 # Internal working files — not for public repo
 Discard/
+paper/archive/
 paper/arxiv_upload/
+paper/arxiv_submission/
 paper/arxiv_kalavai_neurips2026.zip
+.claude/worktrees/
+.codex_tmp/
 
 # LaTeX build artifacts
 paper/*.aux
