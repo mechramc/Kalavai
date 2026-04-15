@@ -84,7 +84,7 @@
 \item {\bf Experimental setting/details}
     \item[] Question: Does the paper specify all the training and test details (e.g., data splits, hyperparameters, how they were chosen, type of optimizer) necessary to understand the results?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Section~4.1 covers all core hyperparameters. For each domain, 90\% of samples are used for specialist training and 10\% held out for evaluation; the held-out split is never seen during training or router training. Specialist learning rate ($2\times10^{-5}$) and router learning rate ($2\times10^{-4}$) are as stated in Section~4.1; freeze depth and router training steps were varied in dedicated ablations (Sections~4.4 and~4.9).
+    \item[] Justification: Section~4.1 covers all core hyperparameters. For each domain, 90\% of samples are used for specialist training and 10\% held out for evaluation; the held-out split is never seen during training or router training. Specialist learning rate ($2\times10^{-5}$) and router learning rate ($2\times10^{-4}$) are as stated in Section~4.1; freeze depth was varied in a dedicated ablation (Section~4.4 and Appendix~B); router architecture was ablated in Section~5.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include experiments.
@@ -95,7 +95,7 @@
 \item {\bf Experiment statistical significance}
     \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
     \item[] Answer: \answerYes{}
-    \item[] Justification: All main Phase~1 results are reported as means over 3 seeds (42, 137, 2026) with standard deviation in percentage points (e.g., $\pm$0.02pp at 410M, $\pm$0.01pp at 1B, $\pm$0.024pp at 6.9B). Phase~2 experiments provide per-seed tables in Appendix~G--H. The regression slope's 95\% confidence interval is reported ([0.35, 1.28]).
+    \item[] Justification: All main Phase~1 results are reported as means over 3 seeds (42, 137, 2026) with standard deviation in percentage points (e.g., $\pm$0.02pp at 410M, $\pm$0.01pp at 1B, $\pm$0.024pp at 6.9B). Phase~2 experiments provide per-seed tables in Appendix~G--H. The regression slope's 95\% confidence interval is reported ([0.52, 1.15]).
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include experiments.
@@ -112,7 +112,7 @@
 \item {\bf Experiments compute resources}
     \item[] Question: For each experiment, does the paper provide sufficient information on the computer resources (type of compute workers, memory, time of execution) needed to reproduce the experiments?
     \item[] Answer: \answerYes{}
-    \item[] Justification: All experiments were run on a single NVIDIA GeForce RTX 5090; inference latency and VRAM benchmarks for this hardware are reported in Appendix~I. Training compute is implicitly bounded by the step counts and model sizes given in Section~4.1 (e.g., 50 specialist steps takes under two minutes on this GPU; the main 410M experiments use 2,000 steps per specialist). The full research project involved additional preliminary runs and ablations beyond those reported; these were also conducted on the same single-GPU setup.
+    \item[] Justification: Pythia-410M and Pythia-1B experiments were run on a single NVIDIA GeForce RTX 5090 (24\,GB VRAM); Pythia-6.9B experiments were run on a cloud-hosted NVIDIA A100 (80\,GB VRAM). Inference latency and VRAM benchmarks for the RTX~5090 are reported in Appendix~I. Training compute is implicitly bounded by the step counts and model sizes given in Section~4.1 (e.g., 50 specialist steps takes under two minutes on the RTX~5090; the main 410M experiments use 2,000 steps per specialist).
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include experiments.
